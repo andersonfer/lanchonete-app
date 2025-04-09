@@ -23,7 +23,7 @@ class RepositorioConfigTest {
     private ClienteRepositorio clienteRepositorio;
 
     @Test
-    @DisplayName( "Deve criar o bean clienteRepositorio")
+    @DisplayName( "Deve criar o bean ClienteRepositorio")
     void t1() {
         assertNotNull(clienteRepositorio);
     }

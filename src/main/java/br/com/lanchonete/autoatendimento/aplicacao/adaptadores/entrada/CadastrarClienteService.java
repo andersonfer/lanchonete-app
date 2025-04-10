@@ -8,6 +8,8 @@ import br.com.lanchonete.autoatendimento.dominio.Cliente;
 import io.swagger.v3.oas.annotations.servers.Server;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Optional;
+
 @Server
 public class CadastrarClienteService implements CadastrarClienteUC {
 
@@ -21,6 +23,12 @@ public class CadastrarClienteService implements CadastrarClienteUC {
     public ClienteResponseDTO cadastrar(CadastrarClienteDTO novoCliente) {
 
         validarDadosCliente(novoCliente);
+
+        Optional<Cliente> clienteExistente = clienteRepositorio.buscarPorCpf(novoCliente.getCpf());
+        if (clienteExistente.isPresent()) {
+            throw new IllegalArgumentException("CPF duplicado");
+        }
+
 
         Cliente cliente = Cliente.builder()
                 .nome(novoCliente.getNome())
@@ -41,13 +49,13 @@ public class CadastrarClienteService implements CadastrarClienteUC {
         if (StringUtils.isBlank(novoCliente.getEmail())) {
             throw new IllegalArgumentException("Email é obrigatório");
         }
-        if (!novoCliente.getEmail().matches("^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
+        if (!novoCliente.getEmail().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
             throw new IllegalArgumentException("Email inválido");
         }
         if (StringUtils.isBlank(novoCliente.getCpf())) {
             throw new IllegalArgumentException("CPF é obrigatório");
         }
-        if (!novoCliente.getCpf().matches("^[0-9]{11}$")) {
+        if (!novoCliente.getCpf().matches("^\\d{11}$")) {
             throw new IllegalArgumentException("CPF deve conter 11 dígitos numéricos");
         }
     }

@@ -21,21 +21,30 @@ class ClienteRepositorioJDBCTest {
 
     private ClienteRepositorioJDBC clienteRepositorio;
 
+    private final String CPF_JA_CASTRADADO = "12345678901";
+
     @BeforeEach
     void configurar() {
         clienteRepositorio = new ClienteRepositorioJDBC(jdbcTemplate);
+
+        Cliente clientePreCadastrado = Cliente.builder()
+                .nome("João Silva")
+                .email("joao@email.com")
+                .cpf(CPF_JA_CASTRADADO)
+                .build();
+
+        clienteRepositorio.salvar(clientePreCadastrado);
     }
 
     @Test
     @DisplayName("Deve encontrar o cliente por CPF")
     void t1() {
-        String cpfExistente = "12345678901";
 
-        Optional<Cliente> resultado = clienteRepositorio.buscarPorCpf(cpfExistente);
+        Optional<Cliente> resultado = clienteRepositorio.buscarPorCpf(CPF_JA_CASTRADADO);
 
         assertTrue(resultado.isPresent(), "Cliente deve ser encontrado pelo CPF");
         Cliente cliente = resultado.get();
-        assertEquals(cpfExistente, cliente.getCpf());
+        assertEquals(CPF_JA_CASTRADADO, cliente.getCpf());
         assertEquals("João Silva", cliente.getNome());
         assertEquals("joao@email.com", cliente.getEmail());
     }

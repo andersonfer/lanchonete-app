@@ -4,6 +4,7 @@ import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.Cadas
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
 import br.com.lanchonete.autoatendimento.dominio.Cliente;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,8 +13,11 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 class CadastrarClienteServiceTest {
@@ -24,26 +28,32 @@ class CadastrarClienteServiceTest {
     @InjectMocks
     private CadastrarClienteService cadastrarClienteService;
 
+    private CadastrarClienteDTO clienteValido;
+    private Cliente clienteSalvo;
 
-    @Test
-    @DisplayName("Deve cadastrar cliente com sucesso quando os dados são válidos")
-    void t1() {
-        CadastrarClienteDTO dto = CadastrarClienteDTO.builder()
+    @BeforeEach
+    void configurar() {
+        clienteValido = CadastrarClienteDTO.builder()
                 .nome("João Silva")
                 .email("joao.silva@example.com")
                 .cpf("12345678901")
                 .build();
 
-        Cliente clienteSalvo = Cliente.builder()
+        clienteSalvo = Cliente.builder()
                 .id(1L)
                 .nome("João Silva")
                 .email("joao.silva@example.com")
                 .cpf("12345678901")
                 .build();
+    }
 
-        Mockito.when(clienteRepositorio.salvar(any(Cliente.class))).thenReturn(clienteSalvo);
+    @Test
+    @DisplayName("Deve cadastrar cliente com sucesso quando os dados são válidos")
+    void t1() {
 
-        ClienteResponseDTO response = cadastrarClienteService.cadastrar(dto);
+        when(clienteRepositorio.salvar(any(Cliente.class))).thenReturn(clienteSalvo);
+
+        ClienteResponseDTO response = cadastrarClienteService.cadastrar(clienteValido);
 
         assertNotNull(response, "A resposta não deveria ser nula.");
         assertEquals(1L, response.getId(), "O ID do cliente salvo deveria ser 1.");
@@ -130,5 +140,19 @@ class CadastrarClienteServiceTest {
                 "Deveria lançar uma exceção para CPF inválido.");
 
         assertEquals("CPF deve conter 11 dígitos numéricos", exception.getMessage(), "Mensagem da exceção está incorreta.");
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção quando CPF já existe")
+    void t7() {
+
+        when(clienteRepositorio.buscarPorCpf(clienteValido.getCpf())).thenReturn(Optional.of(clienteSalvo));
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> cadastrarClienteService.cadastrar(clienteValido));
+
+        assertTrue(ex.getMessage().equals("CPF duplicado"));
+
+        verify(clienteRepositorio, never()).salvar(any(Cliente.class));
     }
 }

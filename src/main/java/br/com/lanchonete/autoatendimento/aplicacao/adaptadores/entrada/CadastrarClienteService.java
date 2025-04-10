@@ -5,19 +5,18 @@ import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.Clien
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.CadastrarClienteUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
 import br.com.lanchonete.autoatendimento.dominio.Cliente;
-import io.swagger.v3.oas.annotations.servers.Server;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-@Server
+@Service
+@RequiredArgsConstructor
 public class CadastrarClienteService implements CadastrarClienteUC {
 
     private final ClienteRepositorio clienteRepositorio;
 
-    public CadastrarClienteService(ClienteRepositorio clienteRepositorio) {
-        this.clienteRepositorio = clienteRepositorio;
-    }
 
     @Override
     public ClienteResponseDTO cadastrar(CadastrarClienteDTO novoCliente) {

@@ -4,18 +4,16 @@ import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.Clien
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.IdentificarClienteUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
 import br.com.lanchonete.autoatendimento.dominio.Cliente;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class IdentificarClienteService implements IdentificarClienteUC {
 
     private final ClienteRepositorio clienteRepositorio;
-
-    public IdentificarClienteService(ClienteRepositorio clienteRepositorio) {
-        this.clienteRepositorio = clienteRepositorio;
-    }
 
     @Override
     public Optional<ClienteResponseDTO> identificar(String cpf) {

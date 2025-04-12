@@ -2,6 +2,7 @@ package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.CadastrarClienteDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteResponseDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.CadastrarClienteUC;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,10 +70,10 @@ class CadastrarClienteControllerTest {
     }
 
     @Test
-    @DisplayName("Deve retornar status 400 quando o UC lançar IllegalArgumentException")
+    @DisplayName("Deve retornar status 400 quando o UC lançar ValidacaoException")
     void t2() throws Exception {
 
-        when(cadastrarClienteUC.cadastrar(any(CadastrarClienteDTO.class))).thenThrow(new IllegalArgumentException("Erro de validação ou duplicidade"));
+        when(cadastrarClienteUC.cadastrar(any(CadastrarClienteDTO.class))).thenThrow(new ValidacaoException("Erro de validação ou duplicidade"));
 
         mockMvc.perform(post("/clientes")
                 .contentType(MediaType.APPLICATION_JSON)

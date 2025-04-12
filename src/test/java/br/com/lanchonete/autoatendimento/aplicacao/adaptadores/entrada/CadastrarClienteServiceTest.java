@@ -2,6 +2,7 @@ package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.CadastrarClienteDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteResponseDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
 import br.com.lanchonete.autoatendimento.dominio.Cliente;
 import org.junit.jupiter.api.BeforeEach;
@@ -71,7 +72,7 @@ class CadastrarClienteServiceTest {
                 .cpf("12345678901")
                 .build();
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+        ValidacaoException exception = assertThrows(ValidacaoException.class,
                 () -> cadastrarClienteService.cadastrar(dto),
                 "Deveria lançar uma exceção para nome vazio.");
 
@@ -87,7 +88,7 @@ class CadastrarClienteServiceTest {
                 .cpf("12345678901")
                 .build();
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+        ValidacaoException exception = assertThrows(ValidacaoException.class,
                 () -> cadastrarClienteService.cadastrar(dto),
                 "Deveria lançar uma exceção para email vazio.");
 
@@ -103,7 +104,7 @@ class CadastrarClienteServiceTest {
                 .cpf("12345678901")
                 .build();
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+        ValidacaoException exception = assertThrows(ValidacaoException.class,
                 () -> cadastrarClienteService.cadastrar(dto),
                 "Deveria lançar uma exceção para email inválido.");
 
@@ -119,7 +120,7 @@ class CadastrarClienteServiceTest {
                 .cpf("")
                 .build();
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+        ValidacaoException exception = assertThrows(ValidacaoException.class,
                 () -> cadastrarClienteService.cadastrar(dto),
                 "Deveria lançar uma exceção para CPF vazio.");
 
@@ -135,7 +136,7 @@ class CadastrarClienteServiceTest {
                 .cpf("12345")
                 .build();
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+        ValidacaoException exception = assertThrows(ValidacaoException.class,
                 () -> cadastrarClienteService.cadastrar(dto),
                 "Deveria lançar uma exceção para CPF inválido.");
 
@@ -148,7 +149,7 @@ class CadastrarClienteServiceTest {
 
         when(clienteRepositorio.buscarPorCpf(clienteValido.getCpf())).thenReturn(Optional.of(clienteSalvo));
 
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+        ValidacaoException ex = assertThrows(ValidacaoException.class,
                 () -> cadastrarClienteService.cadastrar(clienteValido));
 
         assertTrue(ex.getMessage().equals("CPF duplicado"));

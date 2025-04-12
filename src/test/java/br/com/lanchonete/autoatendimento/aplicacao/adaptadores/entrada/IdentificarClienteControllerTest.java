@@ -1,6 +1,7 @@
 package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteResponseDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.IdentificarClienteUC;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -72,7 +73,7 @@ class IdentificarClienteControllerTest {
         String cpfInvalido = "123";
 
         when(identificarClienteUC.identificar(anyString()))
-                .thenThrow(new IllegalArgumentException("CPF deve conter 11 dígitos numéricos"));
+                .thenThrow(new ValidacaoException("CPF deve conter 11 dígitos numéricos"));
 
 
         mockMvc.perform(get("/clientes/cpf/{cpf}", cpfInvalido))

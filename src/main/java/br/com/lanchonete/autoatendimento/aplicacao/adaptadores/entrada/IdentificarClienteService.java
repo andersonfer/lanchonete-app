@@ -1,6 +1,7 @@
 package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteResponseDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.IdentificarClienteUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
 import br.com.lanchonete.autoatendimento.dominio.Cliente;
@@ -18,7 +19,7 @@ public class IdentificarClienteService implements IdentificarClienteUC {
     @Override
     public Optional<ClienteResponseDTO> identificar(String cpf) {
         if (cpf.isBlank()) {
-            throw new IllegalArgumentException("CPF é obrigatório");
+            throw new ValidacaoException("CPF é obrigatório");
         }
          return clienteRepositorio.buscarPorCpf(cpf)
                  .map(this::converterParaResponseDTO);

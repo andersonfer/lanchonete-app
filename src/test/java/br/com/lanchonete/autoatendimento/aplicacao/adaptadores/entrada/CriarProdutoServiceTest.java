@@ -1,0 +1,198 @@
+package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
+
+import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ProdutoRequestDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ProdutoResponseDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.dominio.Categoria;
+import br.com.lanchonete.autoatendimento.dominio.Produto;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.math.BigDecimal;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(SpringExtension.class)
+class CriarProdutoServiceTest {
+
+    @Mock
+    private ProdutoRepositorio produtoRepositorio;
+
+    @InjectMocks
+    private CriarProdutoService criarProdutoService;
+
+    private ProdutoRequestDTO produtoValido;
+    private Produto produtoSalvo;
+
+    @BeforeEach
+    void configurar() {
+        produtoValido = ProdutoRequestDTO.builder()
+                .nome("X-Bacon")
+                .descricao("Hambúrguer com bacon crocante")
+                .preco(new BigDecimal("28.90"))
+                .categoria(Categoria.LANCHE)
+                .build();
+
+        produtoSalvo = Produto.builder()
+                .id(1L)
+                .nome("X-Bacon")
+                .descricao("Hambúrguer com bacon crocante")
+                .preco(new BigDecimal("28.90"))
+                .categoria(Categoria.LANCHE)
+                .build();
+    }
+
+    @Test
+    @DisplayName("Deve criar produto com sucesso quando os dados são válidos")
+    void t1() {
+        // Arrange
+        when(produtoRepositorio.existePorNome(produtoValido.getNome())).thenReturn(false);
+        when(produtoRepositorio.salvar(any(Produto.class))).thenReturn(produtoSalvo);
+
+        // Act
+        ProdutoResponseDTO response = criarProdutoService.criar(produtoValido);
+
+        // Assert
+        assertNotNull(response, "A resposta não deveria ser nula");
+        assertEquals(1L, response.getId(), "O ID do produto salvo deveria ser 1");
+        assertEquals("X-Bacon", response.getNome(), "O nome do produto salvo está incorreto");
+        assertEquals(new BigDecimal("28.90"), response.getPreco(), "O preço do produto salvo está incorreto");
+        assertEquals(Categoria.LANCHE, response.getCategoria(), "A categoria do produto salvo está incorreta");
+
+        verify(produtoRepositorio).existePorNome(produtoValido.getNome());
+        verify(produtoRepositorio).salvar(any(Produto.class));
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao tentar criar produto com nome duplicado")
+    void t2() {
+        // Arrange
+        when(produtoRepositorio.existePorNome(produtoValido.getNome())).thenReturn(true);
+
+        // Act & Assert
+        ValidacaoException exception = assertThrows(ValidacaoException.class,
+                () -> criarProdutoService.criar(produtoValido),
+                "Deveria lançar uma exceção para nome duplicado");
+
+        assertEquals("Já existe um produto com este nome", exception.getMessage(),
+                "Mensagem da exceção está incorreta");
+
+        verify(produtoRepositorio).existePorNome(produtoValido.getNome());
+        verify(produtoRepositorio, never()).salvar(any(Produto.class));
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao tentar criar produto sem nome")
+    void t3() {
+        // Arrange
+        ProdutoRequestDTO produtoSemNome = ProdutoRequestDTO.builder()
+                .nome("")
+                .descricao("Descrição teste")
+                .preco(new BigDecimal("15.90"))
+                .categoria(Categoria.BEBIDA)
+                .build();
+
+        // Act & Assert
+        ValidacaoException exception = assertThrows(ValidacaoException.class,
+                () -> criarProdutoService.criar(produtoSemNome),
+                "Deveria lançar uma exceção para nome vazio");
+
+        assertEquals("Nome do produto é obrigatório", exception.getMessage(),
+                "Mensagem da exceção está incorreta");
+
+        verify(produtoRepositorio, never()).existePorNome(anyString());
+        verify(produtoRepositorio, never()).salvar(any(Produto.class));
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao tentar criar produto sem preço")
+    void t4() {
+        // Arrange
+        ProdutoRequestDTO produtoSemPreco = ProdutoRequestDTO.builder()
+                .nome("Refrigerante Cola")
+                .descricao("Refrigerante de cola 350ml")
+                .preco(null)
+                .categoria(Categoria.BEBIDA)
+                .build();
+
+        // Act & Assert
+        ValidacaoException exception = assertThrows(ValidacaoException.class,
+                () -> criarProdutoService.criar(produtoSemPreco),
+                "Deveria lançar uma exceção para preço nulo");
+
+        assertEquals("Preço do produto é obrigatório", exception.getMessage(),
+                "Mensagem da exceção está incorreta");
+
+        verify(produtoRepositorio, never()).existePorNome(anyString());
+        verify(produtoRepositorio, never()).salvar(any(Produto.class));
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao tentar criar produto com preço zero ou negativo")
+    void t5() {
+        // Arrange
+        ProdutoRequestDTO produtoPrecoZero = ProdutoRequestDTO.builder()
+                .nome("Refrigerante Cola")
+                .descricao("Refrigerante de cola 350ml")
+                .preco(BigDecimal.ZERO)
+                .categoria(Categoria.BEBIDA)
+                .build();
+
+        // Act & Assert
+        ValidacaoException exception = assertThrows(ValidacaoException.class,
+                () -> criarProdutoService.criar(produtoPrecoZero),
+                "Deveria lançar uma exceção para preço zero");
+
+        assertEquals("Preço deve ser maior que zero", exception.getMessage(),
+                "Mensagem da exceção está incorreta");
+
+        // Teste com preço negativo
+        ProdutoRequestDTO produtoPrecoNegativo = ProdutoRequestDTO.builder()
+                .nome("Refrigerante Cola")
+                .descricao("Refrigerante de cola 350ml")
+                .preco(new BigDecimal("-5.00"))
+                .categoria(Categoria.BEBIDA)
+                .build();
+
+        ValidacaoException exception2 = assertThrows(ValidacaoException.class,
+                () -> criarProdutoService.criar(produtoPrecoNegativo),
+                "Deveria lançar uma exceção para preço negativo");
+
+        assertEquals("Preço deve ser maior que zero", exception2.getMessage(),
+                "Mensagem da exceção está incorreta");
+
+        verify(produtoRepositorio, never()).existePorNome(anyString());
+        verify(produtoRepositorio, never()).salvar(any(Produto.class));
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao tentar criar produto sem categoria")
+    void t6() {
+        // Arrange
+        ProdutoRequestDTO produtoSemCategoria = ProdutoRequestDTO.builder()
+                .nome("Refrigerante Cola")
+                .descricao("Refrigerante de cola 350ml")
+                .preco(new BigDecimal("5.50"))
+                .categoria(null)
+                .build();
+
+        // Act & Assert
+        ValidacaoException exception = assertThrows(ValidacaoException.class,
+                () -> criarProdutoService.criar(produtoSemCategoria),
+                "Deveria lançar uma exceção para categoria nula");
+
+        assertEquals("Categoria do produto é obrigatória", exception.getMessage(),
+                "Mensagem da exceção está incorreta");
+
+        verify(produtoRepositorio, never()).existePorNome(anyString());
+        verify(produtoRepositorio, never()).salvar(any(Produto.class));
+    }
+}

@@ -2,6 +2,7 @@ package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.CadastrarClienteDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteResponseDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.CadastrarClienteUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
 import br.com.lanchonete.autoatendimento.dominio.Cliente;
@@ -25,7 +26,7 @@ public class CadastrarClienteService implements CadastrarClienteUC {
 
         Optional<Cliente> clienteExistente = clienteRepositorio.buscarPorCpf(novoCliente.getCpf());
         if (clienteExistente.isPresent()) {
-            throw new IllegalArgumentException("CPF duplicado");
+            throw new ValidacaoException("CPF duplicado");
         }
 
 
@@ -43,19 +44,19 @@ public class CadastrarClienteService implements CadastrarClienteUC {
 
     private void validarDadosCliente(CadastrarClienteDTO novoCliente) {
         if (StringUtils.isBlank(novoCliente.getNome())) {
-            throw new IllegalArgumentException("Nome é obrigatório");
+            throw new ValidacaoException("Nome é obrigatório");
         }
         if (StringUtils.isBlank(novoCliente.getEmail())) {
-            throw new IllegalArgumentException("Email é obrigatório");
+            throw new ValidacaoException("Email é obrigatório");
         }
         if (!novoCliente.getEmail().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
-            throw new IllegalArgumentException("Email inválido");
+            throw new ValidacaoException("Email inválido");
         }
         if (StringUtils.isBlank(novoCliente.getCpf())) {
-            throw new IllegalArgumentException("CPF é obrigatório");
+            throw new ValidacaoException("CPF é obrigatório");
         }
         if (!novoCliente.getCpf().matches("^\\d{11}$")) {
-            throw new IllegalArgumentException("CPF deve conter 11 dígitos numéricos");
+            throw new ValidacaoException("CPF deve conter 11 dígitos numéricos");
         }
     }
 

@@ -1,6 +1,7 @@
 package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteResponseDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
 import br.com.lanchonete.autoatendimento.dominio.Cliente;
 import org.junit.jupiter.api.DisplayName;
@@ -61,13 +62,13 @@ class IdentificarClienteServiceTest {
     }
 
     @Test
-    @DisplayName("Deve lançar IllegalArgumentException ao informar CPF vazio")
+    @DisplayName("Deve lançar ValidacaoException ao informar CPF vazio")
     void t3() {
         String cpf = "";
 
-        Exception excecao = assertThrows(IllegalArgumentException.class,
+        ValidacaoException excecao = assertThrows(ValidacaoException.class,
                 () -> identificarClienteService.identificar(cpf),
-                "Deveria lançar IllegalArgumentException para CPF vazio");
+                "Deveria lançar ValidacaoException para CPF vazio");
 
         assertEquals("CPF é obrigatório", excecao.getMessage(), "A mensagem de exceção não está correta");
     }

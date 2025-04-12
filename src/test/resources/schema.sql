@@ -6,3 +6,13 @@ CREATE TABLE cliente (
     nome VARCHAR NOT NULL,
     email VARCHAR NOT NULL
 );
+
+DROP TABLE IF EXISTS produto;
+
+CREATE TABLE produto (
+    id IDENTITY PRIMARY KEY,
+    nome VARCHAR NOT NULL UNIQUE,
+    descricao VARCHAR,
+    preco DECIMAL(10,2) NOT NULL,
+    categoria VARCHAR NOT NULL
+);

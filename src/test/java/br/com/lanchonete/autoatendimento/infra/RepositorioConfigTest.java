@@ -1,6 +1,7 @@
 package br.com.lanchonete.autoatendimento.infra;
 
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,9 +23,13 @@ class RepositorioConfigTest {
     @Autowired
     private ClienteRepositorio clienteRepositorio;
 
+    @Autowired
+    private ProdutoRepositorio produtoRepositorio;
+
     @Test
-    @DisplayName( "Deve criar o bean ClienteRepositorio")
+    @DisplayName( "Deve criar os beans de repositorio")
     void t1() {
         assertNotNull(clienteRepositorio);
+        assertNotNull(produtoRepositorio);
     }
 }

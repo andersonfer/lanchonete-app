@@ -1,7 +1,9 @@
 package br.com.lanchonete.autoatendimento.infra;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.saida.ClienteRepositorioJDBC;
+import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.saida.ProdutoRepositorioJDBC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -14,4 +16,8 @@ public class RepositorioConfig {
         return new ClienteRepositorioJDBC(jdbcTemplate);
     }
 
+    @Bean
+    public ProdutoRepositorio produtoRepositorio(JdbcTemplate jdbcTemplate) {
+        return new ProdutoRepositorioJDBC(jdbcTemplate);
+    }
 }

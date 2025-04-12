@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class ServicoConfig {
+public class ClienteServiceConfig {
 
     @Bean
     public CadastrarClienteService cadastrarClienteService(ClienteRepositorio clienteRepositorio) {

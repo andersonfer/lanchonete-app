@@ -14,8 +14,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {ServicoConfig.class})
-class ServicoConfigTest {
+@ContextConfiguration(classes = {ClienteServiceConfig.class})
+class ClienteServiceConfigTest {
 
     @MockitoBean
     private ClienteRepositorio clienteRepositorio;
@@ -27,7 +27,7 @@ class ServicoConfigTest {
     private IdentificarClienteService identificarClienteService;
 
     @Test
-    @DisplayName("Deve criar os beans Service")
+    @DisplayName("Deve criar os beans dos UCs de cliente")
     void t1() {
         assertNotNull(cadastrarClienteService);
         assertNotNull(identificarClienteService);

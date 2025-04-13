@@ -2,6 +2,7 @@ package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.CadastrarClienteDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteResponseDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.util.ClienteMapper;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.CadastrarClienteUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
@@ -38,7 +39,7 @@ public class CadastrarClienteService implements CadastrarClienteUC {
 
         Cliente clienteSalvo = clienteRepositorio.salvar(cliente);
 
-        return converterParaResponseDTO(clienteSalvo);
+        return ClienteMapper.converterParaResponseDTO(clienteSalvo);
 
     }
 
@@ -58,14 +59,5 @@ public class CadastrarClienteService implements CadastrarClienteUC {
         if (!novoCliente.getCpf().matches("^\\d{11}$")) {
             throw new ValidacaoException("CPF deve conter 11 dígitos numéricos");
         }
-    }
-
-    private ClienteResponseDTO converterParaResponseDTO(Cliente cliente) {
-        return ClienteResponseDTO.builder()
-                .id(cliente.getId())
-                .nome(cliente.getNome())
-                .email(cliente.getEmail())
-                .cpf(cliente.getCpf())
-                .build();
     }
 }

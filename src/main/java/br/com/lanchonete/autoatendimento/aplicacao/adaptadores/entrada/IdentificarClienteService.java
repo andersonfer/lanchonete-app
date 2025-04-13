@@ -1,6 +1,7 @@
 package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteResponseDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.util.ClienteMapper;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.IdentificarClienteUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
@@ -22,15 +23,6 @@ public class IdentificarClienteService implements IdentificarClienteUC {
             throw new ValidacaoException("CPF é obrigatório");
         }
          return clienteRepositorio.buscarPorCpf(cpf)
-                 .map(this::converterParaResponseDTO);
-    }
-
-    private ClienteResponseDTO converterParaResponseDTO(Cliente cliente) {
-        return ClienteResponseDTO.builder()
-                .id(cliente.getId())
-                .nome(cliente.getNome())
-                .email(cliente.getEmail())
-                .cpf(cliente.getCpf())
-                .build();
+                 .map(ClienteMapper::converterParaResponseDTO);
     }
 }

@@ -2,6 +2,7 @@ package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ProdutoRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ProdutoResponseDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.util.ProdutoMapper;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.EditarProdutoUC;
@@ -36,7 +37,7 @@ public class EditarProdutoService implements EditarProdutoUC {
 
         Produto produtoAtualizado = produtoRepositorio.atualizar(produto);
 
-        return converterParaResponseDTO(produtoAtualizado);
+        return ProdutoMapper.converterParaResponseDTO(produtoAtualizado);
     }
 
     private void validarDadosProduto(Long idAtual, ProdutoRequestDTO produtoRequest) {
@@ -73,13 +74,4 @@ public class EditarProdutoService implements EditarProdutoUC {
         }
     }
 
-    private ProdutoResponseDTO converterParaResponseDTO(Produto produto) {
-        return ProdutoResponseDTO.builder()
-                .id(produto.getId())
-                .nome(produto.getNome())
-                .descricao(produto.getDescricao())
-                .preco(produto.getPreco())
-                .categoria(produto.getCategoria())
-                .build();
-    }
 }

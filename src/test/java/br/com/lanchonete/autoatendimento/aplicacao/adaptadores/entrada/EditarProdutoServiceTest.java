@@ -2,6 +2,7 @@ package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ProdutoRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ProdutoResponseDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
 import br.com.lanchonete.autoatendimento.dominio.Categoria;
@@ -105,7 +106,7 @@ class EditarProdutoServiceTest {
         when(produtoRepositorio.buscarPorId(999L)).thenReturn(Optional.empty());
 
 
-        assertThrows(ValidacaoException.class,
+        assertThrows(RecursoNaoEncontradoException.class,
                 () -> editarProdutoService.editar(999L, produtoValido),
                 "Deveria lançar uma exceção quando o produto não existe");
 

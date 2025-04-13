@@ -2,6 +2,7 @@ package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ProdutoRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ProdutoResponseDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.util.ProdutoMapper;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.CriarProdutoUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
@@ -32,7 +33,7 @@ public class CriarProdutoService implements CriarProdutoUC {
 
         Produto produtoSalvo = produtoRepositorio.salvar(novoProduto);
 
-        return converterParaResponseDTO(produtoSalvo);
+        return ProdutoMapper.converterParaResponseDTO(produtoSalvo);
     }
 
     private void validarProduto(ProdutoRequestDTO produtoRequest) {
@@ -55,15 +56,5 @@ public class CriarProdutoService implements CriarProdutoUC {
         if (produtoRepositorio.existePorNome(produtoRequest.getNome())) {
             throw new ValidacaoException("Já existe um produto com este nome");
         }
-    }
-
-    private ProdutoResponseDTO converterParaResponseDTO(Produto produto) {
-        return ProdutoResponseDTO.builder()
-                .id(produto.getId())
-                .nome(produto.getNome())
-                .descricao(produto.getDescricao())
-                .preco(produto.getPreco())
-                .categoria(produto.getCategoria())
-                .build();
     }
 }

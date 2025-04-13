@@ -1,5 +1,6 @@
 package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
+import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
 import br.com.lanchonete.autoatendimento.dominio.Categoria;
@@ -75,7 +76,7 @@ class RemoverProdutoServiceTest {
 
         when(produtoRepositorio.buscarPorId(999L)).thenReturn(Optional.empty());
 
-        ValidacaoException exception = assertThrows(ValidacaoException.class,
+        RecursoNaoEncontradoException exception = assertThrows(RecursoNaoEncontradoException.class,
                 () -> removerProdutoService.remover(999L),
                 "Deveria lançar exceção quando produto não existe");
 

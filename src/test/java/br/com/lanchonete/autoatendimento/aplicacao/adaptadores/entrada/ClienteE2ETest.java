@@ -23,14 +23,15 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-class CadastrarClienteE2ETest {
+class ClienteE2ETest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -91,27 +92,6 @@ class CadastrarClienteE2ETest {
         }
     }
 
-    private static Stream<Arguments> fornecerCenariosClienteInvalido() {
-        return Stream.of(
-                // Nome inválido
-                Arguments.of(criarDTO("", "98765432100", "paulo@email.com"), "Nome é obrigatório"),
-
-                // CPF inválido - vazio
-                Arguments.of(criarDTO("Paulo Silva", "", "paulo@email.com"), "CPF é obrigatório"),
-
-                // CPF inválido - formato
-                Arguments.of(criarDTO("Paulo Silva", "123", "paulo@email.com"), "CPF deve conter 11 dígitos numéricos"),
-                Arguments.of(criarDTO("Paulo Silva", "1234567890A", "paulo@email.com"), "CPF deve conter 11 dígitos numéricos"),
-
-                // Email inválido - vazio
-                Arguments.of(criarDTO("Paulo Silva", "98765432100", ""), "Email é obrigatório"),
-
-                // Email inválido - formato
-                Arguments.of(criarDTO("Paulo Silva", "98765432100", "paulo"), "Email inválido"),
-                Arguments.of(criarDTO("Paulo Silva", "98765432100", "paulo@"), "Email inválido")
-        );
-    }
-
     @Test
     @DisplayName("Deve retornar erro 400 ao tentar cadastrar cliente com CPF duplicado")
     void t3() throws Exception {
@@ -142,6 +122,91 @@ class CadastrarClienteE2ETest {
 
         String resposta = resultado.getResponse().getContentAsString();
         assertEquals("CPF duplicado",resposta);
+    }
+
+    @Test
+    @DisplayName("Deve identificar um cliente existente através do CPF")
+    void t4() throws Exception {
+
+        Cliente clientePreCadastrado = Cliente.builder()
+                .nome("João dos Santos")
+                .cpf("23456789012")
+                .email("joao@email.com")
+                .build();
+
+        clientePreCadastrado = clienteRepositorio.salvar(clientePreCadastrado);
+
+        MvcResult resultado = mockMvc.perform(get("/clientes/cpf/{cpf}", "23456789012"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(clientePreCadastrado.getId()))
+                .andExpect(jsonPath("$.nome").value(clientePreCadastrado.getNome()))
+                .andExpect(jsonPath("$.cpf").value(clientePreCadastrado.getCpf()))
+                .andExpect(jsonPath("$.email").value(clientePreCadastrado.getEmail()))
+                .andReturn();
+
+        String resposta = resultado.getResponse().getContentAsString();
+        ClienteResponseDTO respostaDTO = objectMapper.readValue(resposta, ClienteResponseDTO.class);
+
+        assertEquals(clientePreCadastrado.getId(), respostaDTO.getId());
+        assertEquals(clientePreCadastrado.getNome(), respostaDTO.getNome());
+        assertEquals(clientePreCadastrado.getCpf(), respostaDTO.getCpf());
+        assertEquals(clientePreCadastrado.getEmail(), respostaDTO.getEmail());
+    }
+
+
+    @Test
+    @DisplayName("Deve retornar status 404 quando cliente não existe")
+    void t5() throws Exception {
+
+        mockMvc.perform(get("/clientes/cpf/{cpf}", "99988877766"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Deve identificar um cliente após ser cadastrado pela API")
+    void t6() throws Exception {
+
+        String novoCpf = "11122233344";
+        CadastrarClienteDTO requisicao = CadastrarClienteDTO.builder()
+                .nome("Carlos Santos")
+                .email("carlos@email.com")
+                .cpf(novoCpf)
+                .build();
+
+
+        //Cadastra um novo cliente via API
+        mockMvc.perform(post("/clientes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requisicao)))
+                .andExpect(status().isCreated());
+
+        //Verifica se o cliente pode ser encontrado
+        mockMvc.perform(get("/clientes/cpf/{cpf}", novoCpf))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nome").value(requisicao.getNome()))
+                .andExpect(jsonPath("$.cpf").value(requisicao.getCpf()))
+                .andExpect(jsonPath("$.email").value(requisicao.getEmail()));
+    }
+
+    private static Stream<Arguments> fornecerCenariosClienteInvalido() {
+        return Stream.of(
+                // Nome inválido
+                Arguments.of(criarDTO("", "98765432100", "paulo@email.com"), "Nome é obrigatório"),
+
+                // CPF inválido - vazio
+                Arguments.of(criarDTO("Paulo Silva", "", "paulo@email.com"), "CPF é obrigatório"),
+
+                // CPF inválido - formato
+                Arguments.of(criarDTO("Paulo Silva", "123", "paulo@email.com"), "CPF deve conter 11 dígitos numéricos"),
+                Arguments.of(criarDTO("Paulo Silva", "1234567890A", "paulo@email.com"), "CPF deve conter 11 dígitos numéricos"),
+
+                // Email inválido - vazio
+                Arguments.of(criarDTO("Paulo Silva", "98765432100", ""), "Email é obrigatório"),
+
+                // Email inválido - formato
+                Arguments.of(criarDTO("Paulo Silva", "98765432100", "paulo"), "Email inválido"),
+                Arguments.of(criarDTO("Paulo Silva", "98765432100", "paulo@"), "Email inválido")
+        );
     }
 
     private static CadastrarClienteDTO criarDTO(String nome, String cpf, String email) {

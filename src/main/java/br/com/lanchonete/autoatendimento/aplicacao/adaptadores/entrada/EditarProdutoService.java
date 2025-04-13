@@ -2,6 +2,7 @@ package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ProdutoRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ProdutoResponseDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.EditarProdutoUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
@@ -24,9 +25,9 @@ public class EditarProdutoService implements EditarProdutoUC {
         validarDadosProduto(id, produtoRequest);
 
         Produto produto = produtoRepositorio.buscarPorId(id)
-                .orElseThrow(() -> new ValidacaoException("Produto não encontrado"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Produto não encontrado"));
 
-        validarProdutoParaEdicao(produto, produtoRequest);
+        validarDuplicidade(produto, produtoRequest);
 
         produto.setNome(produtoRequest.getNome());
         produto.setDescricao(produtoRequest.getDescricao());
@@ -62,7 +63,7 @@ public class EditarProdutoService implements EditarProdutoUC {
 
     }
 
-    private void validarProdutoParaEdicao(Produto produto, ProdutoRequestDTO produtoRequest) {
+    private void validarDuplicidade(Produto produto, ProdutoRequestDTO produtoRequest) {
         boolean houveAlteracaoNoNome = !produto.getNome().equals(produtoRequest.getNome());
         if (houveAlteracaoNoNome) {
             boolean existeOutroProdutoComMesmoNome = produtoRepositorio.existePorNome(produtoRequest.getNome());

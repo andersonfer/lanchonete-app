@@ -1,5 +1,6 @@
 package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
+import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.RemoverProdutoUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
@@ -28,7 +29,7 @@ public class RemoverProdutoService implements RemoverProdutoUC {
 
         Optional<Produto> produto = produtoRepositorio.buscarPorId(id);
         if (produto.isEmpty()) {
-            throw new ValidacaoException("Produto não encontrado");
+            throw new RecursoNaoEncontradoException("Produto não encontrado");
         }
     }
 }

@@ -25,10 +25,10 @@ public class CriarProdutoService implements CriarProdutoUC {
         validarParametros(novoProduto);
 
         Produto produto = Produto.builder()
-                .nome(novoProduto.getNome())
-                .descricao(novoProduto.getDescricao())
-                .preco(novoProduto.getPreco())
-                .categoria(novoProduto.getCategoria())
+                .nome(novoProduto.nome())
+                .descricao(novoProduto.descricao())
+                .preco(novoProduto.preco())
+                .categoria(novoProduto.categoria())
                 .build();
 
         Produto produtoSalvo = produtoRepositorio.salvar(produto);
@@ -37,23 +37,23 @@ public class CriarProdutoService implements CriarProdutoUC {
     }
 
     private void validarParametros(ProdutoRequestDTO produtoRequest) {
-        if (StringUtils.isBlank(produtoRequest.getNome())) {
+        if (StringUtils.isBlank(produtoRequest.nome())) {
             throw new ValidacaoException("Nome do produto é obrigatório");
         }
 
-        if (produtoRequest.getPreco() == null) {
+        if (produtoRequest.preco() == null) {
             throw new ValidacaoException("Preço do produto é obrigatório");
         }
 
-        if (produtoRequest.getPreco().compareTo(BigDecimal.ZERO) <= 0) {
+        if (produtoRequest.preco().compareTo(BigDecimal.ZERO) <= 0) {
             throw new ValidacaoException("Preço deve ser maior que zero");
         }
 
-        if (produtoRequest.getCategoria() == null) {
+        if (produtoRequest.categoria() == null) {
             throw new ValidacaoException("Categoria do produto é obrigatória");
         }
 
-        if (produtoRepositorio.existePorNome(produtoRequest.getNome())) {
+        if (produtoRepositorio.existePorNome(produtoRequest.nome())) {
             throw new ValidacaoException("Já existe um produto com este nome");
         }
     }

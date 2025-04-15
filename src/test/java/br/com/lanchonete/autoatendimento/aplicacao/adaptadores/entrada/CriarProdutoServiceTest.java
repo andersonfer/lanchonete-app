@@ -34,12 +34,9 @@ class CriarProdutoServiceTest {
 
     @BeforeEach
     void configurar() {
-        produtoValido = ProdutoRequestDTO.builder()
-                .nome("X-Bacon")
-                .descricao("Hambúrguer com bacon crocante")
-                .preco(new BigDecimal("28.90"))
-                .categoria(Categoria.LANCHE)
-                .build();
+        produtoValido = new ProdutoRequestDTO("X-Bacon",
+                "Hambúrguer com bacon crocante", new BigDecimal("28.90"), Categoria.LANCHE);
+
 
         produtoSalvo = Produto.builder()
                 .id(1L)
@@ -54,7 +51,7 @@ class CriarProdutoServiceTest {
     @DisplayName("Deve criar produto com sucesso quando os dados são válidos")
     void t1() {
         // Arrange
-        when(produtoRepositorio.existePorNome(produtoValido.getNome())).thenReturn(false);
+        when(produtoRepositorio.existePorNome(produtoValido.nome())).thenReturn(false);
         when(produtoRepositorio.salvar(any(Produto.class))).thenReturn(produtoSalvo);
 
         // Act
@@ -67,7 +64,7 @@ class CriarProdutoServiceTest {
         assertEquals(new BigDecimal("28.90"), response.getPreco(), "O preço do produto salvo está incorreto");
         assertEquals(Categoria.LANCHE, response.getCategoria(), "A categoria do produto salvo está incorreta");
 
-        verify(produtoRepositorio).existePorNome(produtoValido.getNome());
+        verify(produtoRepositorio).existePorNome(produtoValido.nome());
         verify(produtoRepositorio).salvar(any(Produto.class));
     }
 
@@ -75,7 +72,7 @@ class CriarProdutoServiceTest {
     @DisplayName("Deve lançar exceção ao tentar criar produto com nome duplicado")
     void t2() {
         // Arrange
-        when(produtoRepositorio.existePorNome(produtoValido.getNome())).thenReturn(true);
+        when(produtoRepositorio.existePorNome(produtoValido.nome())).thenReturn(true);
 
         // Act & Assert
         ValidacaoException exception = assertThrows(ValidacaoException.class,
@@ -85,7 +82,7 @@ class CriarProdutoServiceTest {
         assertEquals("Já existe um produto com este nome", exception.getMessage(),
                 "Mensagem da exceção está incorreta");
 
-        verify(produtoRepositorio).existePorNome(produtoValido.getNome());
+        verify(produtoRepositorio).existePorNome(produtoValido.nome());
         verify(produtoRepositorio, never()).salvar(any(Produto.class));
     }
 
@@ -93,12 +90,8 @@ class CriarProdutoServiceTest {
     @DisplayName("Deve lançar exceção ao tentar criar produto sem nome")
     void t3() {
         // Arrange
-        ProdutoRequestDTO produtoSemNome = ProdutoRequestDTO.builder()
-                .nome("")
-                .descricao("Descrição teste")
-                .preco(new BigDecimal("15.90"))
-                .categoria(Categoria.BEBIDA)
-                .build();
+        ProdutoRequestDTO produtoSemNome = new ProdutoRequestDTO("", "Descrição teste", new BigDecimal("15.90"), Categoria.BEBIDA);
+
 
         // Act & Assert
         ValidacaoException exception = assertThrows(ValidacaoException.class,
@@ -116,12 +109,8 @@ class CriarProdutoServiceTest {
     @DisplayName("Deve lançar exceção ao tentar criar produto sem preço")
     void t4() {
         // Arrange
-        ProdutoRequestDTO produtoSemPreco = ProdutoRequestDTO.builder()
-                .nome("Refrigerante Cola")
-                .descricao("Refrigerante de cola 350ml")
-                .preco(null)
-                .categoria(Categoria.BEBIDA)
-                .build();
+        ProdutoRequestDTO produtoSemPreco = new ProdutoRequestDTO("Refrigerante Cola",
+                "Refrigerante de cola 350ml", null, Categoria.BEBIDA);
 
         // Act & Assert
         ValidacaoException exception = assertThrows(ValidacaoException.class,
@@ -139,12 +128,9 @@ class CriarProdutoServiceTest {
     @DisplayName("Deve lançar exceção ao tentar criar produto com preço zero ou negativo")
     void t5() {
         // Arrange
-        ProdutoRequestDTO produtoPrecoZero = ProdutoRequestDTO.builder()
-                .nome("Refrigerante Cola")
-                .descricao("Refrigerante de cola 350ml")
-                .preco(BigDecimal.ZERO)
-                .categoria(Categoria.BEBIDA)
-                .build();
+        ProdutoRequestDTO produtoPrecoZero = new ProdutoRequestDTO("Refrigerante Cola",
+                "Refrigerante de cola 350ml", BigDecimal.ZERO, Categoria.BEBIDA);
+
 
         // Act & Assert
         ValidacaoException exception = assertThrows(ValidacaoException.class,
@@ -155,12 +141,8 @@ class CriarProdutoServiceTest {
                 "Mensagem da exceção está incorreta");
 
         // Teste com preço negativo
-        ProdutoRequestDTO produtoPrecoNegativo = ProdutoRequestDTO.builder()
-                .nome("Refrigerante Cola")
-                .descricao("Refrigerante de cola 350ml")
-                .preco(new BigDecimal("-5.00"))
-                .categoria(Categoria.BEBIDA)
-                .build();
+        ProdutoRequestDTO produtoPrecoNegativo = new ProdutoRequestDTO("Refrigerante Cola",
+                "Refrigerante de cola 350ml", new BigDecimal("-5.00"), Categoria.BEBIDA);
 
         ValidacaoException exception2 = assertThrows(ValidacaoException.class,
                 () -> criarProdutoService.criar(produtoPrecoNegativo),
@@ -177,12 +159,8 @@ class CriarProdutoServiceTest {
     @DisplayName("Deve lançar exceção ao tentar criar produto sem categoria")
     void t6() {
         // Arrange
-        ProdutoRequestDTO produtoSemCategoria = ProdutoRequestDTO.builder()
-                .nome("Refrigerante Cola")
-                .descricao("Refrigerante de cola 350ml")
-                .preco(new BigDecimal("5.50"))
-                .categoria(null)
-                .build();
+        ProdutoRequestDTO produtoSemCategoria = new ProdutoRequestDTO("Refrigerante Cola",
+                "Refrigerante de cola 350ml", new BigDecimal("5.50"), null);
 
         // Act & Assert
         ValidacaoException exception = assertThrows(ValidacaoException.class,

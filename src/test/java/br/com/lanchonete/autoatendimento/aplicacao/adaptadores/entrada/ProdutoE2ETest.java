@@ -57,17 +57,13 @@ class ProdutoE2ETest {
     @DisplayName("Deve criar um produto com sucesso")
     void t1() throws Exception {
 
-        ProdutoRequestDTO requisicao = ProdutoRequestDTO.builder()
-                .nome("Batata Frita")
-                .descricao("Porção de batata frita crocante")
-                .preco(new BigDecimal("15.90"))
-                .categoria(Categoria.ACOMPANHAMENTO)
-                .build();
+        ProdutoRequestDTO novoProduto = new ProdutoRequestDTO("Batata Frita",
+                "Porção de batata frita crocante", new BigDecimal("15.90"), Categoria.ACOMPANHAMENTO);
 
 
         MvcResult resultado = mockMvc.perform(post("/produtos")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requisicao)))
+                        .content(objectMapper.writeValueAsString(novoProduto)))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").exists())
@@ -92,17 +88,12 @@ class ProdutoE2ETest {
     @DisplayName("Deve editar um produto com sucesso")
     void t2() throws Exception {
 
-        ProdutoRequestDTO requisicao = ProdutoRequestDTO.builder()
-                .nome("X-Bacon Especial")
-                .descricao("Hambúrguer com bacon crocante e molho especial")
-                .preco(new BigDecimal("32.90"))
-                .categoria(Categoria.LANCHE)
-                .build();
-
+        ProdutoRequestDTO produtoParaEditar = new ProdutoRequestDTO("X-Bacon Especial",
+                "Hambúrguer com bacon crocante e molho especial", new BigDecimal("32.90"), Categoria.LANCHE);
 
         mockMvc.perform(put("/produtos/{id}", produtoPreCadastrado.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requisicao)))
+                        .content(objectMapper.writeValueAsString(produtoParaEditar)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(produtoPreCadastrado.getId()))
@@ -182,16 +173,12 @@ class ProdutoE2ETest {
     @DisplayName("Deve retornar erro 400 ao tentar criar produto com nome duplicado")
     void t5() throws Exception {
         // Tenta criar um produto com o mesmo nome de um produto existente
-        ProdutoRequestDTO requisicao = ProdutoRequestDTO.builder()
-                .nome("X-Bacon") // Nome já existente
-                .descricao("Outro hambúrguer com bacon")
-                .preco(new BigDecimal("27.90"))
-                .categoria(Categoria.LANCHE)
-                .build();
+        ProdutoRequestDTO novoProdutoComNomeDuplicado = new ProdutoRequestDTO("X-Bacon",
+                "Outro hambúrguer com bacon", new BigDecimal("27.90"), Categoria.LANCHE);
 
         mockMvc.perform(post("/produtos")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requisicao)))
+                        .content(objectMapper.writeValueAsString(novoProdutoComNomeDuplicado)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Já existe um produto com este nome"));
     }
@@ -199,31 +186,23 @@ class ProdutoE2ETest {
     @Test
     @DisplayName("Deve retornar erro 400 ao tentar criar produto com dados inválidos")
     void t6() throws Exception {
+
         // Produto sem nome
-        ProdutoRequestDTO requisicaoSemNome = ProdutoRequestDTO.builder()
-                .nome("")
-                .descricao("Descrição teste")
-                .preco(new BigDecimal("19.90"))
-                .categoria(Categoria.LANCHE)
-                .build();
+        ProdutoRequestDTO novoProdutoSemNome = new ProdutoRequestDTO("", "Descrição teste", new BigDecimal("19.90"), Categoria.LANCHE);
 
         mockMvc.perform(post("/produtos")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requisicaoSemNome)))
+                        .content(objectMapper.writeValueAsString(novoProdutoSemNome)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Nome do produto é obrigatório"));
 
         // Produto com preço negativo
-        ProdutoRequestDTO requisicaoPrecoNegativo = ProdutoRequestDTO.builder()
-                .nome("Produto Teste")
-                .descricao("Descrição teste")
-                .preco(new BigDecimal("-5.90"))
-                .categoria(Categoria.LANCHE)
-                .build();
+        ProdutoRequestDTO novoProdutoPrecoNegativo = new ProdutoRequestDTO("Produto Teste",
+                "Descrição teste", new BigDecimal("-5.90"), Categoria.LANCHE);
 
         mockMvc.perform(post("/produtos")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requisicaoPrecoNegativo)))
+                        .content(objectMapper.writeValueAsString(novoProdutoPrecoNegativo)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Preço deve ser maior que zero"));
     }
@@ -231,16 +210,14 @@ class ProdutoE2ETest {
     @Test
     @DisplayName("Deve retornar erro 404 ao tentar editar produto inexistente")
     void t7() throws Exception {
-        ProdutoRequestDTO requisicao = ProdutoRequestDTO.builder()
-                .nome("Produto Inexistente")
-                .descricao("Descrição teste")
-                .preco(new BigDecimal("19.90"))
-                .categoria(Categoria.LANCHE)
-                .build();
+
+        ProdutoRequestDTO produtoParaEditarInexistente = new ProdutoRequestDTO("Produto Inexistente",
+                "Descrição teste",new BigDecimal("19.90"), Categoria.LANCHE);
+
 
         mockMvc.perform(put("/produtos/{id}", 999L)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requisicao)))
+                        .content(objectMapper.writeValueAsString(produtoParaEditarInexistente)))
                 .andExpect(status().isNotFound());
     }
 

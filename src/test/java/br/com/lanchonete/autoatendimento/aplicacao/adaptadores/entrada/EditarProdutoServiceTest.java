@@ -47,12 +47,8 @@ class EditarProdutoServiceTest {
                 .build();
 
         // Produto com dados atualizados
-        produtoValido = ProdutoRequestDTO.builder()
-                .nome("X-Bacon Especial")
-                .descricao("Hambúrguer com bacon crocante e molho especial")
-                .preco(new BigDecimal("32.90"))
-                .categoria(Categoria.LANCHE)
-                .build();
+        produtoValido = new ProdutoRequestDTO("X-Bacon Especial",
+                "Hambúrguer com bacon crocante e molho especial",new BigDecimal("32.90"), Categoria.LANCHE);
 
         // Produto após atualização
         produtoAtualizado = Produto.builder()
@@ -128,19 +124,16 @@ class EditarProdutoServiceTest {
 
         when(produtoRepositorio.buscarPorId(2L)).thenReturn(Optional.of(outroProduto));
 
+        // Nome que já existe para o produto com ID 1
+        ProdutoRequestDTO novoProdutoComNomeDuplicado = new ProdutoRequestDTO("X-Bacon",
+                "Hambúrguer com salada especial", new BigDecimal("27.90"), Categoria.LANCHE);
 
-        ProdutoRequestDTO requestComNomeDuplicado = ProdutoRequestDTO.builder()
-                .nome("X-Bacon") // Nome que já existe para o produto com ID 1
-                .descricao("Hambúrguer com salada especial")
-                .preco(new BigDecimal("27.90"))
-                .categoria(Categoria.LANCHE)
-                .build();
 
         when(produtoRepositorio.existePorNome("X-Bacon")).thenReturn(true);
 
 
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> editarProdutoService.editar(2L, requestComNomeDuplicado),
+                () -> editarProdutoService.editar(2L, novoProdutoComNomeDuplicado),
                 "Deveria lançar uma exceção quando o nome já existe para outro produto");
 
         assertEquals("Já existe um produto com este nome", exception.getMessage(),
@@ -155,12 +148,9 @@ class EditarProdutoServiceTest {
     @DisplayName("Deve permitir editar mantendo o mesmo nome para o produto")
     void t5() {
 
-        ProdutoRequestDTO requestMesmoNome = ProdutoRequestDTO.builder()
-                .nome("X-Bacon") // Mesmo nome
-                .descricao("Hambúrguer com bacon e queijo")
-                .preco(new BigDecimal("29.90"))
-                .categoria(Categoria.LANCHE)
-                .build();
+        // Mesmo nome
+        ProdutoRequestDTO produtoParaEditarMatendoNome = new ProdutoRequestDTO("X-Bacon",
+                "Hambúrguer com bacon e queijo", new BigDecimal("29.90"), Categoria.LANCHE);
 
         Produto produtoAtualizadoMesmoNome = Produto.builder()
                 .id(1L)
@@ -174,7 +164,7 @@ class EditarProdutoServiceTest {
         when(produtoRepositorio.atualizar(any(Produto.class))).thenReturn(produtoAtualizadoMesmoNome);
 
 
-        ProdutoResponseDTO response = editarProdutoService.editar(1L, requestMesmoNome);
+        ProdutoResponseDTO response = editarProdutoService.editar(1L, produtoParaEditarMatendoNome);
 
 
         assertNotNull(response);
@@ -193,61 +183,44 @@ class EditarProdutoServiceTest {
         when(produtoRepositorio.buscarPorId(1L)).thenReturn(Optional.of(produtoExistente));
 
 
-        ProdutoRequestDTO requestNomeVazio = ProdutoRequestDTO.builder()
-                .nome("")
-                .descricao("Descrição teste")
-                .preco(new BigDecimal("29.90"))
-                .categoria(Categoria.LANCHE)
-                .build();
+        ProdutoRequestDTO produtoParaEditarNomeVazio = new ProdutoRequestDTO("",
+                "Descrição teste",new BigDecimal("29.90"), Categoria.LANCHE);
 
 
         ValidacaoException exceptionNome = assertThrows(ValidacaoException.class,
-                () -> editarProdutoService.editar(1L, requestNomeVazio),
+                () -> editarProdutoService.editar(1L, produtoParaEditarNomeVazio),
                 "Deveria lançar uma exceção para nome vazio");
 
         assertEquals("Nome do produto é obrigatório", exceptionNome.getMessage());
 
 
-        ProdutoRequestDTO requestPrecoNulo = ProdutoRequestDTO.builder()
-                .nome("X-Bacon Especial")
-                .descricao("Descrição teste")
-                .preco(null)
-                .categoria(Categoria.LANCHE)
-                .build();
+        ProdutoRequestDTO produtoParaEditarPrecoNulo = new ProdutoRequestDTO("X-Bacon Especial",
+                "Descrição teste", null, Categoria.LANCHE);
 
 
         ValidacaoException exceptionPreco = assertThrows(ValidacaoException.class,
-                () -> editarProdutoService.editar(1L, requestPrecoNulo),
+                () -> editarProdutoService.editar(1L, produtoParaEditarPrecoNulo),
                 "Deveria lançar uma exceção para preço nulo");
 
         assertEquals("Preço do produto é obrigatório", exceptionPreco.getMessage());
 
 
-        ProdutoRequestDTO requestPrecoZero = ProdutoRequestDTO.builder()
-                .nome("X-Bacon Especial")
-                .descricao("Descrição teste")
-                .preco(BigDecimal.ZERO)
-                .categoria(Categoria.LANCHE)
-                .build();
+        ProdutoRequestDTO produtoParaEditarPrecoZero = new ProdutoRequestDTO("X-Bacon Especial",
+                "Descrição teste", BigDecimal.ZERO, Categoria.LANCHE);
 
 
         ValidacaoException exceptionPrecoZero = assertThrows(ValidacaoException.class,
-                () -> editarProdutoService.editar(1L, requestPrecoZero),
+                () -> editarProdutoService.editar(1L, produtoParaEditarPrecoZero),
                 "Deveria lançar uma exceção para preço zero");
 
         assertEquals("Preço deve ser maior que zero", exceptionPrecoZero.getMessage());
 
 
-        ProdutoRequestDTO requestCategoriaNula = ProdutoRequestDTO.builder()
-                .nome("X-Bacon Especial")
-                .descricao("Descrição teste")
-                .preco(new BigDecimal("29.90"))
-                .categoria(null)
-                .build();
+        ProdutoRequestDTO produtoParaEditarCategoriaNula = new ProdutoRequestDTO("X-Bacon Especial","Descrição teste",new BigDecimal("29.90"),null);
 
 
         ValidacaoException exceptionCategoria = assertThrows(ValidacaoException.class,
-                () -> editarProdutoService.editar(1L, requestCategoriaNula),
+                () -> editarProdutoService.editar(1L, produtoParaEditarCategoriaNula),
                 "Deveria lançar uma exceção para categoria nula");
 
         assertEquals("Categoria do produto é obrigatória", exceptionCategoria.getMessage());

@@ -30,10 +30,10 @@ public class EditarProdutoService implements EditarProdutoUC {
 
         validarDuplicidade(produto, produtoParaEditar);
 
-        produto.setNome(produtoParaEditar.getNome());
-        produto.setDescricao(produtoParaEditar.getDescricao());
-        produto.setPreco(produtoParaEditar.getPreco());
-        produto.setCategoria(produtoParaEditar.getCategoria());
+        produto.setNome(produtoParaEditar.nome());
+        produto.setDescricao(produtoParaEditar.descricao());
+        produto.setPreco(produtoParaEditar.preco());
+        produto.setCategoria(produtoParaEditar.categoria());
 
         Produto produtoAtualizado = produtoRepositorio.atualizar(produto);
 
@@ -46,28 +46,28 @@ public class EditarProdutoService implements EditarProdutoUC {
             throw new ValidacaoException("ID do produto é obrigatório");
         }
 
-        if (StringUtils.isBlank(produtoRequest.getNome())) {
+        if (StringUtils.isBlank(produtoRequest.nome())) {
             throw new ValidacaoException("Nome do produto é obrigatório");
         }
 
-        if (produtoRequest.getPreco() == null) {
+        if (produtoRequest.preco() == null) {
             throw new ValidacaoException("Preço do produto é obrigatório");
         }
 
-        if (produtoRequest.getPreco().compareTo(BigDecimal.ZERO) <= 0) {
+        if (produtoRequest.preco().compareTo(BigDecimal.ZERO) <= 0) {
             throw new ValidacaoException("Preço deve ser maior que zero");
         }
 
-        if (produtoRequest.getCategoria() == null) {
+        if (produtoRequest.categoria() == null) {
             throw new ValidacaoException("Categoria do produto é obrigatória");
         }
 
     }
 
     private void validarDuplicidade(Produto produto, ProdutoRequestDTO produtoRequest) {
-        boolean houveAlteracaoNoNome = !produto.getNome().equals(produtoRequest.getNome());
+        boolean houveAlteracaoNoNome = !produto.getNome().equals(produtoRequest.nome());
         if (houveAlteracaoNoNome) {
-            boolean existeOutroProdutoComMesmoNome = produtoRepositorio.existePorNome(produtoRequest.getNome());
+            boolean existeOutroProdutoComMesmoNome = produtoRepositorio.existePorNome(produtoRequest.nome());
             if (existeOutroProdutoComMesmoNome) {
                 throw new ValidacaoException("Já existe um produto com este nome");
             }

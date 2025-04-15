@@ -5,7 +5,6 @@ import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.util.Clie
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.IdentificarClienteUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
-import br.com.lanchonete.autoatendimento.dominio.Cliente;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

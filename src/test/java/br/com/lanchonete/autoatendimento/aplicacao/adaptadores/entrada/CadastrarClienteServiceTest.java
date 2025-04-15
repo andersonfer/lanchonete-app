@@ -1,6 +1,6 @@
 package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.CadastrarClienteDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
@@ -28,16 +28,13 @@ class CadastrarClienteServiceTest {
     @InjectMocks
     private CadastrarClienteService cadastrarClienteService;
 
-    private CadastrarClienteDTO clienteValido;
+    private ClienteRequestDTO clienteValido;
     private Cliente clienteSalvo;
 
     @BeforeEach
     void configurar() {
-        clienteValido = CadastrarClienteDTO.builder()
-                .nome("João Silva")
-                .email("joao.silva@example.com")
-                .cpf("12345678901")
-                .build();
+
+        clienteValido = new ClienteRequestDTO("João Silva", "12345678901", "Joao.silva@example.com");
 
         clienteSalvo = Cliente.builder()
                 .id(1L)
@@ -65,14 +62,10 @@ class CadastrarClienteServiceTest {
     @Test
     @DisplayName("Deve lançar exceção ao tentar cadastrar cliente com nome vazio")
     void t2() {
-        CadastrarClienteDTO dto = CadastrarClienteDTO.builder()
-                .nome("")
-                .email("joao.silva@example.com")
-                .cpf("12345678901")
-                .build();
+        ClienteRequestDTO novoCliente = new ClienteRequestDTO("", "12345678901", "Joao.silva@example.com");
 
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> cadastrarClienteService.cadastrar(dto),
+                () -> cadastrarClienteService.cadastrar(novoCliente),
                 "Deveria lançar uma exceção para nome vazio.");
 
         assertEquals("Nome é obrigatório", exception.getMessage(), "Mensagem da exceção está incorreta.");
@@ -81,14 +74,10 @@ class CadastrarClienteServiceTest {
     @Test
     @DisplayName("Deve lançar exceção ao tentar cadastrar cliente com email vazio")
     void t3() {
-        CadastrarClienteDTO dto = CadastrarClienteDTO.builder()
-                .nome("João Silva")
-                .email("")
-                .cpf("12345678901")
-                .build();
+        ClienteRequestDTO novoCliente = new ClienteRequestDTO("João Silva", "12345678901", "");
 
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> cadastrarClienteService.cadastrar(dto),
+                () -> cadastrarClienteService.cadastrar(novoCliente),
                 "Deveria lançar uma exceção para email vazio.");
 
         assertEquals("Email é obrigatório", exception.getMessage(), "Mensagem da exceção está incorreta.");
@@ -97,14 +86,10 @@ class CadastrarClienteServiceTest {
     @Test
     @DisplayName("Deve lançar exceção ao tentar cadastrar cliente com email inválido")
     void t4() {
-        CadastrarClienteDTO dto = CadastrarClienteDTO.builder()
-                .nome("João Silva")
-                .email("email_invalido")
-                .cpf("12345678901")
-                .build();
+        ClienteRequestDTO novoCliente = new ClienteRequestDTO("João Silva", "12345678901", "email_invalido");
 
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> cadastrarClienteService.cadastrar(dto),
+                () -> cadastrarClienteService.cadastrar(novoCliente),
                 "Deveria lançar uma exceção para email inválido.");
 
         assertEquals("Email inválido", exception.getMessage(), "Mensagem da exceção está incorreta.");
@@ -113,14 +98,10 @@ class CadastrarClienteServiceTest {
     @Test
     @DisplayName("Deve lançar exceção ao tentar cadastrar cliente com CPF vazio")
     void t5() {
-        CadastrarClienteDTO dto = CadastrarClienteDTO.builder()
-                .nome("João Silva")
-                .email("joao.silva@example.com")
-                .cpf("")
-                .build();
+        ClienteRequestDTO novoCliente = new ClienteRequestDTO("João Silva", "", "Joao.silva@example.com");
 
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> cadastrarClienteService.cadastrar(dto),
+                () -> cadastrarClienteService.cadastrar(novoCliente),
                 "Deveria lançar uma exceção para CPF vazio.");
 
         assertEquals("CPF é obrigatório", exception.getMessage(), "Mensagem da exceção está incorreta.");
@@ -129,14 +110,10 @@ class CadastrarClienteServiceTest {
     @Test
     @DisplayName("Deve lançar exceção ao tentar cadastrar cliente com CPF inválido")
     void t6() {
-        CadastrarClienteDTO dto = CadastrarClienteDTO.builder()
-                .nome("João Silva")
-                .email("joao.silva@example.com")
-                .cpf("12345")
-                .build();
+        ClienteRequestDTO novoCliente = new ClienteRequestDTO("João Silva", "12345", "Joao.silva@example.com");
 
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> cadastrarClienteService.cadastrar(dto),
+                () -> cadastrarClienteService.cadastrar(novoCliente),
                 "Deveria lançar uma exceção para CPF inválido.");
 
         assertEquals("CPF deve conter 11 dígitos numéricos", exception.getMessage(), "Mensagem da exceção está incorreta.");
@@ -146,7 +123,7 @@ class CadastrarClienteServiceTest {
     @DisplayName("Deve lançar exceção quando CPF já existe")
     void t7() {
 
-        when(clienteRepositorio.buscarPorCpf(clienteValido.getCpf())).thenReturn(Optional.of(clienteSalvo));
+        when(clienteRepositorio.buscarPorCpf(clienteValido.cpf())).thenReturn(Optional.of(clienteSalvo));
 
         ValidacaoException ex = assertThrows(ValidacaoException.class,
                 () -> cadastrarClienteService.cadastrar(clienteValido));

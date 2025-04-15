@@ -1,11 +1,10 @@
 package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.CadastrarClienteDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.CadastrarClienteUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.IdentificarClienteUC;
-import br.com.lanchonete.autoatendimento.dominio.Cliente;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -41,15 +40,11 @@ class ClienteControllerTest {
     @MockitoBean
     private IdentificarClienteUC identificarClienteUC;
 
-    private CadastrarClienteDTO requisicao;
+    private ClienteRequestDTO novoCliente;
 
     @BeforeEach
     void configurar() {
-        requisicao = CadastrarClienteDTO.builder()
-                .nome("Teste da Silva")
-                .cpf("12345678901")
-                .email("teste@email.com")
-                .build();
+        novoCliente = new ClienteRequestDTO("Teste da Silva","12345678901","teste@email.com");
     }
 
     @Test
@@ -60,11 +55,11 @@ class ClienteControllerTest {
                 "Teste da Silva","12345678901", "teste@email.com");
 
 
-        when(cadastrarClienteUC.cadastrar(any(CadastrarClienteDTO.class))).thenReturn(resposta);
+        when(cadastrarClienteUC.cadastrar(any(ClienteRequestDTO.class))).thenReturn(resposta);
 
         mockMvc.perform(post("/clientes")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(requisicao)))
+                .content(objectMapper.writeValueAsString(novoCliente)))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(1L))
@@ -79,11 +74,11 @@ class ClienteControllerTest {
     @DisplayName("Deve retornar status 400 quando o UC lançar ValidacaoException")
     void t2() throws Exception {
 
-        when(cadastrarClienteUC.cadastrar(any(CadastrarClienteDTO.class))).thenThrow(new ValidacaoException("Erro de validação ou duplicidade"));
+        when(cadastrarClienteUC.cadastrar(any(ClienteRequestDTO.class))).thenThrow(new ValidacaoException("Erro de validação ou duplicidade"));
 
         mockMvc.perform(post("/clientes")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(requisicao)))
+                .content(objectMapper.writeValueAsString(novoCliente)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Erro de validação ou duplicidade"));
     }

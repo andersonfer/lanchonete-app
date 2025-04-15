@@ -1,6 +1,6 @@
 package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.CadastrarClienteDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.CadastrarClienteUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.IdentificarClienteUC;
@@ -30,7 +30,7 @@ public class ClienteController {
                 @ApiResponse(responseCode = "400", description = "Dados inválidos ou CPF já cadastrado")
         }
     )
-    public ResponseEntity<ClienteResponseDTO> cadastrarCliente(@RequestBody CadastrarClienteDTO novoCliente) {
+    public ResponseEntity<ClienteResponseDTO> cadastrarCliente(@RequestBody ClienteRequestDTO novoCliente) {
         ClienteResponseDTO clienteCadastrado = cadastrarClienteUC.cadastrar(novoCliente);
         return new ResponseEntity<>(clienteCadastrado, HttpStatus.CREATED);
     }

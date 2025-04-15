@@ -1,7 +1,7 @@
 package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
 
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.CadastrarClienteDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
 import br.com.lanchonete.autoatendimento.dominio.Cliente;
@@ -47,15 +47,11 @@ class ClienteE2ETest {
 
     void t1() throws Exception {
 
-        CadastrarClienteDTO requisicao = CadastrarClienteDTO.builder()
-                .nome("Carlos Santos")
-                .email("carlos@email.com")
-                .cpf("11122233344")
-                .build();
+        ClienteRequestDTO novoCliente = new ClienteRequestDTO("Carlos Santos","11122233344","carlos@email.com");
 
         MvcResult resultado = mockMvc.perform(post("/clientes")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(requisicao)))
+                .content(objectMapper.writeValueAsString(novoCliente)))
                 .andExpect(status().isCreated())
                 .andReturn();
 
@@ -64,21 +60,21 @@ class ClienteE2ETest {
 
         //verifica se o ID foi gerado
         assertNotNull(respostaDTO.id());
-        assertEquals(requisicao.getNome(), respostaDTO.nome());
-        assertEquals(requisicao.getCpf(), respostaDTO.cpf());
-        assertEquals(requisicao.getEmail(), respostaDTO.email());
+        assertEquals(novoCliente.nome(), respostaDTO.nome());
+        assertEquals(novoCliente.cpf(), respostaDTO.cpf());
+        assertEquals(novoCliente.email(), respostaDTO.email());
 
         // Verifica se o cliente foi realmente persistido no banco de dados
-        Optional<Cliente> clientePersistido = clienteRepositorio.buscarPorCpf(requisicao.getCpf());
+        Optional<Cliente> clientePersistido = clienteRepositorio.buscarPorCpf(novoCliente.cpf());
         assertTrue(clientePersistido.isPresent());
-        assertEquals(requisicao.getNome(), clientePersistido.get().getNome());
-        assertEquals(requisicao.getEmail(), clientePersistido.get().getEmail());
+        assertEquals(novoCliente.nome(), clientePersistido.get().getNome());
+        assertEquals(novoCliente.email(), clientePersistido.get().getEmail());
     }
 
     @ParameterizedTest
     @MethodSource("fornecerCenariosClienteInvalido")
     @DisplayName("Deve retornar erro 400 ao tentar cadastrar cliente com dados inválidos")
-    void t2(CadastrarClienteDTO requisicao, String mensagemErro) throws Exception {
+    void t2(ClienteRequestDTO requisicao, String mensagemErro) throws Exception {
         mockMvc.perform(post("/clientes")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requisicao)))
@@ -86,8 +82,8 @@ class ClienteE2ETest {
                 .andExpect(content().string(mensagemErro));
 
         // Verifica que o cliente não foi persistido
-        if (requisicao.getCpf() != null && !requisicao.getCpf().isEmpty()) {
-            Optional<Cliente> clienteNaoPersistido = clienteRepositorio.buscarPorCpf(requisicao.getCpf());
+        if (requisicao.cpf() != null && !requisicao.cpf().isEmpty()) {
+            Optional<Cliente> clienteNaoPersistido = clienteRepositorio.buscarPorCpf(requisicao.cpf());
             assertTrue(clienteNaoPersistido.isEmpty(), "O cliente não deveria ser persistido com dados inválidos");
         }
     }
@@ -96,27 +92,19 @@ class ClienteE2ETest {
     @DisplayName("Deve retornar erro 400 ao tentar cadastrar cliente com CPF duplicado")
     void t3() throws Exception {
 
-        CadastrarClienteDTO requisicao1 = CadastrarClienteDTO.builder()
-                .nome("Carlos Santos")
-                .email("carlos@email.com")
-                .cpf("11122233344")
-                .build();
+        ClienteRequestDTO novoCliente = new ClienteRequestDTO("Carlos Santos","11122233344","carlos@email.com");
 
         mockMvc.perform(post("/clientes")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(requisicao1)))
+                .content(objectMapper.writeValueAsString(novoCliente)))
                 .andExpect(status().isCreated());
 
         //tentativa de cadastro duplicado
-        CadastrarClienteDTO requisicao2 = CadastrarClienteDTO.builder()
-                .nome("Outro Cliente")
-                .email("outro@email.com")
-                .cpf("11122233344")
-                .build();
+        ClienteRequestDTO novoClienteComCpfDuplicado = new ClienteRequestDTO("Outro Cliente","11122233344","outro@email.com");
 
         MvcResult resultado = mockMvc.perform(post("/clientes")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(requisicao2)))
+                .content(objectMapper.writeValueAsString(novoClienteComCpfDuplicado)))
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
@@ -167,53 +155,41 @@ class ClienteE2ETest {
     void t6() throws Exception {
 
         String novoCpf = "11122233344";
-        CadastrarClienteDTO requisicao = CadastrarClienteDTO.builder()
-                .nome("Carlos Santos")
-                .email("carlos@email.com")
-                .cpf(novoCpf)
-                .build();
-
+        ClienteRequestDTO novoCliente = new ClienteRequestDTO("Carlos Santos",novoCpf,"carlos@email.com");
 
         //Cadastra um novo cliente via API
         mockMvc.perform(post("/clientes")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requisicao)))
+                        .content(objectMapper.writeValueAsString(novoCliente)))
                 .andExpect(status().isCreated());
 
         //Verifica se o cliente pode ser encontrado
         mockMvc.perform(get("/clientes/cpf/{cpf}", novoCpf))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nome").value(requisicao.getNome()))
-                .andExpect(jsonPath("$.cpf").value(requisicao.getCpf()))
-                .andExpect(jsonPath("$.email").value(requisicao.getEmail()));
+                .andExpect(jsonPath("$.nome").value(novoCliente.nome()))
+                .andExpect(jsonPath("$.cpf").value(novoCliente.cpf()))
+                .andExpect(jsonPath("$.email").value(novoCliente.email()));
     }
 
     private static Stream<Arguments> fornecerCenariosClienteInvalido() {
         return Stream.of(
                 // Nome inválido
-                Arguments.of(criarDTO("", "98765432100", "paulo@email.com"), "Nome é obrigatório"),
+                Arguments.of(new ClienteRequestDTO("", "98765432100", "paulo@email.com"), "Nome é obrigatório"),
 
                 // CPF inválido - vazio
-                Arguments.of(criarDTO("Paulo Silva", "", "paulo@email.com"), "CPF é obrigatório"),
+                Arguments.of(new ClienteRequestDTO("Paulo Silva", "", "paulo@email.com"), "CPF é obrigatório"),
 
                 // CPF inválido - formato
-                Arguments.of(criarDTO("Paulo Silva", "123", "paulo@email.com"), "CPF deve conter 11 dígitos numéricos"),
-                Arguments.of(criarDTO("Paulo Silva", "1234567890A", "paulo@email.com"), "CPF deve conter 11 dígitos numéricos"),
+                Arguments.of(new ClienteRequestDTO("Paulo Silva", "123", "paulo@email.com"), "CPF deve conter 11 dígitos numéricos"),
+                Arguments.of(new ClienteRequestDTO("Paulo Silva", "1234567890A", "paulo@email.com"), "CPF deve conter 11 dígitos numéricos"),
 
                 // Email inválido - vazio
-                Arguments.of(criarDTO("Paulo Silva", "98765432100", ""), "Email é obrigatório"),
+                Arguments.of(new ClienteRequestDTO("Paulo Silva", "98765432100", ""), "Email é obrigatório"),
 
                 // Email inválido - formato
-                Arguments.of(criarDTO("Paulo Silva", "98765432100", "paulo"), "Email inválido"),
-                Arguments.of(criarDTO("Paulo Silva", "98765432100", "paulo@"), "Email inválido")
+                Arguments.of(new ClienteRequestDTO("Paulo Silva", "98765432100", "paulo"), "Email inválido"),
+                Arguments.of(new ClienteRequestDTO("Paulo Silva", "98765432100", "paulo@"), "Email inválido")
         );
     }
 
-    private static CadastrarClienteDTO criarDTO(String nome, String cpf, String email) {
-        return CadastrarClienteDTO.builder()
-                .nome(nome)
-                .cpf(cpf)
-                .email(email)
-                .build();
-    }
 }

@@ -1,6 +1,6 @@
 package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.CadastrarClienteDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.util.ClienteMapper;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
@@ -21,15 +21,15 @@ public class CadastrarClienteService implements CadastrarClienteUC {
 
 
     @Override
-    public ClienteResponseDTO cadastrar(CadastrarClienteDTO novoCliente) {
+    public ClienteResponseDTO cadastrar(ClienteRequestDTO novoCliente) {
 
         validarParametros(novoCliente);
         validarDuplicidade(novoCliente);
 
         Cliente cliente = Cliente.builder()
-                .nome(novoCliente.getNome())
-                .email(novoCliente.getEmail())
-                .cpf(novoCliente.getCpf())
+                .nome(novoCliente.nome())
+                .email(novoCliente.email())
+                .cpf(novoCliente.cpf())
                 .build();
 
         Cliente clienteSalvo = clienteRepositorio.salvar(cliente);
@@ -38,26 +38,26 @@ public class CadastrarClienteService implements CadastrarClienteUC {
 
     }
 
-    private void validarParametros(CadastrarClienteDTO novoCliente) {
-        if (StringUtils.isBlank(novoCliente.getNome())) {
+    private void validarParametros(ClienteRequestDTO novoCliente) {
+        if (StringUtils.isBlank(novoCliente.nome())) {
             throw new ValidacaoException("Nome é obrigatório");
         }
-        if (StringUtils.isBlank(novoCliente.getEmail())) {
+        if (StringUtils.isBlank(novoCliente.email())) {
             throw new ValidacaoException("Email é obrigatório");
         }
-        if (!novoCliente.getEmail().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+        if (!novoCliente.email().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
             throw new ValidacaoException("Email inválido");
         }
-        if (StringUtils.isBlank(novoCliente.getCpf())) {
+        if (StringUtils.isBlank(novoCliente.cpf())) {
             throw new ValidacaoException("CPF é obrigatório");
         }
-        if (!novoCliente.getCpf().matches("^\\d{11}$")) {
+        if (!novoCliente.cpf().matches("^\\d{11}$")) {
             throw new ValidacaoException("CPF deve conter 11 dígitos numéricos");
         }
     }
 
-    private void validarDuplicidade(CadastrarClienteDTO novoCliente){
-        Optional<Cliente> clienteExistente = clienteRepositorio.buscarPorCpf(novoCliente.getCpf());
+    private void validarDuplicidade(ClienteRequestDTO novoCliente){
+        Optional<Cliente> clienteExistente = clienteRepositorio.buscarPorCpf(novoCliente.cpf());
         if (clienteExistente.isPresent()) {
             throw new ValidacaoException("CPF duplicado");
         }

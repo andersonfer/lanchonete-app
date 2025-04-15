@@ -5,18 +5,18 @@ import br.com.lanchonete.autoatendimento.dominio.Cliente;
 
 public class ClienteMapper {
 
-    private ClienteMapper() {};
+    private ClienteMapper() {}
 
     public static ClienteResponseDTO converterParaResponseDTO(Cliente cliente) {
         if (cliente == null) {
             return null;
         }
 
-        return ClienteResponseDTO.builder()
-                .id(cliente.getId())
-                .nome(cliente.getNome())
-                .email(cliente.getEmail())
-                .cpf(cliente.getCpf())
-                .build();
+        return new ClienteResponseDTO(
+                cliente.getId(),
+                cliente.getNome(),
+                cliente.getCpf(),
+                cliente.getEmail()
+        );
     }
 }

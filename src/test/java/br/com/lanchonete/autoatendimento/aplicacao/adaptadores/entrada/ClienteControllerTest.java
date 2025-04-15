@@ -5,6 +5,7 @@ import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.Clien
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.CadastrarClienteUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.IdentificarClienteUC;
+import br.com.lanchonete.autoatendimento.dominio.Cliente;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -55,12 +56,9 @@ class ClienteControllerTest {
     @DisplayName("Deve cadastrar um cliente com sucesso")
     void t1() throws Exception {
 
-        ClienteResponseDTO resposta = ClienteResponseDTO.builder()
-                .id(1L)
-                .nome("Teste da Silva")
-                .cpf("12345678901")
-                .email("teste@email.com")
-                .build();
+        ClienteResponseDTO resposta = new ClienteResponseDTO(1L,
+                "Teste da Silva","12345678901", "teste@email.com");
+
 
         when(cadastrarClienteUC.cadastrar(any(CadastrarClienteDTO.class))).thenReturn(resposta);
 
@@ -96,12 +94,8 @@ class ClienteControllerTest {
 
         String cpf = "12345678901";
 
-        ClienteResponseDTO resposta = ClienteResponseDTO.builder()
-                .id(1L)
-                .nome("Teste da Silva")
-                .cpf(cpf)
-                .email("teste@email.com")
-                .build();
+        ClienteResponseDTO resposta = new ClienteResponseDTO(1L,
+                "Teste da Silva",cpf, "teste@email.com");
 
         when(identificarClienteUC.identificar(cpf)).thenReturn(Optional.of(resposta));
 

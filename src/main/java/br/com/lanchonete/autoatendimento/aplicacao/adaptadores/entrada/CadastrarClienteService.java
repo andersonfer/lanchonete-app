@@ -24,7 +24,6 @@ public class CadastrarClienteService implements CadastrarClienteUC {
     public ClienteResponseDTO cadastrar(CadastrarClienteDTO novoCliente) {
 
         validarParametros(novoCliente);
-
         validarDuplicidade(novoCliente);
 
         Cliente cliente = Cliente.builder()

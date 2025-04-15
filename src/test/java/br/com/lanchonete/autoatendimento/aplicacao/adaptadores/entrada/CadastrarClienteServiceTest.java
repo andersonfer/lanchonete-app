@@ -56,10 +56,10 @@ class CadastrarClienteServiceTest {
         ClienteResponseDTO response = cadastrarClienteService.cadastrar(clienteValido);
 
         assertNotNull(response, "A resposta não deveria ser nula.");
-        assertEquals(1L, response.getId(), "O ID do cliente salvo deveria ser 1.");
-        assertEquals("João Silva", response.getNome(), "O nome do cliente salvo está incorreto.");
-        assertEquals("joao.silva@example.com", response.getEmail(), "O email do cliente salvo está incorreto.");
-        assertEquals("12345678901", response.getCpf(), "O CPF do cliente salvo está incorreto.");
+        assertEquals(1L, response.id(), "O ID do cliente salvo deveria ser 1.");
+        assertEquals("João Silva", response.nome(), "O nome do cliente salvo está incorreto.");
+        assertEquals("joao.silva@example.com", response.email(), "O email do cliente salvo está incorreto.");
+        assertEquals("12345678901", response.cpf(), "O CPF do cliente salvo está incorreto.");
     }
 
     @Test

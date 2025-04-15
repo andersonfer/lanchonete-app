@@ -25,10 +25,10 @@ class ClienteMapperTest {
 
 
         assertNotNull(dto, "O DTO não deveria ser nulo");
-        assertEquals(1L, dto.getId(), "O ID deveria ser 1L");
-        assertEquals("João Silva", dto.getNome(), "O nome não foi mapeado corretamente");
-        assertEquals("joao@email.com", dto.getEmail(), "O email não foi mapeado corretamente");
-        assertEquals("12345678901", dto.getCpf(), "O CPF não foi mapeado corretamente");
+        assertEquals(1L, dto.id(), "O ID deveria ser 1L");
+        assertEquals("João Silva", dto.nome(), "O nome não foi mapeado corretamente");
+        assertEquals("joao@email.com", dto.email(), "O email não foi mapeado corretamente");
+        assertEquals("12345678901", dto.cpf(), "O CPF não foi mapeado corretamente");
     }
 
     @Test

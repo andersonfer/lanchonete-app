@@ -63,10 +63,10 @@ class ClienteE2ETest {
         ClienteResponseDTO respostaDTO = objectMapper.readValue(resposta, ClienteResponseDTO.class);
 
         //verifica se o ID foi gerado
-        assertNotNull(respostaDTO.getId());
-        assertEquals(requisicao.getNome(), respostaDTO.getNome());
-        assertEquals(requisicao.getCpf(), respostaDTO.getCpf());
-        assertEquals(requisicao.getEmail(), respostaDTO.getEmail());
+        assertNotNull(respostaDTO.id());
+        assertEquals(requisicao.getNome(), respostaDTO.nome());
+        assertEquals(requisicao.getCpf(), respostaDTO.cpf());
+        assertEquals(requisicao.getEmail(), respostaDTO.email());
 
         // Verifica se o cliente foi realmente persistido no banco de dados
         Optional<Cliente> clientePersistido = clienteRepositorio.buscarPorCpf(requisicao.getCpf());
@@ -147,10 +147,10 @@ class ClienteE2ETest {
         String resposta = resultado.getResponse().getContentAsString();
         ClienteResponseDTO respostaDTO = objectMapper.readValue(resposta, ClienteResponseDTO.class);
 
-        assertEquals(clientePreCadastrado.getId(), respostaDTO.getId());
-        assertEquals(clientePreCadastrado.getNome(), respostaDTO.getNome());
-        assertEquals(clientePreCadastrado.getCpf(), respostaDTO.getCpf());
-        assertEquals(clientePreCadastrado.getEmail(), respostaDTO.getEmail());
+        assertEquals(clientePreCadastrado.getId(), respostaDTO.id());
+        assertEquals(clientePreCadastrado.getNome(), respostaDTO.nome());
+        assertEquals(clientePreCadastrado.getCpf(), respostaDTO.cpf());
+        assertEquals(clientePreCadastrado.getEmail(), respostaDTO.email());
     }
 
 

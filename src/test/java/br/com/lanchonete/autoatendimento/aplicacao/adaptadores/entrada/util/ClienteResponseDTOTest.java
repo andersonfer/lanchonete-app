@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ClienteMapperTest {
+class ClienteResponseDTOTest {
 
     @Test
     @DisplayName("Deve converter Cliente para ClienteResponseDTO corretamente")

@@ -43,12 +43,6 @@ class ProdutoE2ETest {
 
     @BeforeEach
     void configurar() {
-        // Limpa todos os produtos para garantir um ambiente isolado para cada teste
-        List<Produto> produtos = produtoRepositorio.listarTodos();
-        for (Produto produto : produtos) {
-            produtoRepositorio.remover(produto.getId());
-        }
-
         // Pré-cadastra um produto para os testes
         produtoPreCadastrado = Produto.builder()
                 .nome("X-Bacon")

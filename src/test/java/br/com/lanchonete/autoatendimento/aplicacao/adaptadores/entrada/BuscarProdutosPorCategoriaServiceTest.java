@@ -67,17 +67,17 @@ class BuscarProdutosPorCategoriaServiceTest {
 
         // Verifica o primeiro produto
         ProdutoResponseDTO primeiro = resultado.get(0);
-        assertEquals(1L, primeiro.getId());
-        assertEquals("X-Bacon", primeiro.getNome());
-        assertEquals(new BigDecimal("28.90"), primeiro.getPreco());
-        assertEquals(Categoria.LANCHE, primeiro.getCategoria());
+        assertEquals(1L, primeiro.id());
+        assertEquals("X-Bacon", primeiro.nome());
+        assertEquals(new BigDecimal("28.90"), primeiro.preco());
+        assertEquals(Categoria.LANCHE, primeiro.categoria());
 
         // Verifica o segundo produto
         ProdutoResponseDTO segundo = resultado.get(1);
-        assertEquals(2L, segundo.getId());
-        assertEquals("X-Salada", segundo.getNome());
-        assertEquals(new BigDecimal("26.90"), segundo.getPreco());
-        assertEquals(Categoria.LANCHE, segundo.getCategoria());
+        assertEquals(2L, segundo.id());
+        assertEquals("X-Salada", segundo.nome());
+        assertEquals(new BigDecimal("26.90"), segundo.preco());
+        assertEquals(Categoria.LANCHE, segundo.categoria());
 
         verify(produtoRepositorio).buscarPorCategoria(Categoria.LANCHE);
     }

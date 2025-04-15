@@ -71,10 +71,10 @@ class EditarProdutoServiceTest {
         ProdutoResponseDTO response = editarProdutoService.editar(1L, produtoValido);
 
         assertNotNull(response, "A resposta não deveria ser nula");
-        assertEquals(1L, response.getId(), "O ID do produto atualizado deveria ser 1");
-        assertEquals("X-Bacon Especial", response.getNome(), "O nome do produto atualizado está incorreto");
-        assertEquals(new BigDecimal("32.90"), response.getPreco(), "O preço do produto atualizado está incorreto");
-        assertEquals(Categoria.LANCHE, response.getCategoria(), "A categoria do produto atualizado está incorreta");
+        assertEquals(1L, response.id(), "O ID do produto atualizado deveria ser 1");
+        assertEquals("X-Bacon Especial", response.nome(), "O nome do produto atualizado está incorreto");
+        assertEquals(new BigDecimal("32.90"), response.preco(), "O preço do produto atualizado está incorreto");
+        assertEquals(Categoria.LANCHE, response.categoria(), "A categoria do produto atualizado está incorreta");
 
         verify(produtoRepositorio).buscarPorId(1L);
         verify(produtoRepositorio).atualizar(any(Produto.class));
@@ -168,8 +168,8 @@ class EditarProdutoServiceTest {
 
 
         assertNotNull(response);
-        assertEquals("X-Bacon", response.getNome());
-        assertEquals(new BigDecimal("29.90"), response.getPreco());
+        assertEquals("X-Bacon", response.nome());
+        assertEquals(new BigDecimal("29.90"), response.preco());
 
         verify(produtoRepositorio).buscarPorId(1L);
         verify(produtoRepositorio).atualizar(any(Produto.class));

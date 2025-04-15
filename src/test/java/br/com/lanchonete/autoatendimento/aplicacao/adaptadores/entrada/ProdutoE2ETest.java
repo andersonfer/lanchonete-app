@@ -78,7 +78,7 @@ class ProdutoE2ETest {
         ProdutoResponseDTO produtoCriado = objectMapper.readValue(respostaJson, ProdutoResponseDTO.class);
 
         // Verifica se o produto foi realmente persistido no banco
-        Optional<Produto> produtoPersistido = produtoRepositorio.buscarPorId(produtoCriado.getId());
+        Optional<Produto> produtoPersistido = produtoRepositorio.buscarPorId(produtoCriado.id());
         assertTrue(produtoPersistido.isPresent(), "O produto deve existir no banco de dados");
         assertEquals("Batata Frita", produtoPersistido.get().getNome());
         assertEquals(new BigDecimal("15.90"), produtoPersistido.get().getPreco());

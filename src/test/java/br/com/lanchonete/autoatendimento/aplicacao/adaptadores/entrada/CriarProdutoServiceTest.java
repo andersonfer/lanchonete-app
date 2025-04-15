@@ -59,10 +59,10 @@ class CriarProdutoServiceTest {
 
         // Assert
         assertNotNull(response, "A resposta não deveria ser nula");
-        assertEquals(1L, response.getId(), "O ID do produto salvo deveria ser 1");
-        assertEquals("X-Bacon", response.getNome(), "O nome do produto salvo está incorreto");
-        assertEquals(new BigDecimal("28.90"), response.getPreco(), "O preço do produto salvo está incorreto");
-        assertEquals(Categoria.LANCHE, response.getCategoria(), "A categoria do produto salvo está incorreta");
+        assertEquals(1L, response.id(), "O ID do produto salvo deveria ser 1");
+        assertEquals("X-Bacon", response.nome(), "O nome do produto salvo está incorreto");
+        assertEquals(new BigDecimal("28.90"), response.preco(), "O preço do produto salvo está incorreto");
+        assertEquals(Categoria.LANCHE, response.categoria(), "A categoria do produto salvo está incorreta");
 
         verify(produtoRepositorio).existePorNome(produtoValido.nome());
         verify(produtoRepositorio).salvar(any(Produto.class));

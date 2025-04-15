@@ -1,17 +1,7 @@
 package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto;
 
 import br.com.lanchonete.autoatendimento.dominio.Categoria;
-import lombok.Builder;
-import lombok.Data;
 
 import java.math.BigDecimal;
 
-@Data
-@Builder
-public class ProdutoResponseDTO {
-    private Long id;
-    private String nome;
-    private String descricao;
-    private BigDecimal preco;
-    private Categoria categoria;
-}
+public record ProdutoResponseDTO(Long id, String nome, String descricao, BigDecimal preco, Categoria categoria) { }

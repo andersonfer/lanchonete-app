@@ -28,11 +28,11 @@ class ProdutoMapperTest {
         ProdutoResponseDTO dto = ProdutoMapper.converterParaResponseDTO(produto);
 
         assertNotNull(dto, "O DTO não deveria ser nulo");
-        assertEquals(1L, dto.getId(), "O ID deveria ser 1L");
-        assertEquals("X-Bacon", dto.getNome(), "O nome deveria ser 'X-Bacon'");
-        assertEquals("Hambúrguer com bacon", dto.getDescricao(), "A descrição não foi mapeada corretamente");
-        assertEquals(new BigDecimal("29.90"), dto.getPreco(), "O preço não foi mapeado corretamente");
-        assertEquals(Categoria.LANCHE, dto.getCategoria(), "A categoria não foi mapeada corretamente");
+        assertEquals(1L, dto.id(), "O ID deveria ser 1L");
+        assertEquals("X-Bacon", dto.nome(), "O nome deveria ser 'X-Bacon'");
+        assertEquals("Hambúrguer com bacon", dto.descricao(), "A descrição não foi mapeada corretamente");
+        assertEquals(new BigDecimal("29.90"), dto.preco(), "O preço não foi mapeado corretamente");
+        assertEquals(Categoria.LANCHE, dto.categoria(), "A categoria não foi mapeada corretamente");
     }
 
     @Test

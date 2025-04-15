@@ -5,19 +5,14 @@ import br.com.lanchonete.autoatendimento.dominio.Produto;
 
 public class ProdutoMapper {
 
-    private ProdutoMapper() {};
+    private ProdutoMapper() {}
 
     public static ProdutoResponseDTO converterParaResponseDTO(Produto produto) {
         if (produto == null) {
             return null;
         }
 
-        return ProdutoResponseDTO.builder()
-                .id(produto.getId())
-                .nome(produto.getNome())
-                .descricao(produto.getDescricao())
-                .preco(produto.getPreco())
-                .categoria(produto.getCategoria())
-                .build();
+        return new ProdutoResponseDTO(produto.getId(),produto.getNome(),
+                produto.getDescricao(), produto.getPreco(), produto.getCategoria());
     }
 }

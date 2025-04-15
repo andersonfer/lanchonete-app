@@ -2,7 +2,6 @@ package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ProdutoRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ProdutoResponseDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.util.ProdutoMapper;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.EditarProdutoUC;
@@ -37,7 +36,7 @@ public class EditarProdutoService implements EditarProdutoUC {
 
         Produto produtoAtualizado = produtoRepositorio.atualizar(produto);
 
-        return ProdutoMapper.converterParaResponseDTO(produtoAtualizado);
+        return ProdutoResponseDTO.converterParaDTO(produtoAtualizado);
     }
 
     private void validarParametros(Long idAtual, ProdutoRequestDTO produtoRequest) {

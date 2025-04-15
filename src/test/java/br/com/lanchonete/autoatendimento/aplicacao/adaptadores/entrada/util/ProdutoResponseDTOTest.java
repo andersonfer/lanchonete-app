@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ProdutoMapperTest {
+class ProdutoResponseDTOTest {
 
     @Test
     @DisplayName("Deve converter Produto para ProdutoResponseDTO corretamente")
@@ -25,7 +25,7 @@ class ProdutoMapperTest {
                 .build();
 
 
-        ProdutoResponseDTO dto = ProdutoMapper.converterParaResponseDTO(produto);
+        ProdutoResponseDTO dto = ProdutoResponseDTO.converterParaDTO(produto);
 
         assertNotNull(dto, "O DTO não deveria ser nulo");
         assertEquals(1L, dto.id(), "O ID deveria ser 1L");
@@ -38,7 +38,7 @@ class ProdutoMapperTest {
     @Test
     @DisplayName("Deve retornar null quando Produto for null")
     void t2() {
-        ProdutoResponseDTO dto = ProdutoMapper.converterParaResponseDTO(null);
+        ProdutoResponseDTO dto = ProdutoResponseDTO.converterParaDTO(null);
         assertNull(dto, "O DTO deveria ser nulo quando o produto é nulo");
     }
 }

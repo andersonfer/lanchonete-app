@@ -1,7 +1,6 @@
 package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ProdutoResponseDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.util.ProdutoMapper;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.BuscarProdutosPorCategoriaUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
@@ -26,7 +25,7 @@ public class BuscarProdutosPorCategoriaService implements BuscarProdutosPorCateg
         List<Produto> produtos = produtoRepositorio.buscarPorCategoria(categoria);
 
         return produtos.stream()
-                .map(ProdutoMapper::converterParaResponseDTO)
+                .map(ProdutoResponseDTO::converterParaDTO)
                 .collect(Collectors.toList());
     }
 

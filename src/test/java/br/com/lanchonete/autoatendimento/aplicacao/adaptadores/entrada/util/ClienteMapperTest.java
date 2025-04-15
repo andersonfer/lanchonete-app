@@ -21,7 +21,7 @@ class ClienteMapperTest {
                 .build();
 
 
-        ClienteResponseDTO dto = ClienteMapper.converterParaResponseDTO(cliente);
+        ClienteResponseDTO dto = ClienteResponseDTO.converterParaDTO(cliente);
 
 
         assertNotNull(dto, "O DTO não deveria ser nulo");
@@ -34,7 +34,7 @@ class ClienteMapperTest {
     @Test
     @DisplayName("Deve retornar null quando Cliente for null")
     void t2() {
-        ClienteResponseDTO dto = ClienteMapper.converterParaResponseDTO(null);
+        ClienteResponseDTO dto = ClienteResponseDTO.converterParaDTO(null);
         assertNull(dto, "O DTO deveria ser nulo quando o cliente é nulo");
     }
 }

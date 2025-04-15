@@ -2,7 +2,6 @@ package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ProdutoRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ProdutoResponseDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.util.ProdutoMapper;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.CriarProdutoUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
@@ -33,7 +32,7 @@ public class CriarProdutoService implements CriarProdutoUC {
 
         Produto produtoSalvo = produtoRepositorio.salvar(produto);
 
-        return ProdutoMapper.converterParaResponseDTO(produtoSalvo);
+        return ProdutoResponseDTO.converterParaDTO(produtoSalvo);
     }
 
     private void validarParametros(ProdutoRequestDTO produtoRequest) {

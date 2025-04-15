@@ -1,12 +1,10 @@
 package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteResponseDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.util.ClienteMapper;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.IdentificarClienteUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
-import br.com.lanchonete.autoatendimento.dominio.Produto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +22,7 @@ public class IdentificarClienteService implements IdentificarClienteUC {
         validarParametros(cpf);
 
          return Optional.ofNullable(clienteRepositorio.buscarPorCpf(cpf)
-                 .map(ClienteMapper::converterParaResponseDTO)
+                 .map(ClienteResponseDTO::converterParaDTO)
                  .orElseThrow(() -> new RecursoNaoEncontradoException("CPF não encontrado")));
 
     }

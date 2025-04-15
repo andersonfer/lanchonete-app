@@ -2,7 +2,6 @@ package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteResponseDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.util.ClienteMapper;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.CadastrarClienteUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
@@ -34,7 +33,7 @@ public class CadastrarClienteService implements CadastrarClienteUC {
 
         Cliente clienteSalvo = clienteRepositorio.salvar(cliente);
 
-        return ClienteMapper.converterParaResponseDTO(clienteSalvo);
+        return ClienteResponseDTO.converterParaDTO(clienteSalvo);
 
     }
 

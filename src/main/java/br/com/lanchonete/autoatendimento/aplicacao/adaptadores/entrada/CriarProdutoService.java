@@ -20,23 +20,23 @@ public class CriarProdutoService implements CriarProdutoUC {
     private final ProdutoRepositorio produtoRepositorio;
 
     @Override
-    public ProdutoResponseDTO criar(ProdutoRequestDTO produtoRequest) {
+    public ProdutoResponseDTO criar(ProdutoRequestDTO novoProduto) {
 
-        validarProduto(produtoRequest);
+        validarParametros(novoProduto);
 
-        Produto novoProduto = Produto.builder()
-                .nome(produtoRequest.getNome())
-                .descricao(produtoRequest.getDescricao())
-                .preco(produtoRequest.getPreco())
-                .categoria(produtoRequest.getCategoria())
+        Produto produto = Produto.builder()
+                .nome(novoProduto.getNome())
+                .descricao(novoProduto.getDescricao())
+                .preco(novoProduto.getPreco())
+                .categoria(novoProduto.getCategoria())
                 .build();
 
-        Produto produtoSalvo = produtoRepositorio.salvar(novoProduto);
+        Produto produtoSalvo = produtoRepositorio.salvar(produto);
 
         return ProdutoMapper.converterParaResponseDTO(produtoSalvo);
     }
 
-    private void validarProduto(ProdutoRequestDTO produtoRequest) {
+    private void validarParametros(ProdutoRequestDTO produtoRequest) {
         if (StringUtils.isBlank(produtoRequest.getNome())) {
             throw new ValidacaoException("Nome do produto é obrigatório");
         }

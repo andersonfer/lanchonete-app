@@ -1,6 +1,7 @@
 package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteResponseDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
 import br.com.lanchonete.autoatendimento.dominio.Cliente;
@@ -50,15 +51,17 @@ class IdentificarClienteServiceTest {
     }
 
     @Test
-    @DisplayName("Deve retornar vazio quando cliente não for encontrado pelo CPF")
+    @DisplayName("Deve lançar RecursoNaoEncontradoException ao informa cliente inexistente")
     void t2() {
         String cpf = "12345678910";
 
         when(clienteRepositorio.buscarPorCpf(cpf)).thenReturn(Optional.empty());
 
-        Optional<ClienteResponseDTO> resultado = identificarClienteService.identificar(cpf);
+        RecursoNaoEncontradoException excecao = assertThrows(RecursoNaoEncontradoException.class,
+                () -> identificarClienteService.identificar(cpf),
+                "Deveria lançar RecursoNaoEncontradoException para CPF inexistente");
 
-        assertTrue(resultado.isEmpty(), "O cliente não deveria estar presente");
+        assertEquals("CPF não encontrado", excecao.getMessage(), "A mensagem de exceção não está correta");
     }
 
     @Test

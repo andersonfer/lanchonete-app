@@ -21,7 +21,7 @@ public class BuscarProdutosPorCategoriaService implements BuscarProdutosPorCateg
 
     @Override
     public List<ProdutoResponseDTO> buscarProdutoPorCategoria(Categoria categoria) {
-        validarCategoria(categoria);
+        validarParametros(categoria);
 
         List<Produto> produtos = produtoRepositorio.buscarPorCategoria(categoria);
 
@@ -30,7 +30,7 @@ public class BuscarProdutosPorCategoriaService implements BuscarProdutosPorCateg
                 .collect(Collectors.toList());
     }
 
-    private void validarCategoria(Categoria categoria) {
+    private void validarParametros(Categoria categoria) {
         if (categoria == null) {
             throw new ValidacaoException("Categoria é obrigatória");
         }

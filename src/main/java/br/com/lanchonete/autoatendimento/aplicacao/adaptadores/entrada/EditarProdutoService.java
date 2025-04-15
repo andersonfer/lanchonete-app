@@ -21,26 +21,26 @@ public class EditarProdutoService implements EditarProdutoUC {
     private final ProdutoRepositorio produtoRepositorio;
 
     @Override
-    public ProdutoResponseDTO editar(Long id, ProdutoRequestDTO produtoRequest) {
+    public ProdutoResponseDTO editar(Long id, ProdutoRequestDTO produtoParaEditar) {
 
-        validarDadosProduto(id, produtoRequest);
+        validarParametros(id, produtoParaEditar);
 
         Produto produto = produtoRepositorio.buscarPorId(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Produto não encontrado"));
 
-        validarDuplicidade(produto, produtoRequest);
+        validarDuplicidade(produto, produtoParaEditar);
 
-        produto.setNome(produtoRequest.getNome());
-        produto.setDescricao(produtoRequest.getDescricao());
-        produto.setPreco(produtoRequest.getPreco());
-        produto.setCategoria(produtoRequest.getCategoria());
+        produto.setNome(produtoParaEditar.getNome());
+        produto.setDescricao(produtoParaEditar.getDescricao());
+        produto.setPreco(produtoParaEditar.getPreco());
+        produto.setCategoria(produtoParaEditar.getCategoria());
 
         Produto produtoAtualizado = produtoRepositorio.atualizar(produto);
 
         return ProdutoMapper.converterParaResponseDTO(produtoAtualizado);
     }
 
-    private void validarDadosProduto(Long idAtual, ProdutoRequestDTO produtoRequest) {
+    private void validarParametros(Long idAtual, ProdutoRequestDTO produtoRequest) {
 
         if (idAtual == null) {
             throw new ValidacaoException("ID do produto é obrigatório");

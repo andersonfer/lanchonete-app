@@ -18,11 +18,13 @@ public class RemoverProdutoService implements RemoverProdutoUC {
 
     @Override
     public void remover(Long id) {
-        validarRemocao(id);
+
+        validarParametros(id);
+
         produtoRepositorio.remover(id);
     }
 
-    private void validarRemocao(Long id) {
+    private void validarParametros(Long id) {
         if (id == null) {
             throw new ValidacaoException("ID do produto é obrigatório");
         }

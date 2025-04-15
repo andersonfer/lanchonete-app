@@ -23,13 +23,9 @@ public class CadastrarClienteService implements CadastrarClienteUC {
     @Override
     public ClienteResponseDTO cadastrar(CadastrarClienteDTO novoCliente) {
 
-        validarDadosCliente(novoCliente);
+        validarParametros(novoCliente);
 
-        Optional<Cliente> clienteExistente = clienteRepositorio.buscarPorCpf(novoCliente.getCpf());
-        if (clienteExistente.isPresent()) {
-            throw new ValidacaoException("CPF duplicado");
-        }
-
+        validarDuplicidade(novoCliente);
 
         Cliente cliente = Cliente.builder()
                 .nome(novoCliente.getNome())
@@ -43,7 +39,7 @@ public class CadastrarClienteService implements CadastrarClienteUC {
 
     }
 
-    private void validarDadosCliente(CadastrarClienteDTO novoCliente) {
+    private void validarParametros(CadastrarClienteDTO novoCliente) {
         if (StringUtils.isBlank(novoCliente.getNome())) {
             throw new ValidacaoException("Nome é obrigatório");
         }
@@ -58,6 +54,13 @@ public class CadastrarClienteService implements CadastrarClienteUC {
         }
         if (!novoCliente.getCpf().matches("^\\d{11}$")) {
             throw new ValidacaoException("CPF deve conter 11 dígitos numéricos");
+        }
+    }
+
+    private void validarDuplicidade(CadastrarClienteDTO novoCliente){
+        Optional<Cliente> clienteExistente = clienteRepositorio.buscarPorCpf(novoCliente.getCpf());
+        if (clienteExistente.isPresent()) {
+            throw new ValidacaoException("CPF duplicado");
         }
     }
 }

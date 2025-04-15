@@ -23,11 +23,13 @@ class ClienteRepositorioJDBCTest {
 
     private final String CPF_JA_CASTRADADO = "12345678901";
 
+    private Cliente clientePreCadastrado;
+
     @BeforeEach
     void configurar() {
         clienteRepositorio = new ClienteRepositorioJDBC(jdbcTemplate);
 
-        Cliente clientePreCadastrado = Cliente.builder()
+        clientePreCadastrado = Cliente.builder()
                 .nome("João Silva")
                 .email("joao@email.com")
                 .cpf(CPF_JA_CASTRADADO)
@@ -85,10 +87,29 @@ class ClienteRepositorioJDBCTest {
         Cliente clienteComCpfDuplicado = Cliente.builder()
                 .nome("Pedro Santos")
                 .email("pedro@email.com")
-                .cpf("12345678901")
+                .cpf(CPF_JA_CASTRADADO)
                 .build();
 
         assertThrows(DataIntegrityViolationException.class, () -> clienteRepositorio.salvar(clienteComCpfDuplicado));
+    }
+
+    @Test
+    @DisplayName("Deve encontrar cliente por ID")
+    void t5() {
+        // Utiliza o cliente pré-cadastrado no @BeforeEach
+        Optional<Cliente> resultado = clienteRepositorio.buscarPorId(clientePreCadastrado.getId());
+
+        assertTrue(resultado.isPresent(), "Cliente deve ser encontrado pelo ID");
+        assertEquals(clientePreCadastrado.getNome(), resultado.get().getNome());
+        assertEquals(clientePreCadastrado.getEmail(), resultado.get().getEmail());
+        assertEquals(clientePreCadastrado.getCpf(), resultado.get().getCpf());
+    }
+
+    @Test
+    @DisplayName("Deve retornar vazio ao buscar ID inexistente")
+    void t6() {
+        Optional<Cliente> resultado = clienteRepositorio.buscarPorId(999L);
+        assertTrue(resultado.isEmpty(), "Não deve encontrar cliente com ID inexistente");
     }
 
 }

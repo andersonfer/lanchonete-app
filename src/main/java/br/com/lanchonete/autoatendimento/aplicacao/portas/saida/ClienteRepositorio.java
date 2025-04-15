@@ -7,4 +7,5 @@ import java.util.Optional;
 public interface ClienteRepositorio {
     Cliente salvar(Cliente cliente);
     Optional<Cliente> buscarPorCpf(String cpf);
+    Optional<Cliente> buscarPorId(Long id);
 }

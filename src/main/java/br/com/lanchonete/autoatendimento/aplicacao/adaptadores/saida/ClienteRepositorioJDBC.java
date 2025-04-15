@@ -2,6 +2,7 @@ package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.saida;
 
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
 import br.com.lanchonete.autoatendimento.dominio.Cliente;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
@@ -52,6 +53,17 @@ public class ClienteRepositorioJDBC implements ClienteRepositorio {
                     clienteRowMapper, cpf);
             return Optional.ofNullable(cliente);
         } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public Optional<Cliente> buscarPorId(Long id) {
+        try {
+            Cliente cliente = jdbcTemplate.queryForObject("SELECT * FROM cliente WHERE id = ?",
+                    clienteRowMapper, id);
+            return Optional.ofNullable(cliente);
+        } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
     }

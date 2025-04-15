@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {ProdutoServiceConfig.class})
-public class ProdutoServiceConfigTest {
+class ProdutoServiceConfigTest {
 
     @MockitoBean
     private ProdutoRepositorio produtoRepositorio;

@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Optional;
@@ -152,7 +151,7 @@ class CadastrarClienteServiceTest {
         ValidacaoException ex = assertThrows(ValidacaoException.class,
                 () -> cadastrarClienteService.cadastrar(clienteValido));
 
-        assertTrue(ex.getMessage().equals("CPF duplicado"));
+        assertEquals("CPF duplicado",ex.getMessage());
 
         verify(clienteRepositorio, never()).salvar(any(Cliente.class));
     }

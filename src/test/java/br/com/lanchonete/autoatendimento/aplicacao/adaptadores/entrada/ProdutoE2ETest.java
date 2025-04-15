@@ -18,7 +18,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -101,7 +100,7 @@ class ProdutoE2ETest {
                 .build();
 
 
-        MvcResult resultado = mockMvc.perform(put("/produtos/{id}", produtoPreCadastrado.getId())
+        mockMvc.perform(put("/produtos/{id}", produtoPreCadastrado.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requisicao)))
                 .andExpect(status().isOk())
@@ -155,7 +154,7 @@ class ProdutoE2ETest {
         produtoRepositorio.salvar(novaBebiba);
 
         // Busca produtos da categoria LANCHE
-        MvcResult resultadoLanche = mockMvc.perform(get("/produtos/categoria/{categoria}", "LANCHE"))
+        mockMvc.perform(get("/produtos/categoria/{categoria}", "LANCHE"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$").isArray())
@@ -163,7 +162,7 @@ class ProdutoE2ETest {
                 .andReturn();
 
         // Busca produtos da categoria BEBIDA
-        MvcResult resultadoBebida = mockMvc.perform(get("/produtos/categoria/{categoria}", "BEBIDA"))
+        mockMvc.perform(get("/produtos/categoria/{categoria}", "BEBIDA"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$").isArray())

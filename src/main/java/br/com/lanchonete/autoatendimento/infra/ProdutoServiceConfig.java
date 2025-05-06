@@ -4,7 +4,7 @@ import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto.BuscarProd
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto.CriarProduto;
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto.EditarProduto;
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto.RemoverProduto;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.aplicacao.repositorios.ProdutoRepositorio;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

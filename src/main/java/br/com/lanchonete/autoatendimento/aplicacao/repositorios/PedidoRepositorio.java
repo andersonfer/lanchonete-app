@@ -1,4 +1,4 @@
-package br.com.lanchonete.autoatendimento.aplicacao.portas.saida;
+package br.com.lanchonete.autoatendimento.aplicacao.repositorios;
 
 import br.com.lanchonete.autoatendimento.aplicacao.dominio.Pedido;
 import br.com.lanchonete.autoatendimento.aplicacao.dominio.StatusPedido;

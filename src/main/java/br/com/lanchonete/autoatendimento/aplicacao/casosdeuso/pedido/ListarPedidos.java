@@ -1,7 +1,7 @@
 package br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.PedidoResponseDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.PedidoRepositorio;
+import br.com.lanchonete.autoatendimento.aplicacao.repositorios.PedidoRepositorio;
 import br.com.lanchonete.autoatendimento.aplicacao.dominio.Pedido;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -4,9 +4,9 @@ import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ItemP
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.PedidoRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.PedidoResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.dominio.*;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.PedidoRepositorio;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.aplicacao.repositorios.ClienteRepositorio;
+import br.com.lanchonete.autoatendimento.aplicacao.repositorios.PedidoRepositorio;
+import br.com.lanchonete.autoatendimento.aplicacao.repositorios.ProdutoRepositorio;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

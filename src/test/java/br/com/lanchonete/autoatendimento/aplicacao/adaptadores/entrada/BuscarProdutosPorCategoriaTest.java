@@ -3,7 +3,7 @@ package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ProdutoResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto.BuscarProdutosPorCategoria;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.aplicacao.repositorios.ProdutoRepositorio;
 import br.com.lanchonete.autoatendimento.aplicacao.dominio.Categoria;
 import br.com.lanchonete.autoatendimento.aplicacao.dominio.Produto;
 import org.junit.jupiter.api.BeforeEach;

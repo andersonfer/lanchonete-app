@@ -5,7 +5,7 @@ import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.Produ
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto.EditarProduto;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.aplicacao.repositorios.ProdutoRepositorio;
 import br.com.lanchonete.autoatendimento.aplicacao.dominio.Categoria;
 import br.com.lanchonete.autoatendimento.aplicacao.dominio.Produto;
 import org.junit.jupiter.api.BeforeEach;

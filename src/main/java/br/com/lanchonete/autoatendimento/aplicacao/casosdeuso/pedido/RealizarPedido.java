@@ -6,9 +6,9 @@ import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.Pedid
 import br.com.lanchonete.autoatendimento.aplicacao.dominio.*;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.PedidoRepositorio;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.aplicacao.repositorios.ClienteRepositorio;
+import br.com.lanchonete.autoatendimento.aplicacao.repositorios.PedidoRepositorio;
+import br.com.lanchonete.autoatendimento.aplicacao.repositorios.ProdutoRepositorio;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;

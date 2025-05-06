@@ -1,7 +1,7 @@
 package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.saida;
 
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RegistroNaoEncontradoException;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.aplicacao.repositorios.ProdutoRepositorio;
 import br.com.lanchonete.autoatendimento.aplicacao.dominio.Categoria;
 import br.com.lanchonete.autoatendimento.aplicacao.dominio.Produto;
 import org.springframework.dao.EmptyResultDataAccessException;

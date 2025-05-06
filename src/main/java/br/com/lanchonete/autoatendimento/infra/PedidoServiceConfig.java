@@ -1,7 +1,7 @@
 package br.com.lanchonete.autoatendimento.infra;
 
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.ListarPedidos;
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.RealizarCheckout;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.RealizarPedido;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.PedidoRepositorio;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
@@ -17,9 +17,9 @@ public class PedidoServiceConfig {
     }
 
     @Bean
-    public RealizarCheckout realizarCheckout(PedidoRepositorio pedidoRepositorio,
-                                                    ClienteRepositorio clienteRepositorio,
-                                                    ProdutoRepositorio produtoRepositorio) {
-        return new RealizarCheckout(pedidoRepositorio, clienteRepositorio, produtoRepositorio);
+    public RealizarPedido realizarPedido(PedidoRepositorio pedidoRepositorio,
+                                           ClienteRepositorio clienteRepositorio,
+                                           ProdutoRepositorio produtoRepositorio) {
+        return new RealizarPedido(pedidoRepositorio, clienteRepositorio, produtoRepositorio);
     }
 }

@@ -3,7 +3,7 @@ package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.PedidoRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.PedidoResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.ListarPedidosUC;
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.RealizarCheckoutUC;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.RealizarPedidoUC;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,7 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PedidoController {
 
-    private final RealizarCheckoutUC realizarCheckoutUC;
+    private final RealizarPedidoUC realizarPedidoUC;
     private final ListarPedidosUC listarPedidosUC;
 
     @PostMapping("/checkout")
@@ -34,7 +34,7 @@ public class PedidoController {
             }
     )
     public ResponseEntity<PedidoResponseDTO> realizarCheckout(@RequestBody PedidoRequestDTO pedidoRequest) {
-        PedidoResponseDTO pedidoResponse = realizarCheckoutUC.executar(pedidoRequest);
+        PedidoResponseDTO pedidoResponse = realizarPedidoUC.executar(pedidoRequest);
         return new ResponseEntity<>(pedidoResponse, HttpStatus.CREATED);
     }
 

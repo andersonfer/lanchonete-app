@@ -7,7 +7,7 @@ import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.Pedid
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.ListarPedidosUC;
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.RealizarCheckoutUC;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.RealizarPedidoUC;
 import br.com.lanchonete.autoatendimento.dominio.StatusPedido;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,7 +42,7 @@ class PedidoControllerTest {
     private ObjectMapper objectMapper;
 
     @MockitoBean
-    private RealizarCheckoutUC realizarCheckoutUC;
+    private RealizarPedidoUC realizarPedidoUC;
 
     @MockitoBean
     private ListarPedidosUC listarPedidosUC;
@@ -94,7 +94,7 @@ class PedidoControllerTest {
     @DisplayName("Deve realizar checkout com sucesso")
     void t1() throws Exception {
         // Mock do serviço
-        when(realizarCheckoutUC.executar(any(PedidoRequestDTO.class)))
+        when(realizarPedidoUC.executar(any(PedidoRequestDTO.class)))
                 .thenReturn(pedidoResponse);
 
         // Executar e verificar
@@ -110,14 +110,14 @@ class PedidoControllerTest {
                 .andExpect(jsonPath("$.itens.length()").value(2));
 
         // Verificar que o serviço foi chamado
-        verify(realizarCheckoutUC).executar(any(PedidoRequestDTO.class));
+        verify(realizarPedidoUC).executar(any(PedidoRequestDTO.class));
     }
 
     @Test
     @DisplayName("Deve retornar erro 400 ao realizar checkout com dados inválidos")
     void t2() throws Exception {
         // Mock do serviço lançando exceção de validação
-        when(realizarCheckoutUC.executar(any(PedidoRequestDTO.class)))
+        when(realizarPedidoUC.executar(any(PedidoRequestDTO.class)))
                 .thenThrow(new ValidacaoException("Pedido deve conter pelo menos um item"));
 
         // Executar e verificar
@@ -128,14 +128,14 @@ class PedidoControllerTest {
                 .andExpect(content().string("Pedido deve conter pelo menos um item"));
 
         // Verificar que o serviço foi chamado
-        verify(realizarCheckoutUC).executar(any(PedidoRequestDTO.class));
+        verify(realizarPedidoUC).executar(any(PedidoRequestDTO.class));
     }
 
     @Test
     @DisplayName("Deve retornar erro 404 ao realizar checkout com cliente ou produto não encontrado")
     void t3() throws Exception {
         // Mock do serviço lançando exceção de recurso não encontrado
-        when(realizarCheckoutUC.executar(any(PedidoRequestDTO.class)))
+        when(realizarPedidoUC.executar(any(PedidoRequestDTO.class)))
                 .thenThrow(new RecursoNaoEncontradoException("Cliente não encontrado com o CPF informado"));
 
         // Executar e verificar
@@ -145,7 +145,7 @@ class PedidoControllerTest {
                 .andExpect(status().isNotFound());
 
         // Verificar que o serviço foi chamado
-        verify(realizarCheckoutUC).executar(any(PedidoRequestDTO.class));
+        verify(realizarPedidoUC).executar(any(PedidoRequestDTO.class));
     }
 
     @Test

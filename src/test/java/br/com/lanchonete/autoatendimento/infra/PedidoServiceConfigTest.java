@@ -1,7 +1,7 @@
 package br.com.lanchonete.autoatendimento.infra;
 
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.ListarPedidos;
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.RealizarCheckout;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.RealizarPedido;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.PedidoRepositorio;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
@@ -28,7 +28,7 @@ class PedidoServiceConfigTest {
     private ProdutoRepositorio produtoRepositorio;
 
     @Autowired
-    private RealizarCheckout realizarCheckout;
+    private RealizarPedido realizarCheckout;
 
     @Autowired
     private ListarPedidos listarPedidos;

@@ -20,7 +20,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class RealizarCheckout implements RealizarCheckoutUC {
+public class RealizarPedido implements RealizarPedidoUC {
 
     private final PedidoRepositorio pedidoRepositorio;
     private final ClienteRepositorio clienteRepositorio;

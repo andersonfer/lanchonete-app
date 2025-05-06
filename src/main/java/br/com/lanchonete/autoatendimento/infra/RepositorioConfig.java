@@ -1,8 +1,8 @@
 package br.com.lanchonete.autoatendimento.infra;
 
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.saida.ClienteRepositorioJDBC;
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.saida.PedidoRepositorioJDBC;
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.saida.ProdutoRepositorioJDBC;
+import br.com.lanchonete.autoatendimento.adaptadores.repositorios.ClienteRepositorioJDBC;
+import br.com.lanchonete.autoatendimento.adaptadores.repositorios.PedidoRepositorioJDBC;
+import br.com.lanchonete.autoatendimento.adaptadores.repositorios.ProdutoRepositorioJDBC;
 import br.com.lanchonete.autoatendimento.aplicacao.repositorios.ClienteRepositorio;
 import br.com.lanchonete.autoatendimento.aplicacao.repositorios.PedidoRepositorio;
 import br.com.lanchonete.autoatendimento.aplicacao.repositorios.ProdutoRepositorio;

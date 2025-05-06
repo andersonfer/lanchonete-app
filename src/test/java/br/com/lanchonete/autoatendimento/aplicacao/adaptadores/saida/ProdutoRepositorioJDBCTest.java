@@ -1,5 +1,6 @@
 package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.saida;
 
+import br.com.lanchonete.autoatendimento.adaptadores.repositorios.ProdutoRepositorioJDBC;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RegistroNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.dominio.Categoria;
 import br.com.lanchonete.autoatendimento.aplicacao.dominio.Produto;

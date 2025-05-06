@@ -3,6 +3,7 @@ package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ItemPedidoDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.PedidoRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.PedidoResponseDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.RealizarCheckout;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
@@ -28,7 +29,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
-class RealizarCheckoutServiceTest {
+class RealizarCheckoutTest {
 
     @Mock
     private PedidoRepositorio pedidoRepositorio;
@@ -40,7 +41,7 @@ class RealizarCheckoutServiceTest {
     private ProdutoRepositorio produtoRepositorio;
 
     @InjectMocks
-    private RealizarCheckoutService realizarCheckoutService;
+    private RealizarCheckout realizarCheckout;
 
     private Cliente cliente;
     private PedidoRequestDTO pedidoComCliente;
@@ -105,7 +106,7 @@ class RealizarCheckoutServiceTest {
     @DisplayName("Deve realizar checkout de pedido com cliente com sucesso")
     void t1() {
         // Executar o checkout
-        PedidoResponseDTO resposta = realizarCheckoutService.checkout(pedidoComCliente);
+        PedidoResponseDTO resposta = realizarCheckout.checkout(pedidoComCliente);
 
         // Verificações
         assertNotNull(resposta, "A resposta não deveria ser nula");
@@ -131,7 +132,7 @@ class RealizarCheckoutServiceTest {
     @DisplayName("Deve realizar checkout de pedido sem cliente com sucesso")
     void t2() {
         // Executar o checkout
-        PedidoResponseDTO resposta = realizarCheckoutService.checkout(pedidoSemCliente);
+        PedidoResponseDTO resposta = realizarCheckout.checkout(pedidoSemCliente);
 
         // Verificações
         assertNotNull(resposta, "A resposta não deveria ser nula");
@@ -162,7 +163,7 @@ class RealizarCheckoutServiceTest {
         // Verificar exceção
         RecursoNaoEncontradoException exception = assertThrows(
                 RecursoNaoEncontradoException.class,
-                () -> realizarCheckoutService.checkout(pedidoRequestClienteInexistente),
+                () -> realizarCheckout.checkout(pedidoRequestClienteInexistente),
                 "Deveria lançar exceção para cliente não encontrado"
         );
 
@@ -188,7 +189,7 @@ class RealizarCheckoutServiceTest {
         // Verificar exceção
         RecursoNaoEncontradoException exception = assertThrows(
                 RecursoNaoEncontradoException.class,
-                () -> realizarCheckoutService.checkout(pedidoRequestProdutoInexistente),
+                () -> realizarCheckout.checkout(pedidoRequestProdutoInexistente),
                 "Deveria lançar exceção para produto não encontrado"
         );
 
@@ -211,7 +212,7 @@ class RealizarCheckoutServiceTest {
         // Verificar exceção
         ValidacaoException exception = assertThrows(
                 ValidacaoException.class,
-                () -> realizarCheckoutService.checkout(pedidoRequestSemItens),
+                () -> realizarCheckout.checkout(pedidoRequestSemItens),
                 "Deveria lançar exceção para pedido sem itens"
         );
 
@@ -234,7 +235,7 @@ class RealizarCheckoutServiceTest {
         // Verificar exceção
         ValidacaoException exception = assertThrows(
                 ValidacaoException.class,
-                () -> realizarCheckoutService.checkout(pedidoRequestQuantidadeZero),
+                () -> realizarCheckout.checkout(pedidoRequestQuantidadeZero),
                 "Deveria lançar exceção para quantidade zero"
         );
 

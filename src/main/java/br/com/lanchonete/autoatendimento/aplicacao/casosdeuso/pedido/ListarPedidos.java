@@ -1,7 +1,6 @@
-package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
+package br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.PedidoResponseDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.ListarPedidosUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.PedidoRepositorio;
 import br.com.lanchonete.autoatendimento.dominio.Pedido;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +11,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class ListarPedidosService implements ListarPedidosUC {
+public class ListarPedidos implements ListarPedidosUC {
 
     private final PedidoRepositorio pedidoRepositorio;
 

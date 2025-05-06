@@ -1,6 +1,7 @@
 package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.PedidoResponseDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.ListarPedidos;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.PedidoRepositorio;
 import br.com.lanchonete.autoatendimento.dominio.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,13 +23,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
-class ListarPedidosServiceTest {
+class ListarPedidosTest {
 
     @Mock
     private PedidoRepositorio pedidoRepositorio;
 
     @InjectMocks
-    private ListarPedidosService listarPedidosService;
+    private ListarPedidos listarPedidos;
 
     private Pedido pedidoComCliente;
     private Pedido pedidoSemCliente;
@@ -110,7 +111,7 @@ class ListarPedidosServiceTest {
         when(pedidoRepositorio.listarTodos()).thenReturn(Arrays.asList(pedidoComCliente, pedidoSemCliente));
 
         // Executar o serviço
-        List<PedidoResponseDTO> pedidos = listarPedidosService.listarTodos();
+        List<PedidoResponseDTO> pedidos = listarPedidos.listarTodos();
 
         // Verificações
         assertNotNull(pedidos, "A lista de pedidos não deve ser nula");
@@ -145,7 +146,7 @@ class ListarPedidosServiceTest {
         when(pedidoRepositorio.listarTodos()).thenReturn(Collections.emptyList());
 
         // Executar o serviço
-        List<PedidoResponseDTO> pedidos = listarPedidosService.listarTodos();
+        List<PedidoResponseDTO> pedidos = listarPedidos.listarTodos();
 
         // Verificações
         assertNotNull(pedidos, "A lista de pedidos não deve ser nula");

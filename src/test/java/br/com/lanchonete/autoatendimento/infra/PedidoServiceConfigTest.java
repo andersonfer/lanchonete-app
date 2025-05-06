@@ -1,7 +1,7 @@
 package br.com.lanchonete.autoatendimento.infra;
 
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.ListarPedidosService;
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.RealizarCheckoutService;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.ListarPedidos;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.RealizarCheckout;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.PedidoRepositorio;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
@@ -28,15 +28,15 @@ class PedidoServiceConfigTest {
     private ProdutoRepositorio produtoRepositorio;
 
     @Autowired
-    private RealizarCheckoutService realizarCheckoutService;
+    private RealizarCheckout realizarCheckout;
 
     @Autowired
-    private ListarPedidosService listarPedidosService;
+    private ListarPedidos listarPedidos;
 
     @Test
     void t1() {
-        assertNotNull(realizarCheckoutService);
-        assertNotNull(listarPedidosService);
+        assertNotNull(realizarCheckout);
+        assertNotNull(listarPedidos);
     }
 
 }

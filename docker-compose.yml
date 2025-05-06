@@ -9,13 +9,18 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
       - SERVER_PORT=8080
+      # Desabilitar o console H2
+      - SPRING_H2_CONSOLE_ENABLED=false
+      # Configurações do PostgreSQL
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/lanchonetedb
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
       - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
       - SPRING_JPA_DATABASE-PLATFORM=org.hibernate.dialect.PostgreSQLDialect
+      # Configurações de perfil e inicialização
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_SQL_INIT_PLATFORM=postgresql
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
     depends_on:
       - db

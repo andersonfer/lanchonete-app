@@ -1,7 +1,7 @@
 package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.PedidoResponseDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.ListarPedidos;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.impl.pedido.ListarPedidos;
 import br.com.lanchonete.autoatendimento.aplicacao.dominio.*;
 import br.com.lanchonete.autoatendimento.aplicacao.repositorios.PedidoRepositorio;
 import org.junit.jupiter.api.BeforeEach;

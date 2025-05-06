@@ -4,8 +4,8 @@ import br.com.lanchonete.autoatendimento.adaptadores.controladores.ClienteContro
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.cliente.CadastrarClienteCasoDeUso;
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.cliente.IdentificarClienteCasoDeUso;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.interfaces.cliente.CadastrarClienteCasoDeUso;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.interfaces.cliente.IdentificarClienteCasoDeUso;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

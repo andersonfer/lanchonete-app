@@ -1,6 +1,7 @@
-package br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto;
+package br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.impl.produto;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ProdutoResponseDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.interfaces.produto.BuscarProdutosPorCategoriaUC;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.repositorios.ProdutoRepositorio;
 import br.com.lanchonete.autoatendimento.aplicacao.dominio.Categoria;

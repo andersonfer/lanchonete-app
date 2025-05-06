@@ -1,7 +1,7 @@
 package br.com.lanchonete.autoatendimento.infra;
 
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.ListarPedidos;
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.RealizarPedido;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.impl.pedido.ListarPedidos;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.impl.pedido.RealizarPedido;
 import br.com.lanchonete.autoatendimento.aplicacao.repositorios.ClienteRepositorio;
 import br.com.lanchonete.autoatendimento.aplicacao.repositorios.PedidoRepositorio;
 import br.com.lanchonete.autoatendimento.aplicacao.repositorios.ProdutoRepositorio;

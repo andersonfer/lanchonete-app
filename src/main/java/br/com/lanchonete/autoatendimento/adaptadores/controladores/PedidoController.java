@@ -2,8 +2,8 @@ package br.com.lanchonete.autoatendimento.adaptadores.controladores;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.PedidoRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.PedidoResponseDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.ListarPedidosUC;
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.RealizarPedidoUC;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.interfaces.pedido.ListarPedidosUC;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.interfaces.pedido.RealizarPedidoUC;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;

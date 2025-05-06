@@ -1,9 +1,9 @@
 package br.com.lanchonete.autoatendimento.infra;
 
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.BuscarProdutosPorCategoriaService;
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.CriarProdutoService;
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.EditarProdutoService;
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.RemoverProdutoService;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto.BuscarProdutosPorCategoria;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto.CriarProduto;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto.EditarProduto;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto.RemoverProduto;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,22 +12,22 @@ import org.springframework.context.annotation.Configuration;
 public class ProdutoServiceConfig {
 
     @Bean
-    public BuscarProdutosPorCategoriaService buscarProdutosPorCategoriaService(ProdutoRepositorio produtoRepositorio) {
-        return new BuscarProdutosPorCategoriaService(produtoRepositorio);
+    public BuscarProdutosPorCategoria buscarProdutosPorCategoria(ProdutoRepositorio produtoRepositorio) {
+        return new BuscarProdutosPorCategoria(produtoRepositorio);
     }
 
     @Bean
-    public CriarProdutoService criarProdutoService(ProdutoRepositorio produtoRepositorio) {
-        return new CriarProdutoService(produtoRepositorio);
+    public CriarProduto criarProduto(ProdutoRepositorio produtoRepositorio) {
+        return new CriarProduto(produtoRepositorio);
     }
 
     @Bean
-    public EditarProdutoService editarProdutoService(ProdutoRepositorio produtoRepositorio) {
-        return new EditarProdutoService(produtoRepositorio);
+    public EditarProduto editarProduto(ProdutoRepositorio produtoRepositorio) {
+        return new EditarProduto(produtoRepositorio);
     }
 
     @Bean
-    public RemoverProdutoService removerProdutoService(ProdutoRepositorio produtoRepositorio) {
-        return new RemoverProdutoService(produtoRepositorio);
+    public RemoverProduto removerProduto(ProdutoRepositorio produtoRepositorio) {
+        return new RemoverProduto(produtoRepositorio);
     }
 }

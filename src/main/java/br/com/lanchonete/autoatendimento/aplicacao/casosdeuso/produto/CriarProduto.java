@@ -1,9 +1,8 @@
-package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
+package br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ProdutoRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ProdutoResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.CriarProdutoUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
 import br.com.lanchonete.autoatendimento.dominio.Produto;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +13,7 @@ import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
-public class CriarProdutoService implements CriarProdutoUC {
+public class CriarProduto implements CriarProdutoUC {
 
     private final ProdutoRepositorio produtoRepositorio;
 

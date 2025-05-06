@@ -1,8 +1,7 @@
-package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
+package br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto;
 
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.RemoverProdutoUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
 import br.com.lanchonete.autoatendimento.dominio.Produto;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +11,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class RemoverProdutoService implements RemoverProdutoUC {
+public class RemoverProduto implements RemoverProdutoUC {
 
     private final ProdutoRepositorio produtoRepositorio;
 

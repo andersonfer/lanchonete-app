@@ -2,6 +2,7 @@ package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ProdutoRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ProdutoResponseDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto.CriarProduto;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
 import br.com.lanchonete.autoatendimento.dominio.Categoria;
@@ -21,13 +22,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
-class CriarProdutoServiceTest {
+class CriarProdutoTest {
 
     @Mock
     private ProdutoRepositorio produtoRepositorio;
 
     @InjectMocks
-    private CriarProdutoService criarProdutoService;
+    private CriarProduto criarProduto;
 
     private ProdutoRequestDTO produtoValido;
     private Produto produtoSalvo;
@@ -55,7 +56,7 @@ class CriarProdutoServiceTest {
         when(produtoRepositorio.salvar(any(Produto.class))).thenReturn(produtoSalvo);
 
         // Act
-        ProdutoResponseDTO response = criarProdutoService.criar(produtoValido);
+        ProdutoResponseDTO response = criarProduto.criar(produtoValido);
 
         // Assert
         assertNotNull(response, "A resposta não deveria ser nula");
@@ -76,7 +77,7 @@ class CriarProdutoServiceTest {
 
         // Act & Assert
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> criarProdutoService.criar(produtoValido),
+                () -> criarProduto.criar(produtoValido),
                 "Deveria lançar uma exceção para nome duplicado");
 
         assertEquals("Já existe um produto com este nome", exception.getMessage(),
@@ -95,7 +96,7 @@ class CriarProdutoServiceTest {
 
         // Act & Assert
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> criarProdutoService.criar(produtoSemNome),
+                () -> criarProduto.criar(produtoSemNome),
                 "Deveria lançar uma exceção para nome vazio");
 
         assertEquals("Nome do produto é obrigatório", exception.getMessage(),
@@ -114,7 +115,7 @@ class CriarProdutoServiceTest {
 
         // Act & Assert
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> criarProdutoService.criar(produtoSemPreco),
+                () -> criarProduto.criar(produtoSemPreco),
                 "Deveria lançar uma exceção para preço nulo");
 
         assertEquals("Preço do produto é obrigatório", exception.getMessage(),
@@ -134,7 +135,7 @@ class CriarProdutoServiceTest {
 
         // Act & Assert
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> criarProdutoService.criar(produtoPrecoZero),
+                () -> criarProduto.criar(produtoPrecoZero),
                 "Deveria lançar uma exceção para preço zero");
 
         assertEquals("Preço deve ser maior que zero", exception.getMessage(),
@@ -145,7 +146,7 @@ class CriarProdutoServiceTest {
                 "Refrigerante de cola 350ml", new BigDecimal("-5.00"), Categoria.BEBIDA);
 
         ValidacaoException exception2 = assertThrows(ValidacaoException.class,
-                () -> criarProdutoService.criar(produtoPrecoNegativo),
+                () -> criarProduto.criar(produtoPrecoNegativo),
                 "Deveria lançar uma exceção para preço negativo");
 
         assertEquals("Preço deve ser maior que zero", exception2.getMessage(),
@@ -164,7 +165,7 @@ class CriarProdutoServiceTest {
 
         // Act & Assert
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> criarProdutoService.criar(produtoSemCategoria),
+                () -> criarProduto.criar(produtoSemCategoria),
                 "Deveria lançar uma exceção para categoria nula");
 
         assertEquals("Categoria do produto é obrigatória", exception.getMessage(),

@@ -1,6 +1,7 @@
 package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ProdutoResponseDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto.BuscarProdutosPorCategoria;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
 import br.com.lanchonete.autoatendimento.dominio.Categoria;
@@ -22,13 +23,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
-class BuscarProdutosPorCategoriaServiceTest {
+class BuscarProdutosPorCategoriaTest {
 
     @Mock
     private ProdutoRepositorio produtoRepositorio;
 
     @InjectMocks
-    private BuscarProdutosPorCategoriaService buscarProdutosPorCategoriaService;
+    private BuscarProdutosPorCategoria buscarProdutosPorCategoria;
 
     private List<Produto> produtosLanche;
 
@@ -59,7 +60,7 @@ class BuscarProdutosPorCategoriaServiceTest {
         when(produtoRepositorio.buscarPorCategoria(Categoria.LANCHE)).thenReturn(produtosLanche);
 
 
-        List<ProdutoResponseDTO> resultado = buscarProdutosPorCategoriaService.buscarProdutoPorCategoria(Categoria.LANCHE);
+        List<ProdutoResponseDTO> resultado = buscarProdutosPorCategoria.buscarProdutoPorCategoria(Categoria.LANCHE);
 
 
         assertNotNull(resultado, "O resultado não deve ser nulo");
@@ -89,7 +90,7 @@ class BuscarProdutosPorCategoriaServiceTest {
         when(produtoRepositorio.buscarPorCategoria(Categoria.SOBREMESA)).thenReturn(Collections.emptyList());
 
 
-        List<ProdutoResponseDTO> resultado = buscarProdutosPorCategoriaService.buscarProdutoPorCategoria(Categoria.SOBREMESA);
+        List<ProdutoResponseDTO> resultado = buscarProdutosPorCategoria.buscarProdutoPorCategoria(Categoria.SOBREMESA);
 
 
         assertNotNull(resultado, "O resultado não deve ser nulo");
@@ -103,7 +104,7 @@ class BuscarProdutosPorCategoriaServiceTest {
     void t3() {
 
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> buscarProdutosPorCategoriaService.buscarProdutoPorCategoria(null),
+                () -> buscarProdutosPorCategoria.buscarProdutoPorCategoria(null),
                 "Deveria lançar exceção para categoria nula");
 
         assertEquals("Categoria é obrigatória", exception.getMessage(),

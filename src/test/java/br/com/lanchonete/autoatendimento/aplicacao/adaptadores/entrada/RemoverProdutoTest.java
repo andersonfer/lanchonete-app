@@ -1,5 +1,6 @@
 package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto.RemoverProduto;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
@@ -20,13 +21,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
-class RemoverProdutoServiceTest {
+class RemoverProdutoTest {
 
     @Mock
     private ProdutoRepositorio produtoRepositorio;
 
     @InjectMocks
-    private RemoverProdutoService removerProdutoService;
+    private RemoverProduto removerProduto;
 
     private Produto produtoExistente;
 
@@ -48,7 +49,7 @@ class RemoverProdutoServiceTest {
         when(produtoRepositorio.buscarPorId(1L)).thenReturn(Optional.of(produtoExistente));
         doNothing().when(produtoRepositorio).remover(1L);
 
-        assertDoesNotThrow(() -> removerProdutoService.remover(1L),
+        assertDoesNotThrow(() -> removerProduto.remover(1L),
                 "Não deveria lançar exceção ao remover produto existente");
 
         verify(produtoRepositorio).buscarPorId(1L);
@@ -60,7 +61,7 @@ class RemoverProdutoServiceTest {
     void t2() {
 
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> removerProdutoService.remover(null),
+                () -> removerProduto.remover(null),
                 "Deveria lançar exceção para ID nulo");
 
         assertEquals("ID do produto é obrigatório", exception.getMessage(),
@@ -77,7 +78,7 @@ class RemoverProdutoServiceTest {
         when(produtoRepositorio.buscarPorId(999L)).thenReturn(Optional.empty());
 
         RecursoNaoEncontradoException exception = assertThrows(RecursoNaoEncontradoException.class,
-                () -> removerProdutoService.remover(999L),
+                () -> removerProduto.remover(999L),
                 "Deveria lançar exceção quando produto não existe");
 
         assertEquals("Produto não encontrado", exception.getMessage(),

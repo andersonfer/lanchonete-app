@@ -1,9 +1,9 @@
 package br.com.lanchonete.autoatendimento.infra;
 
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.BuscarProdutosPorCategoriaService;
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.CriarProdutoService;
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.EditarProdutoService;
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.RemoverProdutoService;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto.BuscarProdutosPorCategoria;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto.CriarProduto;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto.EditarProduto;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto.RemoverProduto;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,23 +23,23 @@ class ProdutoServiceConfigTest {
     private ProdutoRepositorio produtoRepositorio;
 
     @Autowired
-    private BuscarProdutosPorCategoriaService buscarProdutosPorCategoriaService;
+    private BuscarProdutosPorCategoria buscarProdutosPorCategoria;
 
     @Autowired
-    private CriarProdutoService criarProdutoService;
+    private CriarProduto criarProduto;
 
     @Autowired
-    private EditarProdutoService editarProdutoService;
+    private EditarProduto editarProduto;
 
     @Autowired
-    private RemoverProdutoService removerProdutoService;
+    private RemoverProduto removerProduto;
 
     @Test
     @DisplayName("Deve criar os beans dos UCs de produto")
     void t1() {
-        assertNotNull(criarProdutoService);
-        assertNotNull(editarProdutoService);
-        assertNotNull(removerProdutoService);
-        assertNotNull(buscarProdutosPorCategoriaService);
+        assertNotNull(criarProduto);
+        assertNotNull(editarProduto);
+        assertNotNull(removerProduto);
+        assertNotNull(buscarProdutosPorCategoria);
     }
 }

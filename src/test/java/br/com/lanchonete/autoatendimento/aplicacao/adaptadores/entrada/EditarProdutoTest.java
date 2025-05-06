@@ -2,6 +2,7 @@ package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ProdutoRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ProdutoResponseDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto.EditarProduto;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
@@ -23,13 +24,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
-class EditarProdutoServiceTest {
+class EditarProdutoTest {
 
     @Mock
     private ProdutoRepositorio produtoRepositorio;
 
     @InjectMocks
-    private EditarProdutoService editarProdutoService;
+    private EditarProduto editarProduto;
 
     private ProdutoRequestDTO produtoValido;
     private Produto produtoExistente;
@@ -68,7 +69,7 @@ class EditarProdutoServiceTest {
         when(produtoRepositorio.atualizar(any(Produto.class))).thenReturn(produtoAtualizado);
 
 
-        ProdutoResponseDTO response = editarProdutoService.editar(1L, produtoValido);
+        ProdutoResponseDTO response = editarProduto.editar(1L, produtoValido);
 
         assertNotNull(response, "A resposta não deveria ser nula");
         assertEquals(1L, response.id(), "O ID do produto atualizado deveria ser 1");
@@ -85,7 +86,7 @@ class EditarProdutoServiceTest {
     void t2() {
 
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> editarProdutoService.editar(null, produtoValido),
+                () -> editarProduto.editar(null, produtoValido),
                 "Deveria lançar uma exceção para ID nulo");
 
         assertEquals("ID do produto é obrigatório", exception.getMessage(),
@@ -103,7 +104,7 @@ class EditarProdutoServiceTest {
 
 
         assertThrows(RecursoNaoEncontradoException.class,
-                () -> editarProdutoService.editar(999L, produtoValido),
+                () -> editarProduto.editar(999L, produtoValido),
                 "Deveria lançar uma exceção quando o produto não existe");
 
         verify(produtoRepositorio).buscarPorId(999L);
@@ -133,7 +134,7 @@ class EditarProdutoServiceTest {
 
 
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> editarProdutoService.editar(2L, novoProdutoComNomeDuplicado),
+                () -> editarProduto.editar(2L, novoProdutoComNomeDuplicado),
                 "Deveria lançar uma exceção quando o nome já existe para outro produto");
 
         assertEquals("Já existe um produto com este nome", exception.getMessage(),
@@ -164,7 +165,7 @@ class EditarProdutoServiceTest {
         when(produtoRepositorio.atualizar(any(Produto.class))).thenReturn(produtoAtualizadoMesmoNome);
 
 
-        ProdutoResponseDTO response = editarProdutoService.editar(1L, produtoParaEditarMatendoNome);
+        ProdutoResponseDTO response = editarProduto.editar(1L, produtoParaEditarMatendoNome);
 
 
         assertNotNull(response);
@@ -188,7 +189,7 @@ class EditarProdutoServiceTest {
 
 
         ValidacaoException exceptionNome = assertThrows(ValidacaoException.class,
-                () -> editarProdutoService.editar(1L, produtoParaEditarNomeVazio),
+                () -> editarProduto.editar(1L, produtoParaEditarNomeVazio),
                 "Deveria lançar uma exceção para nome vazio");
 
         assertEquals("Nome do produto é obrigatório", exceptionNome.getMessage());
@@ -199,7 +200,7 @@ class EditarProdutoServiceTest {
 
 
         ValidacaoException exceptionPreco = assertThrows(ValidacaoException.class,
-                () -> editarProdutoService.editar(1L, produtoParaEditarPrecoNulo),
+                () -> editarProduto.editar(1L, produtoParaEditarPrecoNulo),
                 "Deveria lançar uma exceção para preço nulo");
 
         assertEquals("Preço do produto é obrigatório", exceptionPreco.getMessage());
@@ -210,7 +211,7 @@ class EditarProdutoServiceTest {
 
 
         ValidacaoException exceptionPrecoZero = assertThrows(ValidacaoException.class,
-                () -> editarProdutoService.editar(1L, produtoParaEditarPrecoZero),
+                () -> editarProduto.editar(1L, produtoParaEditarPrecoZero),
                 "Deveria lançar uma exceção para preço zero");
 
         assertEquals("Preço deve ser maior que zero", exceptionPrecoZero.getMessage());
@@ -220,7 +221,7 @@ class EditarProdutoServiceTest {
 
 
         ValidacaoException exceptionCategoria = assertThrows(ValidacaoException.class,
-                () -> editarProdutoService.editar(1L, produtoParaEditarCategoriaNula),
+                () -> editarProduto.editar(1L, produtoParaEditarCategoriaNula),
                 "Deveria lançar uma exceção para categoria nula");
 
         assertEquals("Categoria do produto é obrigatória", exceptionCategoria.getMessage());

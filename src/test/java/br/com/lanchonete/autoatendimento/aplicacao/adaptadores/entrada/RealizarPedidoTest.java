@@ -4,12 +4,12 @@ import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ItemP
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.PedidoRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.PedidoResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.RealizarPedido;
+import br.com.lanchonete.autoatendimento.aplicacao.dominio.*;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.PedidoRepositorio;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
-import br.com.lanchonete.autoatendimento.dominio.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -1,6 +1,6 @@
 package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto;
 
-import br.com.lanchonete.autoatendimento.dominio.ItemPedido;
+import br.com.lanchonete.autoatendimento.aplicacao.dominio.ItemPedido;
 
 import java.math.BigDecimal;
 

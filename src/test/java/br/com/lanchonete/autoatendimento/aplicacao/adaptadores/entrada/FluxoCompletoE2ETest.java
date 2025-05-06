@@ -2,9 +2,9 @@ package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.*;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
-import br.com.lanchonete.autoatendimento.dominio.Categoria;
-import br.com.lanchonete.autoatendimento.dominio.Produto;
-import br.com.lanchonete.autoatendimento.dominio.StatusPedido;
+import br.com.lanchonete.autoatendimento.aplicacao.dominio.Categoria;
+import br.com.lanchonete.autoatendimento.aplicacao.dominio.Produto;
+import br.com.lanchonete.autoatendimento.aplicacao.dominio.StatusPedido;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

@@ -1,7 +1,7 @@
 package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.saida;
 
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
-import br.com.lanchonete.autoatendimento.dominio.Cliente;
+import br.com.lanchonete.autoatendimento.aplicacao.dominio.Cliente;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;

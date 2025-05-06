@@ -1,7 +1,7 @@
 package br.com.lanchonete.autoatendimento.aplicacao.portas.saida;
 
-import br.com.lanchonete.autoatendimento.dominio.Categoria;
-import br.com.lanchonete.autoatendimento.dominio.Produto;
+import br.com.lanchonete.autoatendimento.aplicacao.dominio.Categoria;
+import br.com.lanchonete.autoatendimento.aplicacao.dominio.Produto;
 
 import java.util.List;
 import java.util.Optional;

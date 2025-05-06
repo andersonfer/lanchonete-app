@@ -5,7 +5,7 @@ import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.Clien
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.cliente.CadastrarCliente;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
-import br.com.lanchonete.autoatendimento.dominio.Cliente;
+import br.com.lanchonete.autoatendimento.aplicacao.dominio.Cliente;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

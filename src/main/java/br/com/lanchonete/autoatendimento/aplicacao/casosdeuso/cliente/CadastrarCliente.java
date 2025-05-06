@@ -4,7 +4,7 @@ import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.Clien
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
-import br.com.lanchonete.autoatendimento.dominio.Cliente;
+import br.com.lanchonete.autoatendimento.aplicacao.dominio.Cliente;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;

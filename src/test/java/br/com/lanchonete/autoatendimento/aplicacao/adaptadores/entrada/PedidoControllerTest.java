@@ -8,7 +8,7 @@ import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoE
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.ListarPedidosUC;
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.RealizarPedidoUC;
-import br.com.lanchonete.autoatendimento.dominio.StatusPedido;
+import br.com.lanchonete.autoatendimento.aplicacao.dominio.StatusPedido;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

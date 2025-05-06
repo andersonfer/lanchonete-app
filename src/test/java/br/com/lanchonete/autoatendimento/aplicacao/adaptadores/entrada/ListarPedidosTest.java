@@ -111,7 +111,7 @@ class ListarPedidosTest {
         when(pedidoRepositorio.listarTodos()).thenReturn(Arrays.asList(pedidoComCliente, pedidoSemCliente));
 
         // Executar o serviço
-        List<PedidoResponseDTO> pedidos = listarPedidos.listarTodos();
+        List<PedidoResponseDTO> pedidos = listarPedidos.executar();
 
         // Verificações
         assertNotNull(pedidos, "A lista de pedidos não deve ser nula");
@@ -146,7 +146,7 @@ class ListarPedidosTest {
         when(pedidoRepositorio.listarTodos()).thenReturn(Collections.emptyList());
 
         // Executar o serviço
-        List<PedidoResponseDTO> pedidos = listarPedidos.listarTodos();
+        List<PedidoResponseDTO> pedidos = listarPedidos.executar();
 
         // Verificações
         assertNotNull(pedidos, "A lista de pedidos não deve ser nula");

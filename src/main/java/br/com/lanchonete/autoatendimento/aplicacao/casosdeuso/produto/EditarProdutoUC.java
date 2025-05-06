@@ -4,5 +4,5 @@ import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.Produ
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ProdutoResponseDTO;
 
 public interface EditarProdutoUC {
-    ProdutoResponseDTO editar(Long id, ProdutoRequestDTO produtoRequest);
+    ProdutoResponseDTO executar(Long id, ProdutoRequestDTO produtoRequest);
 }

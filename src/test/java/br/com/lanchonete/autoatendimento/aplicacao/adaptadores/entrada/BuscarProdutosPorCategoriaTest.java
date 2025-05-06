@@ -60,7 +60,7 @@ class BuscarProdutosPorCategoriaTest {
         when(produtoRepositorio.buscarPorCategoria(Categoria.LANCHE)).thenReturn(produtosLanche);
 
 
-        List<ProdutoResponseDTO> resultado = buscarProdutosPorCategoria.buscarProdutoPorCategoria(Categoria.LANCHE);
+        List<ProdutoResponseDTO> resultado = buscarProdutosPorCategoria.executar(Categoria.LANCHE);
 
 
         assertNotNull(resultado, "O resultado não deve ser nulo");
@@ -90,7 +90,7 @@ class BuscarProdutosPorCategoriaTest {
         when(produtoRepositorio.buscarPorCategoria(Categoria.SOBREMESA)).thenReturn(Collections.emptyList());
 
 
-        List<ProdutoResponseDTO> resultado = buscarProdutosPorCategoria.buscarProdutoPorCategoria(Categoria.SOBREMESA);
+        List<ProdutoResponseDTO> resultado = buscarProdutosPorCategoria.executar(Categoria.SOBREMESA);
 
 
         assertNotNull(resultado, "O resultado não deve ser nulo");
@@ -104,7 +104,7 @@ class BuscarProdutosPorCategoriaTest {
     void t3() {
 
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> buscarProdutosPorCategoria.buscarProdutoPorCategoria(null),
+                () -> buscarProdutosPorCategoria.executar(null),
                 "Deveria lançar exceção para categoria nula");
 
         assertEquals("Categoria é obrigatória", exception.getMessage(),

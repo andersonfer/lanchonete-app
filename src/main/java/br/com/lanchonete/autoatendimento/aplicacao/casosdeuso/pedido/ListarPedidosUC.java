@@ -5,5 +5,5 @@ import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.Pedid
 import java.util.List;
 
 public interface ListarPedidosUC {
-    List<PedidoResponseDTO> listarTodos();
+    List<PedidoResponseDTO> executar();
 }

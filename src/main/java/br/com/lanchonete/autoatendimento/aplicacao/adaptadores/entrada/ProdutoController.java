@@ -38,7 +38,7 @@ public class ProdutoController {
             }
     )
     public ResponseEntity<ProdutoResponseDTO> criar(@RequestBody ProdutoRequestDTO produtoRequest) {
-        ProdutoResponseDTO produto = criarProdutoUC.criar(produtoRequest);
+        ProdutoResponseDTO produto = criarProdutoUC.executar(produtoRequest);
         return new ResponseEntity<>(produto, HttpStatus.CREATED);
     }
 
@@ -53,7 +53,7 @@ public class ProdutoController {
             }
     )
     public ResponseEntity<ProdutoResponseDTO> editar(@PathVariable Long id, @RequestBody ProdutoRequestDTO produtoRequest) {
-        ProdutoResponseDTO produto = editarProdutoUC.editar(id, produtoRequest);
+        ProdutoResponseDTO produto = editarProdutoUC.executar(id, produtoRequest);
         return ResponseEntity.ok(produto);
     }
 
@@ -67,7 +67,7 @@ public class ProdutoController {
             }
     )
     public ResponseEntity<Void> remover(@PathVariable Long id) {
-        removerProdutoUC.remover(id);
+        removerProdutoUC.executar(id);
         return ResponseEntity.noContent().build();
     }
 
@@ -81,7 +81,7 @@ public class ProdutoController {
             }
     )
     public ResponseEntity<List<ProdutoResponseDTO>> buscarPorCategoria(@PathVariable Categoria categoria) {
-        List<ProdutoResponseDTO> produtos = buscarProdutosPorCategoriaUC.buscarProdutoPorCategoria(categoria);
+        List<ProdutoResponseDTO> produtos = buscarProdutosPorCategoriaUC.executar(categoria);
         return ResponseEntity.ok(produtos);
     }
 }

@@ -34,7 +34,7 @@ public class PedidoController {
             }
     )
     public ResponseEntity<PedidoResponseDTO> realizarCheckout(@RequestBody PedidoRequestDTO pedidoRequest) {
-        PedidoResponseDTO pedidoResponse = realizarCheckoutUC.checkout(pedidoRequest);
+        PedidoResponseDTO pedidoResponse = realizarCheckoutUC.executar(pedidoRequest);
         return new ResponseEntity<>(pedidoResponse, HttpStatus.CREATED);
     }
 
@@ -47,7 +47,7 @@ public class PedidoController {
             }
     )
     public ResponseEntity<List<PedidoResponseDTO>> listarPedidos() {
-        List<PedidoResponseDTO> pedidos = listarPedidosUC.listarTodos();
+        List<PedidoResponseDTO> pedidos = listarPedidosUC.executar();
         return ResponseEntity.ok(pedidos);
     }
 }

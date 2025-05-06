@@ -6,5 +6,5 @@ import br.com.lanchonete.autoatendimento.dominio.Categoria;
 import java.util.List;
 
 public interface BuscarProdutosPorCategoriaUC {
-    List<ProdutoResponseDTO> buscarProdutoPorCategoria(Categoria categoria);
+    List<ProdutoResponseDTO> executar(Categoria categoria);
 }

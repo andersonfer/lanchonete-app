@@ -106,7 +106,7 @@ class RealizarCheckoutTest {
     @DisplayName("Deve realizar checkout de pedido com cliente com sucesso")
     void t1() {
         // Executar o checkout
-        PedidoResponseDTO resposta = realizarCheckout.checkout(pedidoComCliente);
+        PedidoResponseDTO resposta = realizarCheckout.executar(pedidoComCliente);
 
         // Verificações
         assertNotNull(resposta, "A resposta não deveria ser nula");
@@ -132,7 +132,7 @@ class RealizarCheckoutTest {
     @DisplayName("Deve realizar checkout de pedido sem cliente com sucesso")
     void t2() {
         // Executar o checkout
-        PedidoResponseDTO resposta = realizarCheckout.checkout(pedidoSemCliente);
+        PedidoResponseDTO resposta = realizarCheckout.executar(pedidoSemCliente);
 
         // Verificações
         assertNotNull(resposta, "A resposta não deveria ser nula");
@@ -163,7 +163,7 @@ class RealizarCheckoutTest {
         // Verificar exceção
         RecursoNaoEncontradoException exception = assertThrows(
                 RecursoNaoEncontradoException.class,
-                () -> realizarCheckout.checkout(pedidoRequestClienteInexistente),
+                () -> realizarCheckout.executar(pedidoRequestClienteInexistente),
                 "Deveria lançar exceção para cliente não encontrado"
         );
 
@@ -189,7 +189,7 @@ class RealizarCheckoutTest {
         // Verificar exceção
         RecursoNaoEncontradoException exception = assertThrows(
                 RecursoNaoEncontradoException.class,
-                () -> realizarCheckout.checkout(pedidoRequestProdutoInexistente),
+                () -> realizarCheckout.executar(pedidoRequestProdutoInexistente),
                 "Deveria lançar exceção para produto não encontrado"
         );
 
@@ -212,7 +212,7 @@ class RealizarCheckoutTest {
         // Verificar exceção
         ValidacaoException exception = assertThrows(
                 ValidacaoException.class,
-                () -> realizarCheckout.checkout(pedidoRequestSemItens),
+                () -> realizarCheckout.executar(pedidoRequestSemItens),
                 "Deveria lançar exceção para pedido sem itens"
         );
 
@@ -235,7 +235,7 @@ class RealizarCheckoutTest {
         // Verificar exceção
         ValidacaoException exception = assertThrows(
                 ValidacaoException.class,
-                () -> realizarCheckout.checkout(pedidoRequestQuantidadeZero),
+                () -> realizarCheckout.executar(pedidoRequestQuantidadeZero),
                 "Deveria lançar exceção para quantidade zero"
         );
 

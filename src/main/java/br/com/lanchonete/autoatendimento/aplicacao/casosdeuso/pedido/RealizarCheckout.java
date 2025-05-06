@@ -28,7 +28,7 @@ public class RealizarCheckout implements RealizarCheckoutUC {
 
     @Override
     @Transactional
-    public PedidoResponseDTO checkout(PedidoRequestDTO novoPedido) {
+    public PedidoResponseDTO executar(PedidoRequestDTO novoPedido) {
         
         validarPedido(novoPedido);
         

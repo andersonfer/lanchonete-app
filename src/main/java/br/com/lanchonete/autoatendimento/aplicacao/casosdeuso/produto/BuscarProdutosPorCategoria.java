@@ -18,7 +18,7 @@ public class BuscarProdutosPorCategoria implements BuscarProdutosPorCategoriaUC 
     private final ProdutoRepositorio produtoRepositorio;
 
     @Override
-    public List<ProdutoResponseDTO> buscarProdutoPorCategoria(Categoria categoria) {
+    public List<ProdutoResponseDTO> executar(Categoria categoria) {
         validarParametros(categoria);
 
         List<Produto> produtos = produtoRepositorio.buscarPorCategoria(categoria);

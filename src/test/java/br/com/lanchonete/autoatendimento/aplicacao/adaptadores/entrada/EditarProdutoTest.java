@@ -69,7 +69,7 @@ class EditarProdutoTest {
         when(produtoRepositorio.atualizar(any(Produto.class))).thenReturn(produtoAtualizado);
 
 
-        ProdutoResponseDTO response = editarProduto.editar(1L, produtoValido);
+        ProdutoResponseDTO response = editarProduto.executar(1L, produtoValido);
 
         assertNotNull(response, "A resposta não deveria ser nula");
         assertEquals(1L, response.id(), "O ID do produto atualizado deveria ser 1");
@@ -86,7 +86,7 @@ class EditarProdutoTest {
     void t2() {
 
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> editarProduto.editar(null, produtoValido),
+                () -> editarProduto.executar(null, produtoValido),
                 "Deveria lançar uma exceção para ID nulo");
 
         assertEquals("ID do produto é obrigatório", exception.getMessage(),
@@ -104,7 +104,7 @@ class EditarProdutoTest {
 
 
         assertThrows(RecursoNaoEncontradoException.class,
-                () -> editarProduto.editar(999L, produtoValido),
+                () -> editarProduto.executar(999L, produtoValido),
                 "Deveria lançar uma exceção quando o produto não existe");
 
         verify(produtoRepositorio).buscarPorId(999L);
@@ -134,7 +134,7 @@ class EditarProdutoTest {
 
 
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> editarProduto.editar(2L, novoProdutoComNomeDuplicado),
+                () -> editarProduto.executar(2L, novoProdutoComNomeDuplicado),
                 "Deveria lançar uma exceção quando o nome já existe para outro produto");
 
         assertEquals("Já existe um produto com este nome", exception.getMessage(),
@@ -165,7 +165,7 @@ class EditarProdutoTest {
         when(produtoRepositorio.atualizar(any(Produto.class))).thenReturn(produtoAtualizadoMesmoNome);
 
 
-        ProdutoResponseDTO response = editarProduto.editar(1L, produtoParaEditarMatendoNome);
+        ProdutoResponseDTO response = editarProduto.executar(1L, produtoParaEditarMatendoNome);
 
 
         assertNotNull(response);
@@ -189,7 +189,7 @@ class EditarProdutoTest {
 
 
         ValidacaoException exceptionNome = assertThrows(ValidacaoException.class,
-                () -> editarProduto.editar(1L, produtoParaEditarNomeVazio),
+                () -> editarProduto.executar(1L, produtoParaEditarNomeVazio),
                 "Deveria lançar uma exceção para nome vazio");
 
         assertEquals("Nome do produto é obrigatório", exceptionNome.getMessage());
@@ -200,7 +200,7 @@ class EditarProdutoTest {
 
 
         ValidacaoException exceptionPreco = assertThrows(ValidacaoException.class,
-                () -> editarProduto.editar(1L, produtoParaEditarPrecoNulo),
+                () -> editarProduto.executar(1L, produtoParaEditarPrecoNulo),
                 "Deveria lançar uma exceção para preço nulo");
 
         assertEquals("Preço do produto é obrigatório", exceptionPreco.getMessage());
@@ -211,7 +211,7 @@ class EditarProdutoTest {
 
 
         ValidacaoException exceptionPrecoZero = assertThrows(ValidacaoException.class,
-                () -> editarProduto.editar(1L, produtoParaEditarPrecoZero),
+                () -> editarProduto.executar(1L, produtoParaEditarPrecoZero),
                 "Deveria lançar uma exceção para preço zero");
 
         assertEquals("Preço deve ser maior que zero", exceptionPrecoZero.getMessage());
@@ -221,7 +221,7 @@ class EditarProdutoTest {
 
 
         ValidacaoException exceptionCategoria = assertThrows(ValidacaoException.class,
-                () -> editarProduto.editar(1L, produtoParaEditarCategoriaNula),
+                () -> editarProduto.executar(1L, produtoParaEditarCategoriaNula),
                 "Deveria lançar uma exceção para categoria nula");
 
         assertEquals("Categoria do produto é obrigatória", exceptionCategoria.getMessage());

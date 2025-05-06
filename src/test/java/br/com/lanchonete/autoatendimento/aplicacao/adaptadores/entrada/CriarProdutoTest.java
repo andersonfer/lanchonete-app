@@ -56,7 +56,7 @@ class CriarProdutoTest {
         when(produtoRepositorio.salvar(any(Produto.class))).thenReturn(produtoSalvo);
 
         // Act
-        ProdutoResponseDTO response = criarProduto.criar(produtoValido);
+        ProdutoResponseDTO response = criarProduto.executar(produtoValido);
 
         // Assert
         assertNotNull(response, "A resposta não deveria ser nula");
@@ -77,7 +77,7 @@ class CriarProdutoTest {
 
         // Act & Assert
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> criarProduto.criar(produtoValido),
+                () -> criarProduto.executar(produtoValido),
                 "Deveria lançar uma exceção para nome duplicado");
 
         assertEquals("Já existe um produto com este nome", exception.getMessage(),
@@ -96,7 +96,7 @@ class CriarProdutoTest {
 
         // Act & Assert
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> criarProduto.criar(produtoSemNome),
+                () -> criarProduto.executar(produtoSemNome),
                 "Deveria lançar uma exceção para nome vazio");
 
         assertEquals("Nome do produto é obrigatório", exception.getMessage(),
@@ -115,7 +115,7 @@ class CriarProdutoTest {
 
         // Act & Assert
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> criarProduto.criar(produtoSemPreco),
+                () -> criarProduto.executar(produtoSemPreco),
                 "Deveria lançar uma exceção para preço nulo");
 
         assertEquals("Preço do produto é obrigatório", exception.getMessage(),
@@ -135,7 +135,7 @@ class CriarProdutoTest {
 
         // Act & Assert
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> criarProduto.criar(produtoPrecoZero),
+                () -> criarProduto.executar(produtoPrecoZero),
                 "Deveria lançar uma exceção para preço zero");
 
         assertEquals("Preço deve ser maior que zero", exception.getMessage(),
@@ -146,7 +146,7 @@ class CriarProdutoTest {
                 "Refrigerante de cola 350ml", new BigDecimal("-5.00"), Categoria.BEBIDA);
 
         ValidacaoException exception2 = assertThrows(ValidacaoException.class,
-                () -> criarProduto.criar(produtoPrecoNegativo),
+                () -> criarProduto.executar(produtoPrecoNegativo),
                 "Deveria lançar uma exceção para preço negativo");
 
         assertEquals("Preço deve ser maior que zero", exception2.getMessage(),
@@ -165,7 +165,7 @@ class CriarProdutoTest {
 
         // Act & Assert
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> criarProduto.criar(produtoSemCategoria),
+                () -> criarProduto.executar(produtoSemCategoria),
                 "Deveria lançar uma exceção para categoria nula");
 
         assertEquals("Categoria do produto é obrigatória", exception.getMessage(),

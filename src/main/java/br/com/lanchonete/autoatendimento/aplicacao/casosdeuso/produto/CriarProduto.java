@@ -18,7 +18,7 @@ public class CriarProduto implements CriarProdutoUC {
     private final ProdutoRepositorio produtoRepositorio;
 
     @Override
-    public ProdutoResponseDTO criar(ProdutoRequestDTO novoProduto) {
+    public ProdutoResponseDTO executar(ProdutoRequestDTO novoProduto) {
 
         validarParametros(novoProduto);
 

@@ -94,7 +94,7 @@ class PedidoControllerTest {
     @DisplayName("Deve realizar checkout com sucesso")
     void t1() throws Exception {
         // Mock do serviço
-        when(realizarCheckoutUC.checkout(any(PedidoRequestDTO.class)))
+        when(realizarCheckoutUC.executar(any(PedidoRequestDTO.class)))
                 .thenReturn(pedidoResponse);
 
         // Executar e verificar
@@ -110,14 +110,14 @@ class PedidoControllerTest {
                 .andExpect(jsonPath("$.itens.length()").value(2));
 
         // Verificar que o serviço foi chamado
-        verify(realizarCheckoutUC).checkout(any(PedidoRequestDTO.class));
+        verify(realizarCheckoutUC).executar(any(PedidoRequestDTO.class));
     }
 
     @Test
     @DisplayName("Deve retornar erro 400 ao realizar checkout com dados inválidos")
     void t2() throws Exception {
         // Mock do serviço lançando exceção de validação
-        when(realizarCheckoutUC.checkout(any(PedidoRequestDTO.class)))
+        when(realizarCheckoutUC.executar(any(PedidoRequestDTO.class)))
                 .thenThrow(new ValidacaoException("Pedido deve conter pelo menos um item"));
 
         // Executar e verificar
@@ -128,14 +128,14 @@ class PedidoControllerTest {
                 .andExpect(content().string("Pedido deve conter pelo menos um item"));
 
         // Verificar que o serviço foi chamado
-        verify(realizarCheckoutUC).checkout(any(PedidoRequestDTO.class));
+        verify(realizarCheckoutUC).executar(any(PedidoRequestDTO.class));
     }
 
     @Test
     @DisplayName("Deve retornar erro 404 ao realizar checkout com cliente ou produto não encontrado")
     void t3() throws Exception {
         // Mock do serviço lançando exceção de recurso não encontrado
-        when(realizarCheckoutUC.checkout(any(PedidoRequestDTO.class)))
+        when(realizarCheckoutUC.executar(any(PedidoRequestDTO.class)))
                 .thenThrow(new RecursoNaoEncontradoException("Cliente não encontrado com o CPF informado"));
 
         // Executar e verificar
@@ -145,14 +145,14 @@ class PedidoControllerTest {
                 .andExpect(status().isNotFound());
 
         // Verificar que o serviço foi chamado
-        verify(realizarCheckoutUC).checkout(any(PedidoRequestDTO.class));
+        verify(realizarCheckoutUC).executar(any(PedidoRequestDTO.class));
     }
 
     @Test
     @DisplayName("Deve listar todos os pedidos")
     void t4() throws Exception {
         // Mock do serviço
-        when(listarPedidosUC.listarTodos())
+        when(listarPedidosUC.executar())
                 .thenReturn(Arrays.asList(pedidoResponse, pedidoResponseSemCliente));
 
         // Executar e verificar
@@ -169,14 +169,14 @@ class PedidoControllerTest {
                 .andExpect(jsonPath("$[1].valorTotal").value(6.00));
 
         // Verificar que o serviço foi chamado
-        verify(listarPedidosUC).listarTodos();
+        verify(listarPedidosUC).executar();
     }
 
     @Test
     @DisplayName("Deve retornar lista vazia quando não há pedidos")
     void t5() throws Exception {
         // Mock do serviço
-        when(listarPedidosUC.listarTodos())
+        when(listarPedidosUC.executar())
                 .thenReturn(Collections.emptyList());
 
         // Executar e verificar
@@ -185,6 +185,6 @@ class PedidoControllerTest {
                 .andExpect(jsonPath("$.length()").value(0));
 
         // Verificar que o serviço foi chamado
-        verify(listarPedidosUC).listarTodos();
+        verify(listarPedidosUC).executar();
     }
 }

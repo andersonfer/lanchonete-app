@@ -19,7 +19,7 @@ public class EditarProduto implements EditarProdutoUC {
     private final ProdutoRepositorio produtoRepositorio;
 
     @Override
-    public ProdutoResponseDTO editar(Long id, ProdutoRequestDTO produtoParaEditar) {
+    public ProdutoResponseDTO executar(Long id, ProdutoRequestDTO produtoParaEditar) {
 
         validarParametros(id, produtoParaEditar);
 

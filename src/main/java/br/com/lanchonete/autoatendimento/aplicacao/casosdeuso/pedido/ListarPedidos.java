@@ -16,7 +16,7 @@ public class ListarPedidos implements ListarPedidosUC {
     private final PedidoRepositorio pedidoRepositorio;
 
     @Override
-    public List<PedidoResponseDTO> listarTodos() {
+    public List<PedidoResponseDTO> executar() {
         List<Pedido> pedidos = pedidoRepositorio.listarTodos();
 
         return pedidos.stream()

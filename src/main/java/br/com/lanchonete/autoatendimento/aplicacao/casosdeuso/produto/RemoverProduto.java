@@ -16,7 +16,7 @@ public class RemoverProduto implements RemoverProdutoUC {
     private final ProdutoRepositorio produtoRepositorio;
 
     @Override
-    public void remover(Long id) {
+    public void executar(Long id) {
 
         validarParametros(id);
 

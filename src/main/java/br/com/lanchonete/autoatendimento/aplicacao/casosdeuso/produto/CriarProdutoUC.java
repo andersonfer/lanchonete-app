@@ -4,5 +4,5 @@ import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.Produ
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ProdutoResponseDTO;
 
 public interface CriarProdutoUC {
-    ProdutoResponseDTO criar(ProdutoRequestDTO produtoRequest);
+    ProdutoResponseDTO executar(ProdutoRequestDTO produtoRequest);
 }

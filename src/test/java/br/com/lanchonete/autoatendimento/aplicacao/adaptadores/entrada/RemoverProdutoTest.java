@@ -49,7 +49,7 @@ class RemoverProdutoTest {
         when(produtoRepositorio.buscarPorId(1L)).thenReturn(Optional.of(produtoExistente));
         doNothing().when(produtoRepositorio).remover(1L);
 
-        assertDoesNotThrow(() -> removerProduto.remover(1L),
+        assertDoesNotThrow(() -> removerProduto.executar(1L),
                 "Não deveria lançar exceção ao remover produto existente");
 
         verify(produtoRepositorio).buscarPorId(1L);
@@ -61,7 +61,7 @@ class RemoverProdutoTest {
     void t2() {
 
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> removerProduto.remover(null),
+                () -> removerProduto.executar(null),
                 "Deveria lançar exceção para ID nulo");
 
         assertEquals("ID do produto é obrigatório", exception.getMessage(),
@@ -78,7 +78,7 @@ class RemoverProdutoTest {
         when(produtoRepositorio.buscarPorId(999L)).thenReturn(Optional.empty());
 
         RecursoNaoEncontradoException exception = assertThrows(RecursoNaoEncontradoException.class,
-                () -> removerProduto.remover(999L),
+                () -> removerProduto.executar(999L),
                 "Deveria lançar exceção quando produto não existe");
 
         assertEquals("Produto não encontrado", exception.getMessage(),

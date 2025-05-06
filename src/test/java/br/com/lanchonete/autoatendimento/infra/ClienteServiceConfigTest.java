@@ -1,7 +1,7 @@
 package br.com.lanchonete.autoatendimento.infra;
 
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.CadastrarClienteService;
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.IdentificarClienteService;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.cliente.CadastrarCliente;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.cliente.IdentificarCliente;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,15 +21,15 @@ class ClienteServiceConfigTest {
     private ClienteRepositorio clienteRepositorio;
 
     @Autowired
-    private CadastrarClienteService cadastrarClienteService;
+    private CadastrarCliente cadastrarCliente;
 
     @Autowired
-    private IdentificarClienteService identificarClienteService;
+    private IdentificarCliente identificarCliente;
 
     @Test
     @DisplayName("Deve criar os beans dos UCs de cliente")
     void t1() {
-        assertNotNull(cadastrarClienteService);
-        assertNotNull(identificarClienteService);
+        assertNotNull(cadastrarCliente);
+        assertNotNull(identificarCliente);
     }
 }

@@ -1,6 +1,7 @@
 package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteResponseDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.cliente.IdentificarCliente;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
@@ -18,13 +19,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
-class IdentificarClienteServiceTest {
+class IdentificarClienteTest {
 
     @Mock
     private ClienteRepositorio clienteRepositorio;
 
     @InjectMocks
-    private IdentificarClienteService identificarClienteService;
+    private IdentificarCliente identificarCliente;
 
 
     @Test
@@ -40,7 +41,7 @@ class IdentificarClienteServiceTest {
 
         when(clienteRepositorio.buscarPorCpf(cpf)).thenReturn(Optional.of(cliente));
 
-        Optional<ClienteResponseDTO> resultado = identificarClienteService.identificar(cpf);
+        Optional<ClienteResponseDTO> resultado = identificarCliente.executar(cpf);
 
         assertTrue(resultado.isPresent(), "O cliente deveria estar presente");
         ClienteResponseDTO dto = resultado.get();
@@ -58,7 +59,7 @@ class IdentificarClienteServiceTest {
         when(clienteRepositorio.buscarPorCpf(cpf)).thenReturn(Optional.empty());
 
         RecursoNaoEncontradoException excecao = assertThrows(RecursoNaoEncontradoException.class,
-                () -> identificarClienteService.identificar(cpf),
+                () -> identificarCliente.executar(cpf),
                 "Deveria lançar RecursoNaoEncontradoException para CPF inexistente");
 
         assertEquals("CPF não encontrado", excecao.getMessage(), "A mensagem de exceção não está correta");
@@ -70,7 +71,7 @@ class IdentificarClienteServiceTest {
         String cpf = "";
 
         ValidacaoException excecao = assertThrows(ValidacaoException.class,
-                () -> identificarClienteService.identificar(cpf),
+                () -> identificarCliente.executar(cpf),
                 "Deveria lançar ValidacaoException para CPF vazio");
 
         assertEquals("CPF é obrigatório", excecao.getMessage(), "A mensagem de exceção não está correta");

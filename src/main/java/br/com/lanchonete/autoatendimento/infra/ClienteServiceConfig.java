@@ -1,7 +1,7 @@
 package br.com.lanchonete.autoatendimento.infra;
 
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.CadastrarClienteService;
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.IdentificarClienteService;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.cliente.CadastrarCliente;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.cliente.IdentificarCliente;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,12 +10,12 @@ import org.springframework.context.annotation.Configuration;
 public class ClienteServiceConfig {
 
     @Bean
-    public CadastrarClienteService cadastrarClienteService(ClienteRepositorio clienteRepositorio) {
-        return new CadastrarClienteService(clienteRepositorio);
+    public CadastrarCliente cadastrarCliente(ClienteRepositorio clienteRepositorio) {
+        return new CadastrarCliente(clienteRepositorio);
     }
 
     @Bean
-    public IdentificarClienteService identificarClienteService(ClienteRepositorio clienteRepositorio){
-        return new IdentificarClienteService(clienteRepositorio);
+    public IdentificarCliente identificarCliente(ClienteRepositorio clienteRepositorio){
+        return new IdentificarCliente(clienteRepositorio);
     }
 }

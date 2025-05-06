@@ -1,9 +1,8 @@
-package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
+package br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.cliente;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.CadastrarClienteUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
 import br.com.lanchonete.autoatendimento.dominio.Cliente;
 import lombok.RequiredArgsConstructor;
@@ -14,13 +13,13 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class CadastrarClienteService implements CadastrarClienteUC {
+public class CadastrarCliente implements CadastrarClienteCasoDeUso {
 
     private final ClienteRepositorio clienteRepositorio;
 
 
     @Override
-    public ClienteResponseDTO cadastrar(ClienteRequestDTO novoCliente) {
+    public ClienteResponseDTO executar(ClienteRequestDTO novoCliente) {
 
         validarParametros(novoCliente);
         validarDuplicidade(novoCliente);

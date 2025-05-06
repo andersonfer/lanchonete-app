@@ -2,8 +2,8 @@ package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteResponseDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.CadastrarClienteUC;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.IdentificarClienteUC;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.cliente.CadastrarClienteCasoDeUso;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.cliente.IdentificarClienteCasoDeUso;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class ClienteController {
 
-    private final CadastrarClienteUC cadastrarClienteUC;
-    private final IdentificarClienteUC identificarClienteUC;
+    private final CadastrarClienteCasoDeUso cadastrarClienteCasoDeUso;
+    private final IdentificarClienteCasoDeUso identificarClienteCasoDeUso;
 
     @PostMapping
     @Operation(
@@ -31,7 +31,7 @@ public class ClienteController {
         }
     )
     public ResponseEntity<ClienteResponseDTO> cadastrarCliente(@RequestBody ClienteRequestDTO novoCliente) {
-        ClienteResponseDTO clienteCadastrado = cadastrarClienteUC.cadastrar(novoCliente);
+        ClienteResponseDTO clienteCadastrado = cadastrarClienteCasoDeUso.executar(novoCliente);
         return new ResponseEntity<>(clienteCadastrado, HttpStatus.CREATED);
     }
 
@@ -45,7 +45,7 @@ public class ClienteController {
             }
     )
     public ResponseEntity<ClienteResponseDTO> identificarPorCpf(@PathVariable String cpf) {
-        return identificarClienteUC.identificar(cpf)
+        return identificarClienteCasoDeUso.executar(cpf)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

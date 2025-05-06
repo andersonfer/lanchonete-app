@@ -1,9 +1,8 @@
-package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
+package br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.cliente;
 
 import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.IdentificarClienteUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,12 +11,12 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class IdentificarClienteService implements IdentificarClienteUC {
+public class IdentificarCliente implements IdentificarClienteCasoDeUso {
 
     private final ClienteRepositorio clienteRepositorio;
 
     @Override
-    public Optional<ClienteResponseDTO> identificar(String cpf) {
+    public Optional<ClienteResponseDTO> executar(String cpf) {
 
         validarParametros(cpf);
 

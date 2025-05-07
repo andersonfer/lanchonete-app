@@ -32,12 +32,11 @@ class ProdutoRepositorioJDBCTest {
     void configurar() {
         produtoRepositorio = new ProdutoRepositorioJDBC(jdbcTemplate);
 
-        produtoPreCadastrado = Produto.builder()
-                .nome("Hambúrguer Clássico")
-                .descricao("Hambúrguer com queijo, alface e tomate")
-                .preco(new BigDecimal("25.90"))
-                .categoria(Categoria.LANCHE)
-                .build();
+        produtoPreCadastrado = Produto.criar(
+                "Hambúrguer Clássico",
+                "Hambúrguer com queijo, alface e tomate",
+                new BigDecimal("25.90"),
+                Categoria.LANCHE);
 
         produtoPreCadastrado = produtoRepositorio.salvar(produtoPreCadastrado);
     }
@@ -45,12 +44,11 @@ class ProdutoRepositorioJDBCTest {
     @Test
     @DisplayName("Deve salvar um produto com sucesso")
     void t1() {
-        Produto novoProduto = Produto.builder()
-                .nome("Batata Frita")
-                .descricao("Porção de batata frita crocante")
-                .preco(new BigDecimal("15.90"))
-                .categoria(Categoria.ACOMPANHAMENTO)
-                .build();
+        Produto novoProduto = Produto.criar(
+                "Batata Frita",
+                "Porção de batata frita crocante",
+                new BigDecimal("15.90"),
+                Categoria.ACOMPANHAMENTO);
 
         Produto produtoSalvo = produtoRepositorio.salvar(novoProduto);
 
@@ -79,13 +77,12 @@ class ProdutoRepositorioJDBCTest {
     @Test
     @DisplayName("Deve lançar exceção ao tentar atualizar produto inexistente")
     void t3() {
-        Produto produtoInexistente = Produto.builder()
-                .id(999L)
-                .nome("Produto que não existe")
-                .descricao("Descrição")
-                .preco(new BigDecimal("10.00"))
-                .categoria(Categoria.LANCHE)
-                .build();
+        Produto produtoInexistente = Produto.criarSemValidacao(
+                999L,
+                "Produto que não existe",
+                "Descrição",
+                new BigDecimal("10.00"),
+                Categoria.LANCHE);
 
         assertThrows(RegistroNaoEncontradoException.class,
                 () -> produtoRepositorio.atualizar(produtoInexistente),
@@ -130,21 +127,19 @@ class ProdutoRepositorioJDBCTest {
     @DisplayName("Deve buscar produtos por categoria")
     void t8() {
         // Adiciona outro produto na mesma categoria
-        Produto outroProduto = Produto.builder()
-                .nome("X-Bacon")
-                .descricao("Hambúrguer com queijo e bacon")
-                .preco(new BigDecimal("28.90"))
-                .categoria(Categoria.LANCHE)
-                .build();
+        Produto outroProduto = Produto.criar(
+                "X-Bacon",
+                "Hambúrguer com queijo e bacon",
+                new BigDecimal("28.90"),
+                Categoria.LANCHE);
         produtoRepositorio.salvar(outroProduto);
 
         // Adiciona produto de outra categoria
-        Produto produtoOutraCategoria = Produto.builder()
-                .nome("Refrigerante")
-                .descricao("Cola 350ml")
-                .preco(new BigDecimal("6.90"))
-                .categoria(Categoria.BEBIDA)
-                .build();
+        Produto produtoOutraCategoria = Produto.criar(
+                "Refrigerante",
+                "Cola 350ml",
+                new BigDecimal("6.90"),
+                Categoria.BEBIDA);
         produtoRepositorio.salvar(produtoOutraCategoria);
 
         List<Produto> produtosLanche = produtoRepositorio.buscarPorCategoria(Categoria.LANCHE);
@@ -166,12 +161,11 @@ class ProdutoRepositorioJDBCTest {
     @DisplayName("Deve listar todos os produtos")
     void t10() {
         // Adiciona mais um produto
-        Produto outroProduto = Produto.builder()
-                .nome("Milkshake")
-                .descricao("Milkshake de chocolate")
-                .preco(new BigDecimal("12.90"))
-                .categoria(Categoria.SOBREMESA)
-                .build();
+        Produto outroProduto = Produto.criar(
+                "Milkshake",
+                "Milkshake de chocolate",
+                new BigDecimal("12.90"),
+                Categoria.SOBREMESA);
         produtoRepositorio.salvar(outroProduto);
 
         List<Produto> todosProdutos = produtoRepositorio.listarTodos();
@@ -192,12 +186,11 @@ class ProdutoRepositorioJDBCTest {
     @DisplayName("Deve lançar exceção ao tentar salvar produto com nome duplicado")
     void t12() {
         // Cria um produto com o mesmo nome do produto pré-cadastrado
-        final Produto produtoNomeDuplicado = Produto.builder()
-                .nome("Hambúrguer Clássico") // Mesmo nome do produtoPreCadastrado
-                .descricao("Outra descrição")
-                .preco(new BigDecimal("22.90"))
-                .categoria(Categoria.LANCHE)
-                .build();
+        final Produto produtoNomeDuplicado = Produto.criar(
+                "Hambúrguer Clássico", // Mesmo nome do produtoPreCadastrado
+                "Outra descrição",
+                new BigDecimal("22.90"),
+                Categoria.LANCHE);
 
         // Deve lançar exceção por causa da restrição de unicidade
         assertThrows(DataIntegrityViolationException.class,
@@ -209,12 +202,11 @@ class ProdutoRepositorioJDBCTest {
     @DisplayName("Deve lançar exceção ao tentar atualizar produto para um nome duplicado")
     void t13() {
         // Cria e salva um segundo produto com nome diferente
-        Produto segundoProduto = Produto.builder()
-                .nome("X-Salada")
-                .descricao("Hambúrguer com alface e tomate")
-                .preco(new BigDecimal("23.90"))
-                .categoria(Categoria.LANCHE)
-                .build();
+        Produto segundoProduto = Produto.criar(
+                "X-Salada",
+                "Hambúrguer com alface e tomate",
+                new BigDecimal("23.90"),
+                Categoria.LANCHE);
 
         Produto produtoSalvo = produtoRepositorio.salvar(segundoProduto);
 

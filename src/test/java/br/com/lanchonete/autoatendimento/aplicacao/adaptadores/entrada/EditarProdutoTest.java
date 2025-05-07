@@ -39,26 +39,16 @@ class EditarProdutoTest {
     @BeforeEach
     void configurar() {
         // Produto existente no repositório
-        produtoExistente = Produto.builder()
-                .id(1L)
-                .nome("X-Bacon")
-                .descricao("Hambúrguer com bacon")
-                .preco(new BigDecimal("28.90"))
-                .categoria(Categoria.LANCHE)
-                .build();
+        produtoExistente = Produto.criarSemValidacao(1L, "X-Bacon",
+                "Hambúrguer com bacon", new BigDecimal("28.90"), Categoria.LANCHE);
 
         // Produto com dados atualizados
         produtoValido = new ProdutoRequestDTO("X-Bacon Especial",
                 "Hambúrguer com bacon crocante e molho especial",new BigDecimal("32.90"), Categoria.LANCHE);
 
         // Produto após atualização
-        produtoAtualizado = Produto.builder()
-                .id(1L)
-                .nome("X-Bacon Especial")
-                .descricao("Hambúrguer com bacon crocante e molho especial")
-                .preco(new BigDecimal("32.90"))
-                .categoria(Categoria.LANCHE)
-                .build();
+        produtoAtualizado = Produto.criarSemValidacao(1L, "X-Bacon Especial",
+                "Hambúrguer com bacon crocante e molho especial", new BigDecimal("32.90"), Categoria.LANCHE);
     }
 
     @Test
@@ -115,13 +105,8 @@ class EditarProdutoTest {
     @DisplayName("Deve lançar exceção quando o nome já existe para outro produto")
     void t4() {
 
-        Produto outroProduto = Produto.builder()
-                .id(2L)
-                .nome("X-Salada")
-                .descricao("Hambúrguer com salada")
-                .preco(new BigDecimal("26.90"))
-                .categoria(Categoria.LANCHE)
-                .build();
+        Produto outroProduto = Produto.criarSemValidacao(2L, "X-Salada",
+                "Hambúrguer com salada", new BigDecimal("26.90"), Categoria.LANCHE);
 
         when(produtoRepositorio.buscarPorId(2L)).thenReturn(Optional.of(outroProduto));
 
@@ -153,13 +138,8 @@ class EditarProdutoTest {
         ProdutoRequestDTO produtoParaEditarMatendoNome = new ProdutoRequestDTO("X-Bacon",
                 "Hambúrguer com bacon e queijo", new BigDecimal("29.90"), Categoria.LANCHE);
 
-        Produto produtoAtualizadoMesmoNome = Produto.builder()
-                .id(1L)
-                .nome("X-Bacon")
-                .descricao("Hambúrguer com bacon e queijo")
-                .preco(new BigDecimal("29.90"))
-                .categoria(Categoria.LANCHE)
-                .build();
+        Produto produtoAtualizadoMesmoNome = Produto.criarSemValidacao(1L, "X-Bacon",
+                "Hambúrguer com bacon e queijo", new BigDecimal("29.90"), Categoria.LANCHE);
 
         when(produtoRepositorio.buscarPorId(1L)).thenReturn(Optional.of(produtoExistente));
         when(produtoRepositorio.atualizar(any(Produto.class))).thenReturn(produtoAtualizadoMesmoNome);

@@ -16,13 +16,12 @@ class ProdutoResponseDTOTest {
     @DisplayName("Deve converter Produto para ProdutoResponseDTO corretamente")
     void t1() {
 
-        Produto produto = Produto.builder()
-                .id(1L)
-                .nome("X-Bacon")
-                .descricao("Hambúrguer com bacon")
-                .preco(new BigDecimal("29.90"))
-                .categoria(Categoria.LANCHE)
-                .build();
+        Produto produto = Produto.criarSemValidacao(
+                1L,
+                "X-Bacon",
+                "Hambúrguer com bacon",
+                new BigDecimal("29.90"),
+                Categoria.LANCHE);
 
 
         ProdutoResponseDTO dto = ProdutoResponseDTO.converterParaDTO(produto);

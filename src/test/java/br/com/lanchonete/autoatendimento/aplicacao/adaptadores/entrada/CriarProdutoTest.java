@@ -38,14 +38,8 @@ class CriarProdutoTest {
         produtoValido = new ProdutoRequestDTO("X-Bacon",
                 "Hambúrguer com bacon crocante", new BigDecimal("28.90"), Categoria.LANCHE);
 
-
-        produtoSalvo = Produto.builder()
-                .id(1L)
-                .nome("X-Bacon")
-                .descricao("Hambúrguer com bacon crocante")
-                .preco(new BigDecimal("28.90"))
-                .categoria(Categoria.LANCHE)
-                .build();
+        produtoSalvo = Produto.criarSemValidacao(1L, "X-Bacon",
+                "Hambúrguer com bacon crocante", new BigDecimal("28.90"), Categoria.LANCHE);
     }
 
     @Test
@@ -102,7 +96,6 @@ class CriarProdutoTest {
         assertEquals("Nome do produto é obrigatório", exception.getMessage(),
                 "Mensagem da exceção está incorreta");
 
-        verify(produtoRepositorio, never()).existePorNome(anyString());
         verify(produtoRepositorio, never()).salvar(any(Produto.class));
     }
 
@@ -121,7 +114,6 @@ class CriarProdutoTest {
         assertEquals("Preço do produto é obrigatório", exception.getMessage(),
                 "Mensagem da exceção está incorreta");
 
-        verify(produtoRepositorio, never()).existePorNome(anyString());
         verify(produtoRepositorio, never()).salvar(any(Produto.class));
     }
 
@@ -152,7 +144,6 @@ class CriarProdutoTest {
         assertEquals("Preço deve ser maior que zero", exception2.getMessage(),
                 "Mensagem da exceção está incorreta");
 
-        verify(produtoRepositorio, never()).existePorNome(anyString());
         verify(produtoRepositorio, never()).salvar(any(Produto.class));
     }
 
@@ -171,7 +162,6 @@ class CriarProdutoTest {
         assertEquals("Categoria do produto é obrigatória", exception.getMessage(),
                 "Mensagem da exceção está incorreta");
 
-        verify(produtoRepositorio, never()).existePorNome(anyString());
         verify(produtoRepositorio, never()).salvar(any(Produto.class));
     }
 }

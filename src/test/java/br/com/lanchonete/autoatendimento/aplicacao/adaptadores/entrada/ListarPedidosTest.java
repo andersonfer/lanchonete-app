@@ -44,21 +44,19 @@ class ListarPedidosTest {
         cliente.setId(1L);
 
         // Produtos para o teste
-        Produto produto1 = Produto.builder()
-                .id(1L)
-                .nome("X-Bacon")
-                .descricao("Hambúrguer com bacon")
-                .preco(new BigDecimal("25.90"))
-                .categoria(Categoria.LANCHE)
-                .build();
+        Produto produto1 = Produto.criarSemValidacao(
+                1L,
+                "X-Bacon",
+                "Hambúrguer com bacon",
+                new BigDecimal("25.90"),
+                Categoria.LANCHE);
 
-        Produto produto2 = Produto.builder()
-                .id(2L)
-                .nome("Refrigerante")
-                .descricao("Refrigerante lata 350ml")
-                .preco(new BigDecimal("6.00"))
-                .categoria(Categoria.BEBIDA)
-                .build();
+        Produto produto2 = Produto.criarSemValidacao(
+                2L,
+                "Refrigerante",
+                "Refrigerante lata 350ml",
+                new BigDecimal("6.00"),
+                Categoria.BEBIDA);
 
         // Criar pedido com cliente
         pedidoComCliente = Pedido.builder()

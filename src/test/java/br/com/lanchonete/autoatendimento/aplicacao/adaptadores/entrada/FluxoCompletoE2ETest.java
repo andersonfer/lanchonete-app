@@ -49,36 +49,28 @@ class FluxoCompletoE2ETest {
     @BeforeEach
     void configurar() {
         // Criar e salvar produtos para o teste
-        lanche = Produto.builder()
-                .nome("X-Tudo")
-                .descricao("Hambúrguer completo com todos os ingredientes")
-                .preco(new BigDecimal("32.90"))
-                .categoria(Categoria.LANCHE)
-                .build();
+        lanche = Produto.criar( "X-Tudo",
+                "Hambúrguer completo com todos os ingredientes",
+                new BigDecimal("32.90"),
+                Categoria.LANCHE);
         lanche = produtoRepositorio.salvar(lanche);
 
-        bebida = Produto.builder()
-                .nome("Refrigerante Cola")
-                .descricao("Refrigerante cola 350ml")
-                .preco(new BigDecimal("6.90"))
-                .categoria(Categoria.BEBIDA)
-                .build();
+        bebida = Produto.criar( "Refrigerante Cola",
+                "Refrigerante cola 350ml",
+                new BigDecimal("6.90"),
+                Categoria.BEBIDA);
         bebida = produtoRepositorio.salvar(bebida);
 
-        acompanhamento = Produto.builder()
-                .nome("Batata Frita")
-                .descricao("Porção de batata frita crocante")
-                .preco(new BigDecimal("12.90"))
-                .categoria(Categoria.ACOMPANHAMENTO)
-                .build();
+        acompanhamento = Produto.criar("Batata Frita",
+                "Porção de batata frita crocante",
+                new BigDecimal("12.90"),
+                Categoria.ACOMPANHAMENTO);
         acompanhamento = produtoRepositorio.salvar(acompanhamento);
 
-        sobremesa = Produto.builder()
-                .nome("Sundae de Chocolate")
-                .descricao("Sorvete com calda de chocolate e amendoim")
-                .preco(new BigDecimal("9.90"))
-                .categoria(Categoria.SOBREMESA)
-                .build();
+        sobremesa = Produto.criar( "Sundae de Chocolate",
+                "Sorvete com calda de chocolate e amendoim",
+                new BigDecimal("9.90"),
+                Categoria.SOBREMESA);
         sobremesa = produtoRepositorio.salvar(sobremesa);
     }
 

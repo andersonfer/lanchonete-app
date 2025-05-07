@@ -21,47 +21,29 @@ public class EditarProduto implements EditarProdutoUC {
 
     @Override
     public ProdutoResponseDTO executar(Long id, ProdutoRequestDTO produtoParaEditar) {
+        try {
+            if (id == null) {
+                throw new ValidacaoException("ID do produto é obrigatório");
+            }
 
-        validarParametros(id, produtoParaEditar);
+            Produto produto = produtoRepositorio.buscarPorId(id)
+                    .orElseThrow(() -> new RecursoNaoEncontradoException("Produto não encontrado"));
 
-        Produto produto = produtoRepositorio.buscarPorId(id)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Produto não encontrado"));
+            validarDuplicidade(produto, produtoParaEditar);
 
-        validarDuplicidade(produto, produtoParaEditar);
+            produto.setNome(produtoParaEditar.nome());
+            produto.setDescricao(produtoParaEditar.descricao());
+            produto.setPreco(produtoParaEditar.preco());
+            produto.setCategoria(produtoParaEditar.categoria());
 
-        produto.setNome(produtoParaEditar.nome());
-        produto.setDescricao(produtoParaEditar.descricao());
-        produto.setPreco(produtoParaEditar.preco());
-        produto.setCategoria(produtoParaEditar.categoria());
+            Produto produtoAtualizado = produtoRepositorio.atualizar(produto);
 
-        Produto produtoAtualizado = produtoRepositorio.atualizar(produto);
-
-        return ProdutoResponseDTO.converterParaDTO(produtoAtualizado);
+            return ProdutoResponseDTO.converterParaDTO(produtoAtualizado);
+        } catch (IllegalArgumentException e) {
+            throw new ValidacaoException(e.getMessage());
+        }
     }
 
-    private void validarParametros(Long idAtual, ProdutoRequestDTO produtoRequest) {
-
-        if (idAtual == null) {
-            throw new ValidacaoException("ID do produto é obrigatório");
-        }
-
-        if (StringUtils.isBlank(produtoRequest.nome())) {
-            throw new ValidacaoException("Nome do produto é obrigatório");
-        }
-
-        if (produtoRequest.preco() == null) {
-            throw new ValidacaoException("Preço do produto é obrigatório");
-        }
-
-        if (produtoRequest.preco().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new ValidacaoException("Preço deve ser maior que zero");
-        }
-
-        if (produtoRequest.categoria() == null) {
-            throw new ValidacaoException("Categoria do produto é obrigatória");
-        }
-
-    }
 
     private void validarDuplicidade(Produto produto, ProdutoRequestDTO produtoRequest) {
         boolean houveAlteracaoNoNome = !produto.getNome().equals(produtoRequest.nome());

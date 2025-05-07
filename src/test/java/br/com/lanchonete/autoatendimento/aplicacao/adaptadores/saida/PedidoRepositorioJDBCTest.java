@@ -49,20 +49,12 @@ class PedidoRepositorioJDBCTest {
         cliente = clienteRepositorio.salvar(cliente);
 
         // Criar e salvar produtos de teste no banco
-        produtoLanche = Produto.builder()
-                .nome("X-Bacon")
-                .descricao("Hambúrguer com bacon")
-                .preco(new BigDecimal("25.90"))
-                .categoria(Categoria.LANCHE)
-                .build();
+        produtoLanche = Produto.criar("X-Bacon", "Hambúrguer com bacon",
+                new BigDecimal("25.90"), Categoria.LANCHE);
         produtoLanche = produtoRepositorio.salvar(produtoLanche);
 
-        produtoBebida = Produto.builder()
-                .nome("Refrigerante")
-                .descricao("Refrigerante lata 350ml")
-                .preco(new BigDecimal("6.00"))
-                .categoria(Categoria.BEBIDA)
-                .build();
+        produtoBebida = Produto.criar("Refrigerante", "Refrigerante lata 350ml",
+                new BigDecimal("6.00"), Categoria.BEBIDA);
         produtoBebida = produtoRepositorio.salvar(produtoBebida);
     }
 
@@ -79,7 +71,8 @@ class PedidoRepositorioJDBCTest {
 
         // Adicionar itens ao pedido
         ItemPedido item1 = ItemPedido.builder()
-                .produto(produtoLanche)
+                .produto(Produto.criarSemValidacao(produtoLanche.getId(), produtoLanche.getNome(),
+                        produtoLanche.getDescricao(), produtoLanche.getPreco(), produtoLanche.getCategoria()))
                 .quantidade(2)
                 .valorUnitario(produtoLanche.getPreco())
                 .build();
@@ -87,7 +80,8 @@ class PedidoRepositorioJDBCTest {
         pedido.adicionarItem(item1);
 
         ItemPedido item2 = ItemPedido.builder()
-                .produto(produtoBebida)
+                .produto(Produto.criarSemValidacao(produtoBebida.getId(), produtoBebida.getNome(),
+                        produtoBebida.getDescricao(), produtoBebida.getPreco(), produtoBebida.getCategoria()))
                 .quantidade(1)
                 .valorUnitario(produtoBebida.getPreco())
                 .build();
@@ -151,7 +145,8 @@ class PedidoRepositorioJDBCTest {
                 .build();
 
         ItemPedido item = ItemPedido.builder()
-                .produto(produtoLanche)
+                .produto(Produto.criarSemValidacao(produtoLanche.getId(), produtoLanche.getNome(),
+                        produtoLanche.getDescricao(), produtoLanche.getPreco(), produtoLanche.getCategoria()))
                 .quantidade(1)
                 .valorUnitario(produtoLanche.getPreco())
                 .build();

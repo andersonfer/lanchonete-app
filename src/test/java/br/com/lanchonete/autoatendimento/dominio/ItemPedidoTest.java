@@ -16,12 +16,7 @@ class ItemPedidoTest {
     @DisplayName("Deve calcular valor total do item corretamente")
     void t1() {
         // Criar um produto para o teste
-        Produto produto = Produto.builder()
-                .id(1L)
-                .nome("X-Bacon")
-                .preco(new BigDecimal("25.90"))
-                .categoria(Categoria.LANCHE)
-                .build();
+        Produto produto = Produto.criar("X-Bacon", null, new BigDecimal("25.90"), Categoria.LANCHE);
 
         // Criar o item de pedido
         ItemPedido item = ItemPedido.builder()
@@ -42,12 +37,8 @@ class ItemPedidoTest {
     @DisplayName("Deve retornar zero quando quantidade for zero")
     void t2() {
         // Criar um produto para o teste
-        Produto produto = Produto.builder()
-                .id(1L)
-                .nome("X-Bacon")
-                .preco(new BigDecimal("25.90"))
-                .categoria(Categoria.LANCHE)
-                .build();
+
+        Produto produto = Produto.criar("X-Bacon", null, new BigDecimal("25.90"), Categoria.LANCHE);
 
         // Criar o item de pedido com quantidade zero
         ItemPedido item = ItemPedido.builder()
@@ -68,11 +59,7 @@ class ItemPedidoTest {
     @DisplayName("Deve retornar zero quando valor unitário for nulo")
     void t3() {
         // Criar um produto para o teste
-        Produto produto = Produto.builder()
-                .id(1L)
-                .nome("X-Bacon")
-                .categoria(Categoria.LANCHE)
-                .build();
+        Produto produto = Produto.criar("X-Bacon", null, new BigDecimal("25.90"), Categoria.LANCHE);
 
         // Criar o item de pedido com valor unitário nulo
         ItemPedido item = ItemPedido.builder()

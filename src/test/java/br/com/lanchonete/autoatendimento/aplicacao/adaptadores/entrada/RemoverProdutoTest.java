@@ -33,13 +33,12 @@ class RemoverProdutoTest {
 
     @BeforeEach
     void configurar() {
-        produtoExistente = Produto.builder()
-                .id(1L)
-                .nome("X-Bacon")
-                .descricao("Hambúrguer com bacon")
-                .preco(new BigDecimal("28.90"))
-                .categoria(Categoria.LANCHE)
-                .build();
+        produtoExistente = Produto.criarSemValidacao(
+                1L,
+                "X-Bacon",
+                "Hambúrguer com bacon",
+                new BigDecimal("28.90"),
+                Categoria.LANCHE);
     }
 
     @Test

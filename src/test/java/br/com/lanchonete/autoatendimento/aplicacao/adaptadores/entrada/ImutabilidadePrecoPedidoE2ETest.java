@@ -61,12 +61,11 @@ class ImutabilidadePrecoPedidoE2ETest {
         cliente = clienteRepositorio.salvar(cliente);
 
         // Criar e salvar produto com preço inicial
-        produto = Produto.builder()
-                .nome("X-Bacon Especial")
-                .descricao("Hambúrguer com bacon e queijo especial")
-                .preco(precoInicial)
-                .categoria(Categoria.LANCHE)
-                .build();
+        produto = Produto.criar(
+                "X-Bacon Especial",
+                "Hambúrguer com bacon e queijo especial",
+                precoInicial,
+                Categoria.LANCHE);
         produto = produtoRepositorio.salvar(produto);
     }
 

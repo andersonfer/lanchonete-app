@@ -36,20 +36,10 @@ class BuscarProdutosPorCategoriaTest {
     @BeforeEach
     void configurar() {
         produtosLanche = Arrays.asList(
-                Produto.builder()
-                        .id(1L)
-                        .nome("X-Bacon")
-                        .descricao("Hambúrguer com bacon")
-                        .preco(new BigDecimal("28.90"))
-                        .categoria(Categoria.LANCHE)
-                        .build(),
-                Produto.builder()
-                        .id(2L)
-                        .nome("X-Salada")
-                        .descricao("Hambúrguer com salada")
-                        .preco(new BigDecimal("26.90"))
-                        .categoria(Categoria.LANCHE)
-                        .build()
+                Produto.criarSemValidacao(1L, "X-Bacon", "Hambúrguer com bacon",
+                        new BigDecimal("28.90"), Categoria.LANCHE),
+                Produto.criarSemValidacao(2L, "X-Salada", "Hambúrguer com salada",
+                        new BigDecimal("26.90"), Categoria.LANCHE)
         );
     }
 

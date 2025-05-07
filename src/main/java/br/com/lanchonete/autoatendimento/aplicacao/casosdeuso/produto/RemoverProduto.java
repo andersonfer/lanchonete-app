@@ -19,12 +19,6 @@ public class RemoverProduto implements RemoverProdutoUC {
     @Override
     public void executar(Long id) {
 
-        validarParametros(id);
-
-        produtoRepositorio.remover(id);
-    }
-
-    private void validarParametros(Long id) {
         if (id == null) {
             throw new ValidacaoException("ID do produto é obrigatório");
         }
@@ -33,5 +27,8 @@ public class RemoverProduto implements RemoverProdutoUC {
         if (produto.isEmpty()) {
             throw new RecursoNaoEncontradoException("Produto não encontrado");
         }
+
+        produtoRepositorio.remover(id);
     }
+
 }

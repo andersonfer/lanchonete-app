@@ -27,13 +27,13 @@ public class ProdutoRepositorioJDBC implements ProdutoRepositorio {
     }
 
     private final RowMapper<Produto> produtoRowMapper = (rs, rowNum) ->
-            Produto.builder()
-                    .id(rs.getLong("id"))
-                    .nome(rs.getString("nome"))
-                    .descricao(rs.getString("descricao"))
-                    .preco(rs.getBigDecimal("preco"))
-                    .categoria(Categoria.valueOf(rs.getString("categoria")))
-                    .build();
+
+            Produto.criarSemValidacao(
+                    rs.getLong("id"),
+                    rs.getString("nome"),
+                    rs.getString("descricao"),
+                    rs.getBigDecimal("preco"),
+                    Categoria.valueOf(rs.getString("categoria")));
 
     @Override
     public Produto salvar(Produto produto) {

@@ -16,12 +16,11 @@ class PedidoTest {
     @DisplayName("Deve calcular valor total do pedido corretamente")
     void t1() {
         // Cria um produto
-        Produto produto = Produto.builder()
-                .id(1L)
-                .nome("X-Bacon")
-                .preco(new BigDecimal("25.90"))
-                .categoria(Categoria.LANCHE)
-                .build();
+        Produto produto = Produto.criar(
+                "X-Bacon",
+                null,
+                new BigDecimal("25.90"),
+                Categoria.LANCHE);
 
         // Cria o pedido
         Pedido pedido = Pedido.builder()

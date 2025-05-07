@@ -20,19 +20,15 @@ public class BuscarProdutosPorCategoria implements BuscarProdutosPorCategoriaUC 
 
     @Override
     public List<ProdutoResponseDTO> executar(Categoria categoria) {
-        validarParametros(categoria);
+        if (categoria == null) {
+            throw new ValidacaoException("Categoria é obrigatória");
+        }
 
         List<Produto> produtos = produtoRepositorio.buscarPorCategoria(categoria);
 
         return produtos.stream()
                 .map(ProdutoResponseDTO::converterParaDTO)
                 .collect(Collectors.toList());
-    }
-
-    private void validarParametros(Categoria categoria) {
-        if (categoria == null) {
-            throw new ValidacaoException("Categoria é obrigatória");
-        }
     }
 
 }

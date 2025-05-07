@@ -59,20 +59,12 @@ class PedidoE2ETest {
         cliente = clienteRepositorio.salvar(cliente);
 
         // Criar e salvar produtos para o teste
-        produto1 = Produto.builder()
-                .nome("X-Bacon")
-                .descricao("Hambúrguer com bacon")
-                .preco(new BigDecimal("25.90"))
-                .categoria(Categoria.LANCHE)
-                .build();
+        produto1 = Produto.criar("X-Bacon", "Hambúrguer com bacon",
+                new BigDecimal("25.90"), Categoria.LANCHE);
         produto1 = produtoRepositorio.salvar(produto1);
 
-        produto2 = Produto.builder()
-                .nome("Refrigerante")
-                .descricao("Refrigerante lata 350ml")
-                .preco(new BigDecimal("6.00"))
-                .categoria(Categoria.BEBIDA)
-                .build();
+        produto2 = Produto.criar("Refrigerante", "Refrigerante lata 350ml",
+                new BigDecimal("6.00"), Categoria.BEBIDA);
         produto2 = produtoRepositorio.salvar(produto2);
     }
 

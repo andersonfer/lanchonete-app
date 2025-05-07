@@ -43,12 +43,10 @@ class ProdutoE2ETest {
     @BeforeEach
     void configurar() {
         // Pré-cadastra um produto para os testes
-        produtoPreCadastrado = Produto.builder()
-                .nome("X-Bacon")
-                .descricao("Hambúrguer com bacon crocante")
-                .preco(new BigDecimal("29.90"))
-                .categoria(Categoria.LANCHE)
-                .build();
+        produtoPreCadastrado = Produto.criar("X-Bacon",
+                "Hambúrguer com bacon crocante",
+                new BigDecimal("29.90"),
+                Categoria.LANCHE);
 
         produtoPreCadastrado = produtoRepositorio.salvar(produtoPreCadastrado);
     }
@@ -127,21 +125,17 @@ class ProdutoE2ETest {
     @DisplayName("Deve buscar produtos por categoria")
     void t4() throws Exception {
         // Adiciona outro produto na mesma categoria do produto pré cadastrado
-        Produto outroLanche = Produto.builder()
-                .nome("X-Salada")
-                .descricao("Hambúrguer com alface e tomate")
-                .preco(new BigDecimal("25.90"))
-                .categoria(Categoria.LANCHE)
-                .build();
+        Produto outroLanche = Produto.criar("X-Salada",
+                "Hambúrguer com alface e tomate",
+                new BigDecimal("25.90"),
+                Categoria.LANCHE);
         produtoRepositorio.salvar(outroLanche);
 
         // Adiciona produto de outra categoria
-        Produto novaBebiba = Produto.builder()
-                .nome("Refrigerante Cola")
-                .descricao("Refrigerante de cola 350ml")
-                .preco(new BigDecimal("5.90"))
-                .categoria(Categoria.BEBIDA)
-                .build();
+        Produto novaBebiba = Produto.criar("Refrigerante Cola",
+                "Refrigerante de cola 350ml",
+                new BigDecimal("5.90"),
+                Categoria.BEBIDA);
         produtoRepositorio.salvar(novaBebiba);
 
         // Busca produtos da categoria LANCHE

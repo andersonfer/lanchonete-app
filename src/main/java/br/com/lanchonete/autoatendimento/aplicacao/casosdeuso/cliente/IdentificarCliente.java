@@ -19,7 +19,9 @@ public class IdentificarCliente implements IdentificarClienteUC {
     @Override
     public Optional<ClienteResponseDTO> executar(String cpf) {
 
-        validarParametros(cpf);
+        if (cpf == null || cpf.isBlank()) {
+            throw new ValidacaoException("CPF é obrigatório");
+        }
 
          return Optional.ofNullable(clienteRepositorio.buscarPorCpf(cpf)
                  .map(ClienteResponseDTO::converterParaDTO)
@@ -27,9 +29,4 @@ public class IdentificarCliente implements IdentificarClienteUC {
 
     }
 
-    private void validarParametros(String cpf) {
-        if (cpf.isBlank()) {
-            throw new ValidacaoException("CPF é obrigatório");
-        }
-    }
 }

@@ -50,12 +50,7 @@ class RealizarPedidoTest {
     @BeforeEach
     void configurar() {
         // Cliente
-        cliente = Cliente.builder()
-                .id(1L)
-                .nome("João Silva")
-                .cpf("12345678901")
-                .email("joao@email.com")
-                .build();
+        cliente = Cliente.criarSemValidacao(1L, "João Silva", "joao@email.com", "12345678901");
 
         // Produtos
         Produto produto1 = Produto.builder()

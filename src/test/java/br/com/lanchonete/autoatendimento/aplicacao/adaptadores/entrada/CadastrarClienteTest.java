@@ -37,12 +37,12 @@ class CadastrarClienteTest {
 
         clienteValido = new ClienteRequestDTO("João Silva", "12345678901", "Joao.silva@example.com");
 
-        clienteSalvo = Cliente.builder()
-                .id(1L)
-                .nome("João Silva")
-                .email("joao.silva@example.com")
-                .cpf("12345678901")
-                .build();
+        clienteSalvo = Cliente.criarSemValidacao(
+                1L,
+                "João Silva",
+                "joao.silva@example.com",
+                "12345678901"
+        );
     }
 
     @Test

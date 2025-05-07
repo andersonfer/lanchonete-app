@@ -116,11 +116,10 @@ class ClienteE2ETest {
     @DisplayName("Deve identificar um cliente existente através do CPF")
     void t4() throws Exception {
 
-        Cliente clientePreCadastrado = Cliente.builder()
-                .nome("João dos Santos")
-                .cpf("23456789012")
-                .email("joao@email.com")
-                .build();
+        Cliente clientePreCadastrado = Cliente.criar(
+                "João dos Santos",
+                "joao@email.com",
+                "23456789012");
 
         clientePreCadastrado = clienteRepositorio.salvar(clientePreCadastrado);
 

@@ -2,12 +2,11 @@ package br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.cliente;
 
 import br.com.lanchonete.autoatendimento.aplicacao.dto.ClienteRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.dto.ClienteResponseDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.cliente.CadastrarClienteUC;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.cliente.CadastrarClienteUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
 import br.com.lanchonete.autoatendimento.dominio.modelo.Cliente;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -22,37 +21,22 @@ public class CadastrarCliente implements CadastrarClienteUC {
     @Override
     public ClienteResponseDTO executar(ClienteRequestDTO novoCliente) {
 
-        validarParametros(novoCliente);
-        validarDuplicidade(novoCliente);
+        try {
 
-        Cliente cliente = Cliente.builder()
-                .nome(novoCliente.nome())
-                .email(novoCliente.email())
-                .cpf(novoCliente.cpf())
-                .build();
+            validarDuplicidade(novoCliente);
 
-        Cliente clienteSalvo = clienteRepositorio.salvar(cliente);
+            Cliente cliente = Cliente.criar(
+                    novoCliente.nome(),
+                    novoCliente.email(),
+                    novoCliente.cpf()
+            );
 
-        return ClienteResponseDTO.converterParaDTO(clienteSalvo);
+            Cliente clienteSalvo = clienteRepositorio.salvar(cliente);
+            return ClienteResponseDTO.converterParaDTO(clienteSalvo);
+        } catch (IllegalArgumentException e) {
+            throw new ValidacaoException(e.getMessage());
+        }
 
-    }
-
-    private void validarParametros(ClienteRequestDTO novoCliente) {
-        if (StringUtils.isBlank(novoCliente.nome())) {
-            throw new ValidacaoException("Nome é obrigatório");
-        }
-        if (StringUtils.isBlank(novoCliente.email())) {
-            throw new ValidacaoException("Email é obrigatório");
-        }
-        if (!novoCliente.email().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
-            throw new ValidacaoException("Email inválido");
-        }
-        if (StringUtils.isBlank(novoCliente.cpf())) {
-            throw new ValidacaoException("CPF é obrigatório");
-        }
-        if (!novoCliente.cpf().matches("^\\d{11}$")) {
-            throw new ValidacaoException("CPF deve conter 11 dígitos numéricos");
-        }
     }
 
     private void validarDuplicidade(ClienteRequestDTO novoCliente){

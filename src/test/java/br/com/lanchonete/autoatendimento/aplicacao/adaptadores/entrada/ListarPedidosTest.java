@@ -37,12 +37,11 @@ class ListarPedidosTest {
     @BeforeEach
     void configurar() {
         // Cliente para o teste
-        Cliente cliente = Cliente.builder()
-                .id(1L)
-                .nome("João Silva")
-                .cpf("12345678901")
-                .email("joao@email.com")
-                .build();
+        Cliente cliente = Cliente.criar(
+                "João Silva",
+                "joao@email.com",
+                "12345678901");
+        cliente.setId(1L);
 
         // Produtos para o teste
         Produto produto1 = Produto.builder()

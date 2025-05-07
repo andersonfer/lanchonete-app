@@ -30,11 +30,11 @@ class ClienteRepositorioJDBCTest {
     void configurar() {
         clienteRepositorio = new ClienteRepositorioJDBC(jdbcTemplate);
 
-        clientePreCadastrado = Cliente.builder()
-                .nome("João Silva")
-                .email("joao@email.com")
-                .cpf(CPF_JA_CASTRADADO)
-                .build();
+        clientePreCadastrado = Cliente.criar(
+                "João Silva",
+                "joao@email.com",
+                CPF_JA_CASTRADADO
+        );
 
         clienteRepositorio.salvar(clientePreCadastrado);
     }
@@ -68,11 +68,11 @@ class ClienteRepositorioJDBCTest {
     void t3() {
         String cpf = "23456789012";
 
-        Cliente novoCliente = Cliente.builder()
-                .nome("Maria Souza")
-                .email("maria@email.com")
-                .cpf(cpf)
-                .build();
+        Cliente novoCliente = Cliente.criar(
+                "Maria Souza",
+                "maria@email.com",
+                cpf
+        );
 
         Cliente clienteSalvo = clienteRepositorio.salvar(novoCliente);
         Optional<Cliente> clienteEncontrado = clienteRepositorio.buscarPorCpf(cpf);
@@ -85,11 +85,11 @@ class ClienteRepositorioJDBCTest {
     @Test
     @DisplayName("Não deve permitir inserção de cpf duplicado")
     void t4() {
-        Cliente clienteComCpfDuplicado = Cliente.builder()
-                .nome("Pedro Santos")
-                .email("pedro@email.com")
-                .cpf(CPF_JA_CASTRADADO)
-                .build();
+        Cliente clienteComCpfDuplicado = Cliente.criar(
+                "Pedro Santos",
+                "pedro@email.com",
+                CPF_JA_CASTRADADO
+        );
 
         assertThrows(DataIntegrityViolationException.class, () -> clienteRepositorio.salvar(clienteComCpfDuplicado));
     }

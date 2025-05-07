@@ -45,11 +45,7 @@ class PedidoRepositorioJDBCTest {
         pedidoRepositorio = new PedidoRepositorioJDBC(jdbcTemplate, clienteRepositorio, produtoRepositorio);
 
         // Criar e salvar cliente de teste no banco
-        cliente = Cliente.builder()
-                .nome("João Silva")
-                .cpf("12345678901")
-                .email("joao@email.com")
-                .build();
+        cliente = Cliente.criar("João Silva", "joao@email.com","12345678901");
         cliente = clienteRepositorio.salvar(cliente);
 
         // Criar e salvar produtos de teste no banco

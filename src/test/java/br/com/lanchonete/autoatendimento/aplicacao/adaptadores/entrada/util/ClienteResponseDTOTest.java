@@ -13,12 +13,12 @@ class ClienteResponseDTOTest {
     @DisplayName("Deve converter Cliente para ClienteResponseDTO corretamente")
     void t1() {
 
-        Cliente cliente = Cliente.builder()
-                .id(1L)
-                .nome("João Silva")
-                .email("joao@email.com")
-                .cpf("12345678901")
-                .build();
+        Cliente cliente = Cliente.criarSemValidacao(
+                1L,
+                "João Silva",
+                "joao@email.com",
+                "12345678901"
+                );
 
 
         ClienteResponseDTO dto = ClienteResponseDTO.converterParaDTO(cliente);

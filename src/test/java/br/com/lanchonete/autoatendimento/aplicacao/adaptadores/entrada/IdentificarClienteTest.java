@@ -32,13 +32,12 @@ class IdentificarClienteTest {
     @DisplayName("Deve retornar ClienteResponseDTO ao encontrar cliente pelo CPF")
     void t1() {
         String cpf = "12345678910";
-        Cliente cliente = Cliente.builder()
-                .id(1L)
-                .nome("Maria Oliveira")
-                .email("maria.oliveira@email.com")
-                .cpf(cpf)
-                .build();
-
+        Cliente cliente = Cliente.criarSemValidacao(
+                1L,
+                "Maria Oliveira",
+                "maria.oliveira@email.com",
+                cpf
+        );
         when(clienteRepositorio.buscarPorCpf(cpf)).thenReturn(Optional.of(cliente));
 
         Optional<ClienteResponseDTO> resultado = identificarCliente.executar(cpf);

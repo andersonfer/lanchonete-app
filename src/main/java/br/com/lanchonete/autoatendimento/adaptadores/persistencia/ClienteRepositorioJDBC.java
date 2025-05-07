@@ -23,12 +23,12 @@ public class ClienteRepositorioJDBC implements ClienteRepositorio {
     }
 
     private final RowMapper<Cliente> clienteRowMapper = (rs, rowNum) ->
-            Cliente.builder()
-                    .id(rs.getLong("id"))
-                    .nome(rs.getString("nome"))
-                    .email(rs.getString("email"))
-                    .cpf(rs.getString("cpf"))
-                    .build();
+        Cliente.criarSemValidacao(
+                rs.getLong("id"),
+                rs.getString("nome"),
+                rs.getString("email"),
+                rs.getString("cpf")
+        );
 
 
     @Override

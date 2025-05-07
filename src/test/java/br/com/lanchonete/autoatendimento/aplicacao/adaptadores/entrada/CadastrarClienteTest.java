@@ -2,7 +2,7 @@ package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
 import br.com.lanchonete.autoatendimento.aplicacao.dto.ClienteRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.dto.ClienteResponseDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.implementacoes.cliente.CadastrarCliente;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.cliente.CadastrarCliente;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
 import br.com.lanchonete.autoatendimento.dominio.modelo.Cliente;

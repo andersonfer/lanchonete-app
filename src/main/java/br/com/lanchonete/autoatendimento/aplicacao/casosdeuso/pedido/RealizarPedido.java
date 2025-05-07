@@ -1,9 +1,9 @@
-package br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.implementacoes.pedido;
+package br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido;
 
 import br.com.lanchonete.autoatendimento.aplicacao.dto.ItemPedidoDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.dto.PedidoRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.dto.PedidoResponseDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.interfaces.pedido.RealizarPedidoUC;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.pedido.RealizarPedidoUC;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;

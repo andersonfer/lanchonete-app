@@ -1,7 +1,7 @@
-package br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.implementacoes.cliente;
+package br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.cliente;
 
 import br.com.lanchonete.autoatendimento.aplicacao.dto.ClienteResponseDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.interfaces.cliente.IdentificarClienteCasoDeUso;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.cliente.IdentificarClienteUC;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class IdentificarCliente implements IdentificarClienteCasoDeUso {
+public class IdentificarCliente implements IdentificarClienteUC {
 
     private final ClienteRepositorio clienteRepositorio;
 

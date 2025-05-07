@@ -1,6 +1,6 @@
-package br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.implementacoes.produto;
+package br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto;
 
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.interfaces.produto.RemoverProdutoUC;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.produto.RemoverProdutoUC;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;

@@ -1,8 +1,8 @@
-package br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.interfaces.cliente;
+package br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.cliente;
 
 import br.com.lanchonete.autoatendimento.aplicacao.dto.ClienteRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.dto.ClienteResponseDTO;
 
-public interface CadastrarClienteCasoDeUso {
+public interface CadastrarClienteUC {
     ClienteResponseDTO executar(ClienteRequestDTO novoCliente);
 }

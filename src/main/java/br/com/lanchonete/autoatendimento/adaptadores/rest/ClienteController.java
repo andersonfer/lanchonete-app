@@ -2,8 +2,8 @@ package br.com.lanchonete.autoatendimento.adaptadores.rest;
 
 import br.com.lanchonete.autoatendimento.aplicacao.dto.ClienteRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.dto.ClienteResponseDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.interfaces.cliente.CadastrarClienteCasoDeUso;
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.interfaces.cliente.IdentificarClienteCasoDeUso;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.cliente.CadastrarClienteUC;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.cliente.IdentificarClienteUC;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class ClienteController {
 
-    private final CadastrarClienteCasoDeUso cadastrarClienteCasoDeUso;
-    private final IdentificarClienteCasoDeUso identificarClienteCasoDeUso;
+    private final CadastrarClienteUC cadastrarClienteUC;
+    private final IdentificarClienteUC identificarClienteUC;
 
     @PostMapping
     @Operation(
@@ -31,7 +31,7 @@ public class ClienteController {
         }
     )
     public ResponseEntity<ClienteResponseDTO> cadastrarCliente(@RequestBody ClienteRequestDTO novoCliente) {
-        ClienteResponseDTO clienteCadastrado = cadastrarClienteCasoDeUso.executar(novoCliente);
+        ClienteResponseDTO clienteCadastrado = cadastrarClienteUC.executar(novoCliente);
         return new ResponseEntity<>(clienteCadastrado, HttpStatus.CREATED);
     }
 
@@ -45,7 +45,7 @@ public class ClienteController {
             }
     )
     public ResponseEntity<ClienteResponseDTO> identificarPorCpf(@PathVariable String cpf) {
-        return identificarClienteCasoDeUso.executar(cpf)
+        return identificarClienteUC.executar(cpf)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

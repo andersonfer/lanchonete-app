@@ -1,9 +1,9 @@
 package br.com.lanchonete.autoatendimento.infra;
 
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.implementacoes.produto.BuscarProdutosPorCategoria;
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.implementacoes.produto.CriarProduto;
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.implementacoes.produto.EditarProduto;
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.implementacoes.produto.RemoverProduto;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto.BuscarProdutosPorCategoria;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto.CriarProduto;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto.EditarProduto;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto.RemoverProduto;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

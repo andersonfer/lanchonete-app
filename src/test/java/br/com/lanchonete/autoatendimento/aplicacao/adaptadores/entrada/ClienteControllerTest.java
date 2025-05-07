@@ -4,8 +4,8 @@ import br.com.lanchonete.autoatendimento.adaptadores.rest.ClienteController;
 import br.com.lanchonete.autoatendimento.aplicacao.dto.ClienteRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.interfaces.cliente.CadastrarClienteCasoDeUso;
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.interfaces.cliente.IdentificarClienteCasoDeUso;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.cliente.CadastrarClienteUC;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.cliente.IdentificarClienteUC;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -36,10 +36,10 @@ class ClienteControllerTest {
     private ObjectMapper objectMapper;
 
     @MockitoBean
-    private CadastrarClienteCasoDeUso cadastrarClienteCasoDeUso;
+    private CadastrarClienteUC cadastrarClienteUC;
 
     @MockitoBean
-    private IdentificarClienteCasoDeUso identificarClienteCasoDeUso;
+    private IdentificarClienteUC identificarClienteUC;
 
     private ClienteRequestDTO novoCliente;
 
@@ -56,7 +56,7 @@ class ClienteControllerTest {
                 "Teste da Silva","12345678901", "teste@email.com");
 
 
-        when(cadastrarClienteCasoDeUso.executar(any(ClienteRequestDTO.class))).thenReturn(resposta);
+        when(cadastrarClienteUC.executar(any(ClienteRequestDTO.class))).thenReturn(resposta);
 
         mockMvc.perform(post("/clientes")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -75,7 +75,7 @@ class ClienteControllerTest {
     @DisplayName("Deve retornar status 400 quando o UC lançar ValidacaoException")
     void t2() throws Exception {
 
-        when(cadastrarClienteCasoDeUso.executar(any(ClienteRequestDTO.class))).thenThrow(new ValidacaoException("Erro de validação ou duplicidade"));
+        when(cadastrarClienteUC.executar(any(ClienteRequestDTO.class))).thenThrow(new ValidacaoException("Erro de validação ou duplicidade"));
 
         mockMvc.perform(post("/clientes")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -93,7 +93,7 @@ class ClienteControllerTest {
         ClienteResponseDTO resposta = new ClienteResponseDTO(1L,
                 "Teste da Silva",cpf, "teste@email.com");
 
-        when(identificarClienteCasoDeUso.executar(cpf)).thenReturn(Optional.of(resposta));
+        when(identificarClienteUC.executar(cpf)).thenReturn(Optional.of(resposta));
 
         mockMvc.perform(get("/clientes/cpf/{cpf}", cpf))
                 .andExpect(status().isOk())
@@ -110,7 +110,7 @@ class ClienteControllerTest {
 
         String cpfInexistente = "99999999999";
 
-        when(identificarClienteCasoDeUso.executar(cpfInexistente)).thenReturn(Optional.empty());
+        when(identificarClienteUC.executar(cpfInexistente)).thenReturn(Optional.empty());
 
 
         mockMvc.perform(get("/clientes/cpf/{cpf}", cpfInexistente))
@@ -123,7 +123,7 @@ class ClienteControllerTest {
 
         String cpfInvalido = "123";
 
-        when(identificarClienteCasoDeUso.executar(anyString()))
+        when(identificarClienteUC.executar(anyString()))
                 .thenThrow(new ValidacaoException("CPF deve conter 11 dígitos numéricos"));
 
 

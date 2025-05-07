@@ -2,10 +2,10 @@ package br.com.lanchonete.autoatendimento.adaptadores.rest;
 
 import br.com.lanchonete.autoatendimento.aplicacao.dto.ProdutoRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.dto.ProdutoResponseDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.interfaces.produto.BuscarProdutosPorCategoriaUC;
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.interfaces.produto.CriarProdutoUC;
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.interfaces.produto.EditarProdutoUC;
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.interfaces.produto.RemoverProdutoUC;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.produto.BuscarProdutosPorCategoriaUC;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.produto.CriarProdutoUC;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.produto.EditarProdutoUC;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.produto.RemoverProdutoUC;
 import br.com.lanchonete.autoatendimento.dominio.modelo.Categoria;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

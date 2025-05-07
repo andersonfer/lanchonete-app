@@ -1,7 +1,7 @@
 package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.saida;
 
-import br.com.lanchonete.autoatendimento.adaptadores.repositorios.ClienteRepositorioJDBC;
-import br.com.lanchonete.autoatendimento.aplicacao.dominio.Cliente;
+import br.com.lanchonete.autoatendimento.adaptadores.persistencia.ClienteRepositorioJDBC;
+import br.com.lanchonete.autoatendimento.dominio.modelo.Cliente;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -1,13 +1,13 @@
 package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ProdutoRequestDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ProdutoResponseDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.impl.produto.EditarProduto;
+import br.com.lanchonete.autoatendimento.aplicacao.dto.ProdutoRequestDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.dto.ProdutoResponseDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.implementacoes.produto.EditarProduto;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
-import br.com.lanchonete.autoatendimento.aplicacao.repositorios.ProdutoRepositorio;
-import br.com.lanchonete.autoatendimento.aplicacao.dominio.Categoria;
-import br.com.lanchonete.autoatendimento.aplicacao.dominio.Produto;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.dominio.modelo.Categoria;
+import br.com.lanchonete.autoatendimento.dominio.modelo.Produto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

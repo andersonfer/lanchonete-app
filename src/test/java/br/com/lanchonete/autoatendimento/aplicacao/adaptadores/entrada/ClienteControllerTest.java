@@ -1,8 +1,8 @@
 package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
-import br.com.lanchonete.autoatendimento.adaptadores.controladores.ClienteController;
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteRequestDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ClienteResponseDTO;
+import br.com.lanchonete.autoatendimento.adaptadores.rest.ClienteController;
+import br.com.lanchonete.autoatendimento.aplicacao.dto.ClienteRequestDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.interfaces.cliente.CadastrarClienteCasoDeUso;
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.interfaces.cliente.IdentificarClienteCasoDeUso;

@@ -1,12 +1,12 @@
 package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.saida;
 
-import br.com.lanchonete.autoatendimento.adaptadores.repositorios.ClienteRepositorioJDBC;
-import br.com.lanchonete.autoatendimento.adaptadores.repositorios.PedidoRepositorioJDBC;
-import br.com.lanchonete.autoatendimento.adaptadores.repositorios.ProdutoRepositorioJDBC;
-import br.com.lanchonete.autoatendimento.aplicacao.dominio.*;
+import br.com.lanchonete.autoatendimento.adaptadores.persistencia.ClienteRepositorioJDBC;
+import br.com.lanchonete.autoatendimento.adaptadores.persistencia.PedidoRepositorioJDBC;
+import br.com.lanchonete.autoatendimento.adaptadores.persistencia.ProdutoRepositorioJDBC;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RegistroNaoEncontradoException;
-import br.com.lanchonete.autoatendimento.aplicacao.repositorios.ClienteRepositorio;
-import br.com.lanchonete.autoatendimento.aplicacao.repositorios.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.dominio.modelo.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

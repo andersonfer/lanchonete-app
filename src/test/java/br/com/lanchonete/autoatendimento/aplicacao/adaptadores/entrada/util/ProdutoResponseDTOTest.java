@@ -1,8 +1,8 @@
 package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.util;
 
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ProdutoResponseDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.dominio.Categoria;
-import br.com.lanchonete.autoatendimento.aplicacao.dominio.Produto;
+import br.com.lanchonete.autoatendimento.aplicacao.dto.ProdutoResponseDTO;
+import br.com.lanchonete.autoatendimento.dominio.modelo.Categoria;
+import br.com.lanchonete.autoatendimento.dominio.modelo.Produto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

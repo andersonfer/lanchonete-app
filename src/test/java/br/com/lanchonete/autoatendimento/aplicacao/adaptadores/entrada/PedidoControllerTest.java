@@ -1,15 +1,15 @@
 package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
 
-import br.com.lanchonete.autoatendimento.adaptadores.controladores.PedidoController;
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ItemPedidoDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.ItemPedidoResponseDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.PedidoRequestDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada.dto.PedidoResponseDTO;
+import br.com.lanchonete.autoatendimento.adaptadores.rest.PedidoController;
+import br.com.lanchonete.autoatendimento.aplicacao.dto.ItemPedidoDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.dto.ItemPedidoResponseDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.dto.PedidoRequestDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.dto.PedidoResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.interfaces.pedido.ListarPedidosUC;
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.interfaces.pedido.RealizarPedidoUC;
-import br.com.lanchonete.autoatendimento.aplicacao.dominio.StatusPedido;
+import br.com.lanchonete.autoatendimento.dominio.modelo.StatusPedido;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

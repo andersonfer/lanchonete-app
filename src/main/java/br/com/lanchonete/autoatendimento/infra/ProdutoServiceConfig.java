@@ -1,10 +1,10 @@
 package br.com.lanchonete.autoatendimento.infra;
 
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.impl.produto.BuscarProdutosPorCategoria;
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.impl.produto.CriarProduto;
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.impl.produto.EditarProduto;
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.impl.produto.RemoverProduto;
-import br.com.lanchonete.autoatendimento.aplicacao.repositorios.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.implementacoes.produto.BuscarProdutosPorCategoria;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.implementacoes.produto.CriarProduto;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.implementacoes.produto.EditarProduto;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.implementacoes.produto.RemoverProduto;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

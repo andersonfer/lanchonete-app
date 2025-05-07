@@ -1,11 +1,11 @@
 package br.com.lanchonete.autoatendimento.infra;
 
-import br.com.lanchonete.autoatendimento.adaptadores.repositorios.ClienteRepositorioJDBC;
-import br.com.lanchonete.autoatendimento.adaptadores.repositorios.PedidoRepositorioJDBC;
-import br.com.lanchonete.autoatendimento.adaptadores.repositorios.ProdutoRepositorioJDBC;
-import br.com.lanchonete.autoatendimento.aplicacao.repositorios.ClienteRepositorio;
-import br.com.lanchonete.autoatendimento.aplicacao.repositorios.PedidoRepositorio;
-import br.com.lanchonete.autoatendimento.aplicacao.repositorios.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.adaptadores.persistencia.ClienteRepositorioJDBC;
+import br.com.lanchonete.autoatendimento.adaptadores.persistencia.PedidoRepositorioJDBC;
+import br.com.lanchonete.autoatendimento.adaptadores.persistencia.ProdutoRepositorioJDBC;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.PedidoRepositorio;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;

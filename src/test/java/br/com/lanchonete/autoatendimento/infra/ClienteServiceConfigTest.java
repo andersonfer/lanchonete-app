@@ -1,8 +1,8 @@
 package br.com.lanchonete.autoatendimento.infra;
 
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.impl.cliente.CadastrarCliente;
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.impl.cliente.IdentificarCliente;
-import br.com.lanchonete.autoatendimento.aplicacao.repositorios.ClienteRepositorio;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.implementacoes.cliente.CadastrarCliente;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.implementacoes.cliente.IdentificarCliente;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

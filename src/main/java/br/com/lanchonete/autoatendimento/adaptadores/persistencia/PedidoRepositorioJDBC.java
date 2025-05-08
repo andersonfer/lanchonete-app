@@ -140,14 +140,16 @@ public class PedidoRepositorioJDBC implements PedidoRepositorio {
                     .orElse(null);
         }
 
-        return Pedido.builder()
-                .id(rs.getLong("id"))
-                .cliente(cliente)
-                .status(StatusPedido.valueOf(rs.getString("status")))
-                .dataCriacao(rs.getTimestamp("data_criacao").toLocalDateTime())
-                .valorTotal(rs.getBigDecimal("valor_total"))
-                .itens(new ArrayList<>())
-                .build();
+        Pedido pedido = Pedido.criar(
+                cliente,
+                StatusPedido.valueOf(rs.getString("status")),
+                rs.getTimestamp("data_criacao").toLocalDateTime()
+        );
+
+        pedido.setId(rs.getLong("id"));
+        pedido.setValorTotal(rs.getBigDecimal("valor_total"));
+
+        return pedido;
     }
 
     private ItemPedido mapearItemPedido(ResultSet rs, Pedido pedido) throws SQLException {

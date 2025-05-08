@@ -59,13 +59,8 @@ class ListarPedidosTest {
                 Categoria.BEBIDA);
 
         // Criar pedido com cliente
-        pedidoComCliente = Pedido.builder()
-                .id(1L)
-                .cliente(cliente)
-                .status(StatusPedido.RECEBIDO)
-                .dataCriacao(LocalDateTime.now())
-                .itens(new ArrayList<>())
-                .build();
+        pedidoComCliente = Pedido.criar(cliente,StatusPedido.RECEBIDO,LocalDateTime.now());
+        pedidoComCliente.setId(1L);
 
         // Adicionar item ao pedido com cliente
         ItemPedido itemDoPedidoComCliente = ItemPedido.builder()
@@ -80,13 +75,8 @@ class ListarPedidosTest {
         pedidoComCliente.setValorTotal(new BigDecimal("51.80"));
 
         // Criar pedido sem cliente
-        pedidoSemCliente = Pedido.builder()
-                .id(2L)
-                .cliente(null)
-                .status(StatusPedido.FINALIZADO)
-                .dataCriacao(LocalDateTime.now().minusHours(1))
-                .itens(new ArrayList<>())
-                .build();
+        pedidoSemCliente = Pedido.criar(null,StatusPedido.FINALIZADO,LocalDateTime.now().minusHours(1));
+        pedidoSemCliente.setId(2L);
 
         // Adicionar item ao pedido sem cliente
         ItemPedido itemDoPedidoSemCliente = ItemPedido.builder()

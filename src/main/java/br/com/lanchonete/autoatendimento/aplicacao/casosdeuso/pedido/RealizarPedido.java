@@ -3,9 +3,9 @@ package br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido;
 import br.com.lanchonete.autoatendimento.aplicacao.dto.ItemPedidoDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.dto.PedidoRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.dto.PedidoResponseDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.pedido.RealizarPedidoUC;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.pedido.RealizarPedidoUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.PedidoRepositorio;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -30,24 +29,31 @@ public class RealizarPedido implements RealizarPedidoUC {
     @Override
     @Transactional
     public PedidoResponseDTO executar(PedidoRequestDTO novoPedido) {
-        
-        validarPedido(novoPedido);
-        
-        Cliente cliente = buscarCliente(novoPedido.cpfCliente());
 
-        Pedido pedido = Pedido.builder()
-                .cliente(cliente)
-                .status(StatusPedido.RECEBIDO)
-                .dataCriacao(LocalDateTime.now())
-                .itens(new ArrayList<>())
-                .build();
-        
-        adicionarItensAoPedido(pedido,novoPedido.itens());
-        pedido.calcularValorTotal();
+        if (novoPedido == null) {
+            throw new ValidacaoException("Pedido não pode ser nulo");
+        }
 
-        Pedido pedidoSalvo = pedidoRepositorio.salvar(pedido);
+        try {
+            Cliente cliente = buscarCliente(novoPedido.cpfCliente());
 
-        return PedidoResponseDTO.converterParaDTO(pedidoSalvo);
+            Pedido pedido = Pedido.criar(
+                    cliente,
+                    StatusPedido.RECEBIDO,
+                    LocalDateTime.now()
+            );
+
+            adicionarItensAoPedido(pedido,novoPedido.itens());
+
+            pedido.validar();
+
+            Pedido pedidoSalvo = pedidoRepositorio.salvar(pedido);
+
+            return PedidoResponseDTO.converterParaDTO(pedidoSalvo);
+        } catch (IllegalArgumentException e) {
+            throw new ValidacaoException(e.getMessage());
+        }
+
     }
 
     private void adicionarItensAoPedido(Pedido pedido, List<ItemPedidoDTO> itens) {
@@ -76,23 +82,4 @@ public class RealizarPedido implements RealizarPedidoUC {
        }
    }
 
-   private void validarPedido(PedidoRequestDTO pedidoRequest) {
-        if (pedidoRequest == null) {
-            throw new ValidacaoException("Pedido não pode ser nulo");
-        }
-
-        if (pedidoRequest.itens() == null || pedidoRequest.itens().isEmpty()) {
-            throw new ValidacaoException("Pedido deve conter pelo menos um item");
-        }
-
-        for (ItemPedidoDTO item : pedidoRequest.itens()) {
-            if (item.produtoId() == null) {
-                throw new ValidacaoException("ID do produto é obrigatório");
-            }
-
-            if (item.quantidade() <= 0) {
-                throw new ValidacaoException("Quantidade deve ser maior que zero");
-            }
-        }
-    }
 }

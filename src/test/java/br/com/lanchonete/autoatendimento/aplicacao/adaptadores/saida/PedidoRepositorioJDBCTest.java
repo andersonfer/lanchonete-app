@@ -62,12 +62,7 @@ class PedidoRepositorioJDBCTest {
     @DisplayName("Deve salvar um pedido completo com sucesso")
     void t1() {
         // Criar um pedido com cliente
-        Pedido pedido = Pedido.builder()
-                .cliente(cliente)
-                .status(StatusPedido.RECEBIDO)
-                .dataCriacao(LocalDateTime.now())
-                .itens(new ArrayList<>())
-                .build();
+        Pedido pedido = Pedido.criar(cliente, StatusPedido.RECEBIDO, LocalDateTime.now());
 
         // Adicionar itens ao pedido
         ItemPedido item1 = ItemPedido.builder()
@@ -106,12 +101,7 @@ class PedidoRepositorioJDBCTest {
     @DisplayName("Deve salvar um pedido sem cliente identificado")
     void t2() {
         // Criar um pedido sem cliente (cliente não identificado)
-        Pedido pedido = Pedido.builder()
-                .cliente(null)
-                .status(StatusPedido.RECEBIDO)
-                .dataCriacao(LocalDateTime.now())
-                .itens(new ArrayList<>())
-                .build();
+        Pedido pedido = Pedido.criar(null, StatusPedido.RECEBIDO, LocalDateTime.now());
 
         // Adicionar um item ao pedido
         ItemPedido item = ItemPedido.builder()
@@ -137,12 +127,7 @@ class PedidoRepositorioJDBCTest {
     @DisplayName("Deve buscar um pedido por ID com seus itens")
     void t3() {
         // Criar e salvar um pedido para o teste
-        Pedido pedido = Pedido.builder()
-                .cliente(cliente)
-                .status(StatusPedido.RECEBIDO)
-                .dataCriacao(LocalDateTime.now())
-                .itens(new ArrayList<>())
-                .build();
+        Pedido pedido = Pedido.criar(cliente, StatusPedido.RECEBIDO, LocalDateTime.now());
 
         ItemPedido item = ItemPedido.builder()
                 .produto(Produto.criarSemValidacao(produtoLanche.getId(), produtoLanche.getNome(),
@@ -181,23 +166,13 @@ class PedidoRepositorioJDBCTest {
 
         // Criar e salvar dois pedidos com datas diferentes
         LocalDateTime dataAnterior = LocalDateTime.now().minusHours(1);
-        Pedido pedidoAntigo = Pedido.builder()
-                .cliente(null)
-                .status(StatusPedido.RECEBIDO)
-                .dataCriacao(dataAnterior)
-                .itens(new ArrayList<>())
-                .valorTotal(BigDecimal.TEN)
-                .build();
+        Pedido pedidoAntigo = Pedido.criar(cliente, StatusPedido.RECEBIDO, dataAnterior);
+        pedidoAntigo.setValorTotal(BigDecimal.TEN);
         pedidoRepositorio.salvar(pedidoAntigo);
 
         LocalDateTime dataMaisRecente = LocalDateTime.now();
-        Pedido pedidoRecente = Pedido.builder()
-                .cliente(cliente)
-                .status(StatusPedido.RECEBIDO)
-                .dataCriacao(dataMaisRecente)
-                .itens(new ArrayList<>())
-                .valorTotal(BigDecimal.ONE)
-                .build();
+        Pedido pedidoRecente = Pedido.criar(cliente, StatusPedido.RECEBIDO, dataMaisRecente);
+        pedidoRecente.setValorTotal(BigDecimal.ONE);
         pedidoRepositorio.salvar(pedidoRecente);
 
         // Listar todos os pedidos
@@ -214,13 +189,8 @@ class PedidoRepositorioJDBCTest {
     @DisplayName("Deve atualizar o status de um pedido")
     void t6() {
         // Criar e salvar um pedido para o teste
-        Pedido pedido = Pedido.builder()
-                .cliente(null)
-                .status(StatusPedido.RECEBIDO)
-                .dataCriacao(LocalDateTime.now())
-                .itens(new ArrayList<>())
-                .valorTotal(BigDecimal.TEN)
-                .build();
+        Pedido pedido = Pedido.criar(cliente, StatusPedido.RECEBIDO, LocalDateTime.now());
+        pedido.setValorTotal(BigDecimal.TEN);
         Pedido pedidoSalvo = pedidoRepositorio.salvar(pedido);
 
         // Atualizar o status

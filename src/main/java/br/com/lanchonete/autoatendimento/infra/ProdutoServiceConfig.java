@@ -12,17 +12,17 @@ import org.springframework.context.annotation.Configuration;
 public class ProdutoServiceConfig {
 
     @Bean
-    public BuscarProdutosPorCategoria buscarProdutosPorCategoria(ProdutoRepositorio produtoRepositorio) {
+    BuscarProdutosPorCategoria buscarProdutosPorCategoria(ProdutoRepositorio produtoRepositorio) {
         return new BuscarProdutosPorCategoria(produtoRepositorio);
     }
 
     @Bean
-    public CriarProduto criarProduto(ProdutoRepositorio produtoRepositorio) {
+    CriarProduto criarProduto(ProdutoRepositorio produtoRepositorio) {
         return new CriarProduto(produtoRepositorio);
     }
 
     @Bean
-    public EditarProduto editarProduto(ProdutoRepositorio produtoRepositorio) {
+    EditarProduto editarProduto(ProdutoRepositorio produtoRepositorio) {
         return new EditarProduto(produtoRepositorio);
     }
 

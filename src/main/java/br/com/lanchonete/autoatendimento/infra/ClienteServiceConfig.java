@@ -10,12 +10,12 @@ import org.springframework.context.annotation.Configuration;
 public class ClienteServiceConfig {
 
     @Bean
-    public CadastrarCliente cadastrarCliente(ClienteRepositorio clienteRepositorio) {
+    CadastrarCliente cadastrarCliente(ClienteRepositorio clienteRepositorio) {
         return new CadastrarCliente(clienteRepositorio);
     }
 
     @Bean
-    public IdentificarCliente identificarCliente(ClienteRepositorio clienteRepositorio){
+    IdentificarCliente identificarCliente(ClienteRepositorio clienteRepositorio){
         return new IdentificarCliente(clienteRepositorio);
     }
 }

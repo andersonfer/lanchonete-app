@@ -12,14 +12,14 @@ import org.springframework.context.annotation.Configuration;
 public class PedidoServiceConfig {
 
     @Bean
-    ListarPedidos listarPedidos(PedidoRepositorio pedidoRepositorio) {
+    ListarPedidos listarPedidos(final PedidoRepositorio pedidoRepositorio) {
         return new ListarPedidos(pedidoRepositorio);
     }
 
     @Bean
-    RealizarPedido realizarPedido(PedidoRepositorio pedidoRepositorio,
-                                           ClienteRepositorio clienteRepositorio,
-                                           ProdutoRepositorio produtoRepositorio) {
+    RealizarPedido realizarPedido(final PedidoRepositorio pedidoRepositorio,
+                                  final ClienteRepositorio clienteRepositorio,
+                                  final ProdutoRepositorio produtoRepositorio) {
         return new RealizarPedido(pedidoRepositorio, clienteRepositorio, produtoRepositorio);
     }
 }

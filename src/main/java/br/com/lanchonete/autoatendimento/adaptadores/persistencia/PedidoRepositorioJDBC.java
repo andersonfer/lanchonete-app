@@ -41,15 +41,15 @@ public class PedidoRepositorioJDBC implements PedidoRepositorio {
 
     @Override
     @Transactional
-    public Pedido salvar(Pedido pedido) {
+    public Pedido salvar(final Pedido pedido) {
         // 1. Salvar pedido
-        Map<String, Object> pedidoParams = new HashMap<>();
+        final Map<String, Object> pedidoParams = new HashMap<>();
         pedidoParams.put("cliente_id", pedido.getCliente() != null ? pedido.getCliente().getId() : null);
         pedidoParams.put("status", pedido.getStatus().name());
         pedidoParams.put("data_criacao", Timestamp.valueOf(pedido.getDataCriacao()));
         pedidoParams.put("valor_total", pedido.getValorTotal());
 
-        Number pedidoId = pedidoInserter.executeAndReturnKey(pedidoParams);
+        final Number pedidoId = pedidoInserter.executeAndReturnKey(pedidoParams);
         pedido.setId(pedidoId.longValue());
 
         // 2. Salvar itens do pedido
@@ -71,7 +71,7 @@ public class PedidoRepositorioJDBC implements PedidoRepositorio {
     }
 
     @Override
-    public Optional<Pedido> buscarPorId(Long id) {
+    public Optional<Pedido> buscarPorId(final Long id) {
         try {
             // 1. Buscar pedido
             Pedido pedido = jdbcTemplate.queryForObject(
@@ -99,13 +99,13 @@ public class PedidoRepositorioJDBC implements PedidoRepositorio {
     @Override
     public List<Pedido> listarTodos() {
         // 1. Buscar todos os pedidos
-        List<Pedido> pedidos = jdbcTemplate.query(
+        final List<Pedido> pedidos = jdbcTemplate.query(
                 "SELECT * FROM pedido ORDER BY data_criacao DESC",
                 (rs, rowNum) -> mapearPedido(rs)
         );
 
         // 2. Para cada pedido, buscar seus itens
-        for (Pedido pedido : pedidos) {
+        for (final Pedido pedido : pedidos) {
             List<ItemPedido> itens = jdbcTemplate.query(
                     "SELECT * FROM item_pedido WHERE pedido_id = ?",
                     (rs, rowNum) -> mapearItemPedido(rs, pedido),
@@ -119,7 +119,7 @@ public class PedidoRepositorioJDBC implements PedidoRepositorio {
 
     @Override
     @Transactional
-    public void atualizarStatus(Long pedidoId, StatusPedido novoStatus) {
+    public void atualizarStatus(final Long pedidoId, final StatusPedido novoStatus) {
         int linhasAfetadas = jdbcTemplate.update(
                 "UPDATE pedido SET status = ? WHERE id = ?",
                 novoStatus.name(), pedidoId
@@ -130,8 +130,8 @@ public class PedidoRepositorioJDBC implements PedidoRepositorio {
         }
     }
 
-    private Pedido mapearPedido(ResultSet rs) throws SQLException {
-        Long clienteId = rs.getLong("cliente_id");
+    private Pedido mapearPedido(final ResultSet rs) throws SQLException {
+        final Long clienteId = rs.getLong("cliente_id");
         Cliente cliente = null;
 
         // Se existir cliente_id, buscar o cliente
@@ -152,9 +152,9 @@ public class PedidoRepositorioJDBC implements PedidoRepositorio {
         return pedido;
     }
 
-    private ItemPedido mapearItemPedido(ResultSet rs, Pedido pedido) throws SQLException {
-        Long produtoId = rs.getLong("produto_id");
-        Produto produto = produtoRepositorio.buscarPorId(produtoId)
+    private ItemPedido mapearItemPedido(final ResultSet rs, final Pedido pedido) throws SQLException {
+        final Long produtoId = rs.getLong("produto_id");
+        final Produto produto = produtoRepositorio.buscarPorId(produtoId)
                 .orElseThrow(() -> new RegistroNaoEncontradoException("Produto", produtoId));
 
         return ItemPedido.builder()

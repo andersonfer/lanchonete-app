@@ -30,8 +30,8 @@ public class ClienteController {
                 @ApiResponse(responseCode = "400", description = "Dados inválidos ou CPF já cadastrado")
         }
     )
-    public ResponseEntity<ClienteResponseDTO> cadastrarCliente(@RequestBody ClienteRequestDTO novoCliente) {
-        ClienteResponseDTO clienteCadastrado = cadastrarClienteUC.executar(novoCliente);
+    public ResponseEntity<ClienteResponseDTO> cadastrarCliente(@RequestBody final ClienteRequestDTO novoCliente) {
+        final ClienteResponseDTO clienteCadastrado = cadastrarClienteUC.executar(novoCliente);
         return new ResponseEntity<>(clienteCadastrado, HttpStatus.CREATED);
     }
 
@@ -44,7 +44,7 @@ public class ClienteController {
                     @ApiResponse(responseCode = "404", description = "Cliente não encontrado")
             }
     )
-    public ResponseEntity<ClienteResponseDTO> identificarPorCpf(@PathVariable String cpf) {
+    public ResponseEntity<ClienteResponseDTO> identificarPorCpf(@PathVariable final String cpf) {
         return identificarClienteUC.executar(cpf)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());

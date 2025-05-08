@@ -16,19 +16,19 @@ public class CriarProduto implements CriarProdutoUC {
     private final ProdutoRepositorio produtoRepositorio;
 
     @Override
-    public ProdutoResponseDTO executar(ProdutoRequestDTO novoProduto) {
+    public ProdutoResponseDTO executar(final ProdutoRequestDTO novoProduto) {
         try {
             if (produtoRepositorio.existePorNome(novoProduto.nome())) {
                 throw new ValidacaoException("Já existe um produto com este nome");
             }
 
-            Produto produto = Produto.criar(
+            final Produto produto = Produto.criar(
                     novoProduto.nome(),
                     novoProduto.descricao(),
                     novoProduto.preco(),
                     novoProduto.categoria());
 
-            Produto produtoSalvo = produtoRepositorio.salvar(produto);
+            final Produto produtoSalvo = produtoRepositorio.salvar(produto);
 
             return ProdutoResponseDTO.converterParaDTO(produtoSalvo);
         } catch (IllegalArgumentException e) {

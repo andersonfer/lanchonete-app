@@ -17,7 +17,7 @@ public class IdentificarCliente implements IdentificarClienteUC {
     private final ClienteRepositorio clienteRepositorio;
 
     @Override
-    public Optional<ClienteResponseDTO> executar(String cpf) {
+    public Optional<ClienteResponseDTO> executar(final String cpf) {
 
         if (cpf == null || cpf.isBlank()) {
             throw new ValidacaoException("CPF é obrigatório");

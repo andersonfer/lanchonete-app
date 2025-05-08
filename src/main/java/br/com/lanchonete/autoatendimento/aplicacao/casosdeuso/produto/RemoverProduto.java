@@ -17,13 +17,13 @@ public class RemoverProduto implements RemoverProdutoUC {
     private final ProdutoRepositorio produtoRepositorio;
 
     @Override
-    public void executar(Long id) {
+    public void executar(final Long id) {
 
         if (id == null) {
             throw new ValidacaoException("ID do produto é obrigatório");
         }
 
-        Optional<Produto> produto = produtoRepositorio.buscarPorId(id);
+        final Optional<Produto> produto = produtoRepositorio.buscarPorId(id);
         if (produto.isEmpty()) {
             throw new RecursoNaoEncontradoException("Produto não encontrado");
         }

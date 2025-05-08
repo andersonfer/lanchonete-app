@@ -33,8 +33,8 @@ public class PedidoController {
                     @ApiResponse(responseCode = "404", description = "Cliente ou produto não encontrado")
             }
     )
-    public ResponseEntity<PedidoResponseDTO> realizarCheckout(@RequestBody PedidoRequestDTO pedidoRequest) {
-        PedidoResponseDTO pedidoResponse = realizarPedidoUC.executar(pedidoRequest);
+    public ResponseEntity<PedidoResponseDTO> realizarCheckout(@RequestBody final PedidoRequestDTO pedidoRequest) {
+        final PedidoResponseDTO pedidoResponse = realizarPedidoUC.executar(pedidoRequest);
         return new ResponseEntity<>(pedidoResponse, HttpStatus.CREATED);
     }
 
@@ -47,7 +47,7 @@ public class PedidoController {
             }
     )
     public ResponseEntity<List<PedidoResponseDTO>> listarPedidos() {
-        List<PedidoResponseDTO> pedidos = listarPedidosUC.executar();
+        final List<PedidoResponseDTO> pedidos = listarPedidosUC.executar();
         return ResponseEntity.ok(pedidos);
     }
 }

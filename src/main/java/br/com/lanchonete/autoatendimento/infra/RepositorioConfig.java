@@ -14,17 +14,17 @@ import org.springframework.jdbc.core.JdbcTemplate;
 public class RepositorioConfig {
 
     @Bean
-    ClienteRepositorio clienteRepositorio(JdbcTemplate jdbcTemplate) {
+    ClienteRepositorio clienteRepositorio(final JdbcTemplate jdbcTemplate) {
         return new ClienteRepositorioJDBC(jdbcTemplate);
     }
 
     @Bean
-    ProdutoRepositorio produtoRepositorio(JdbcTemplate jdbcTemplate) {
+    ProdutoRepositorio produtoRepositorio(final JdbcTemplate jdbcTemplate) {
         return new ProdutoRepositorioJDBC(jdbcTemplate);
     }
 
     @Bean
-    PedidoRepositorio pedidoRepositorio(JdbcTemplate jdbcTemplate, ClienteRepositorio clienteRepositorio, ProdutoRepositorio produtoRepositorio) {
+    PedidoRepositorio pedidoRepositorio(final JdbcTemplate jdbcTemplate, final ClienteRepositorio clienteRepositorio, final ProdutoRepositorio produtoRepositorio) {
         return new PedidoRepositorioJDBC(jdbcTemplate, clienteRepositorio, produtoRepositorio);
     }
 }

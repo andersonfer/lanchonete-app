@@ -14,6 +14,13 @@ public class ClienteRepositorioJDBC implements ClienteRepositorio {
 
     private final JdbcTemplate jdbcTemplate;
     private final SimpleJdbcInsert inserter;
+    private final RowMapper<Cliente> clienteRowMapper = (rs, rowNum) ->
+            Cliente.criarSemValidacao(
+                    rs.getLong("id"),
+                    rs.getString("nome"),
+                    rs.getString("email"),
+                    rs.getString("cpf")
+            );
 
     public ClienteRepositorioJDBC(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -22,17 +29,8 @@ public class ClienteRepositorioJDBC implements ClienteRepositorio {
                 .usingGeneratedKeyColumns("id");
     }
 
-    private final RowMapper<Cliente> clienteRowMapper = (rs, rowNum) ->
-        Cliente.criarSemValidacao(
-                rs.getLong("id"),
-                rs.getString("nome"),
-                rs.getString("email"),
-                rs.getString("cpf")
-        );
-
-
     @Override
-    public Cliente salvar(Cliente cliente) {
+    public Cliente salvar(final Cliente cliente) {
         if (cliente.getId() == null) {
             Map<String, Object> params = Map.of(
                     "nome", cliente.getNome(),
@@ -47,7 +45,7 @@ public class ClienteRepositorioJDBC implements ClienteRepositorio {
     }
 
     @Override
-    public Optional<Cliente> buscarPorCpf(String cpf) {
+    public Optional<Cliente> buscarPorCpf(final String cpf) {
         try {
             Cliente cliente = jdbcTemplate.queryForObject("SELECT * FROM cliente WHERE cpf = ?",
                     clienteRowMapper, cpf);
@@ -58,7 +56,7 @@ public class ClienteRepositorioJDBC implements ClienteRepositorio {
     }
 
     @Override
-    public Optional<Cliente> buscarPorId(Long id) {
+    public Optional<Cliente> buscarPorId(final Long id) {
         try {
             Cliente cliente = jdbcTemplate.queryForObject("SELECT * FROM cliente WHERE id = ?",
                     clienteRowMapper, id);

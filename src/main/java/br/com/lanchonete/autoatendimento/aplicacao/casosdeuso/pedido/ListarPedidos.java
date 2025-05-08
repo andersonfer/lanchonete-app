@@ -18,7 +18,7 @@ public class ListarPedidos implements ListarPedidosUC {
 
     @Override
     public List<PedidoResponseDTO> executar() {
-        List<Pedido> pedidos = pedidoRepositorio.listarTodos();
+        final List<Pedido> pedidos = pedidoRepositorio.listarTodos();
 
         return pedidos.stream()
                 .map(PedidoResponseDTO::converterParaDTO)

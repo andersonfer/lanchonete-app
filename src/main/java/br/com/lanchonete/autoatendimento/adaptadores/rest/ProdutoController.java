@@ -37,8 +37,8 @@ public class ProdutoController {
                     @ApiResponse(responseCode = "400", description = "Dados inválidos ou nome duplicado")
             }
     )
-    public ResponseEntity<ProdutoResponseDTO> criar(@RequestBody ProdutoRequestDTO produtoRequest) {
-        ProdutoResponseDTO produto = criarProdutoUC.executar(produtoRequest);
+    public ResponseEntity<ProdutoResponseDTO> criar(@RequestBody final ProdutoRequestDTO produtoRequest) {
+        final ProdutoResponseDTO produto = criarProdutoUC.executar(produtoRequest);
         return new ResponseEntity<>(produto, HttpStatus.CREATED);
     }
 
@@ -52,8 +52,8 @@ public class ProdutoController {
                     @ApiResponse(responseCode = "404", description = "Produto não encontrado")
             }
     )
-    public ResponseEntity<ProdutoResponseDTO> editar(@PathVariable Long id, @RequestBody ProdutoRequestDTO produtoRequest) {
-        ProdutoResponseDTO produto = editarProdutoUC.executar(id, produtoRequest);
+    public ResponseEntity<ProdutoResponseDTO> editar(@PathVariable final Long id, @RequestBody final ProdutoRequestDTO produtoRequest) {
+        final ProdutoResponseDTO produto = editarProdutoUC.executar(id, produtoRequest);
         return ResponseEntity.ok(produto);
     }
 
@@ -66,7 +66,7 @@ public class ProdutoController {
                     @ApiResponse(responseCode = "404", description = "Produto não encontrado")
             }
     )
-    public ResponseEntity<Void> remover(@PathVariable Long id) {
+    public ResponseEntity<Void> remover(@PathVariable final Long id) {
         removerProdutoUC.executar(id);
         return ResponseEntity.noContent().build();
     }
@@ -80,8 +80,8 @@ public class ProdutoController {
                     @ApiResponse(responseCode = "400", description = "Categoria inválida")
             }
     )
-    public ResponseEntity<List<ProdutoResponseDTO>> buscarPorCategoria(@PathVariable Categoria categoria) {
-        List<ProdutoResponseDTO> produtos = buscarProdutosPorCategoriaUC.executar(categoria);
+    public ResponseEntity<List<ProdutoResponseDTO>> buscarPorCategoria(@PathVariable final Categoria categoria) {
+        final List<ProdutoResponseDTO> produtos = buscarProdutosPorCategoriaUC.executar(categoria);
         return ResponseEntity.ok(produtos);
     }
 }

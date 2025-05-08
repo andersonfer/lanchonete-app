@@ -28,16 +28,16 @@ public class RealizarPedido implements RealizarPedidoUC {
 
     @Override
     @Transactional
-    public PedidoResponseDTO executar(PedidoRequestDTO novoPedido) {
+    public PedidoResponseDTO executar(final PedidoRequestDTO novoPedido) {
 
         if (novoPedido == null) {
             throw new ValidacaoException("Pedido não pode ser nulo");
         }
 
         try {
-            Cliente cliente = buscarCliente(novoPedido.cpfCliente());
+            final Cliente cliente = buscarCliente(novoPedido.cpfCliente());
 
-            Pedido pedido = Pedido.criar(
+            final Pedido pedido = Pedido.criar(
                     cliente,
                     StatusPedido.RECEBIDO,
                     LocalDateTime.now()
@@ -47,7 +47,7 @@ public class RealizarPedido implements RealizarPedidoUC {
 
             pedido.validar();
 
-            Pedido pedidoSalvo = pedidoRepositorio.salvar(pedido);
+            final Pedido pedidoSalvo = pedidoRepositorio.salvar(pedido);
 
             return PedidoResponseDTO.converterParaDTO(pedidoSalvo);
         } catch (IllegalArgumentException e) {
@@ -56,13 +56,13 @@ public class RealizarPedido implements RealizarPedidoUC {
 
     }
 
-    private void adicionarItensAoPedido(Pedido pedido, List<ItemPedidoDTO> itens) {
+    private void adicionarItensAoPedido(final Pedido pedido, final List<ItemPedidoDTO> itens) {
 
-        for (ItemPedidoDTO itemDTO : itens) {
-            Produto produto = produtoRepositorio.buscarPorId(itemDTO.produtoId())
+        for (final ItemPedidoDTO itemDTO : itens) {
+            final Produto produto = produtoRepositorio.buscarPorId(itemDTO.produtoId())
                     .orElseThrow(() -> new RecursoNaoEncontradoException("Produto não encontrado: " + itemDTO.produtoId()));
 
-            ItemPedido item = ItemPedido.builder()
+            final ItemPedido item = ItemPedido.builder()
                     .produto(produto)
                     .quantidade(itemDTO.quantidade())
                     .valorUnitario(produto.getPreco())
@@ -73,7 +73,7 @@ public class RealizarPedido implements RealizarPedidoUC {
         }
     }
 
-    private Cliente buscarCliente(String cpf) {
+    private Cliente buscarCliente(final String cpf) {
        if (StringUtils.isNotBlank(cpf)) {
            return clienteRepositorio.buscarPorCpf(cpf)
                    .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado com o CPF informado"));

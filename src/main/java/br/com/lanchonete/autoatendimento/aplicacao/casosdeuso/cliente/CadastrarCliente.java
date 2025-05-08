@@ -19,19 +19,19 @@ public class CadastrarCliente implements CadastrarClienteUC {
 
 
     @Override
-    public ClienteResponseDTO executar(ClienteRequestDTO novoCliente) {
+    public ClienteResponseDTO executar(final ClienteRequestDTO novoCliente) {
 
         try {
 
             validarDuplicidade(novoCliente);
 
-            Cliente cliente = Cliente.criar(
+            final Cliente cliente = Cliente.criar(
                     novoCliente.nome(),
                     novoCliente.email(),
                     novoCliente.cpf()
             );
 
-            Cliente clienteSalvo = clienteRepositorio.salvar(cliente);
+            final Cliente clienteSalvo = clienteRepositorio.salvar(cliente);
             return ClienteResponseDTO.converterParaDTO(clienteSalvo);
         } catch (IllegalArgumentException e) {
             throw new ValidacaoException(e.getMessage());
@@ -39,8 +39,8 @@ public class CadastrarCliente implements CadastrarClienteUC {
 
     }
 
-    private void validarDuplicidade(ClienteRequestDTO novoCliente){
-        Optional<Cliente> clienteExistente = clienteRepositorio.buscarPorCpf(novoCliente.cpf());
+    private void validarDuplicidade(final ClienteRequestDTO novoCliente){
+        final Optional<Cliente> clienteExistente = clienteRepositorio.buscarPorCpf(novoCliente.cpf());
         if (clienteExistente.isPresent()) {
             throw new ValidacaoException("CPF duplicado");
         }

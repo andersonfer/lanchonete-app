@@ -18,14 +18,6 @@ public class ProdutoRepositorioJDBC implements ProdutoRepositorio {
 
     private final JdbcTemplate jdbcTemplate;
     private final SimpleJdbcInsert inserter;
-
-    public ProdutoRepositorioJDBC(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.inserter = new SimpleJdbcInsert(jdbcTemplate)
-                .withTableName("produto")
-                .usingGeneratedKeyColumns("id");
-    }
-
     private final RowMapper<Produto> produtoRowMapper = (rs, rowNum) ->
 
             Produto.criarSemValidacao(
@@ -35,8 +27,15 @@ public class ProdutoRepositorioJDBC implements ProdutoRepositorio {
                     rs.getBigDecimal("preco"),
                     Categoria.valueOf(rs.getString("categoria")));
 
+    public ProdutoRepositorioJDBC(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+        this.inserter = new SimpleJdbcInsert(jdbcTemplate)
+                .withTableName("produto")
+                .usingGeneratedKeyColumns("id");
+    }
+
     @Override
-    public Produto salvar(Produto produto) {
+    public Produto salvar(final Produto produto) {
         Map<String, Object> params = new HashMap<>();
         params.put("nome", produto.getNome());
         params.put("descricao", produto.getDescricao());
@@ -49,7 +48,7 @@ public class ProdutoRepositorioJDBC implements ProdutoRepositorio {
     }
 
     @Override
-    public Produto atualizar(Produto produto) {
+    public Produto atualizar(final Produto produto) {
         String sql = "UPDATE produto SET nome = ?, descricao = ?, preco = ?, categoria = ? WHERE id = ?";
 
         int linhasAfetadas = jdbcTemplate.update(sql,
@@ -67,7 +66,7 @@ public class ProdutoRepositorioJDBC implements ProdutoRepositorio {
     }
 
     @Override
-    public void remover(Long id) {
+    public void remover(final Long id) {
         String sql = "DELETE FROM produto WHERE id = ?";
         int linhasAfetadas = jdbcTemplate.update(sql, id);
 
@@ -77,7 +76,7 @@ public class ProdutoRepositorioJDBC implements ProdutoRepositorio {
     }
 
     @Override
-    public Optional<Produto> buscarPorId(Long id) {
+    public Optional<Produto> buscarPorId(final Long id) {
         try {
             String sql = "SELECT * FROM produto WHERE id = ?";
             Produto produto = jdbcTemplate.queryForObject(sql, produtoRowMapper, id);
@@ -88,7 +87,7 @@ public class ProdutoRepositorioJDBC implements ProdutoRepositorio {
     }
 
     @Override
-    public List<Produto> buscarPorCategoria(Categoria categoria) {
+    public List<Produto> buscarPorCategoria(final Categoria categoria) {
         String sql = "SELECT * FROM produto WHERE categoria = ?";
         return jdbcTemplate.query(sql, produtoRowMapper, categoria.name());
     }
@@ -100,14 +99,14 @@ public class ProdutoRepositorioJDBC implements ProdutoRepositorio {
     }
 
     @Override
-    public boolean existePorId(Long id) {
+    public boolean existePorId(final Long id) {
         String sql = "SELECT COUNT(*) FROM produto WHERE id = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
         return count != null && count > 0;
     }
 
     @Override
-    public boolean existePorNome(String nome) {
+    public boolean existePorNome(final String nome) {
         String sql = "SELECT COUNT(*) FROM produto WHERE nome = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, nome);
         return count != null && count > 0;

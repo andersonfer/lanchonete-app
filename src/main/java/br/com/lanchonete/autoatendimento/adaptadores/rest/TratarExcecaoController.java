@@ -14,13 +14,13 @@ import java.util.Map;
 public class TratarExcecaoController {
 
     @ExceptionHandler(ValidacaoException.class)
-    public ResponseEntity<String> tratarValidacaoException(ValidacaoException ex) {
+    public ResponseEntity<String> tratarValidacaoException(final ValidacaoException ex) {
         return ResponseEntity.badRequest().body(ex.getMessage());
     }
 
     @ExceptionHandler(RecursoNaoEncontradoException.class)
-    public ResponseEntity<String> tratarRecursoNaoEncontradoException(RecursoNaoEncontradoException ex) {
-        Map<String, String> body = new HashMap<>();
+    public ResponseEntity<String> tratarRecursoNaoEncontradoException(final RecursoNaoEncontradoException ex) {
+        final Map<String, String> body = new HashMap<>();
         body.put("erro", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body.toString());
     }

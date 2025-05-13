@@ -1,6 +1,5 @@
-package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
+package br.com.lanchonete.autoatendimento.adaptadores.rest;
 
-import br.com.lanchonete.autoatendimento.adaptadores.rest.ClienteController;
 import br.com.lanchonete.autoatendimento.aplicacao.dto.ClienteRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;

@@ -1,7 +1,6 @@
-package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
+package br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido;
 
 import br.com.lanchonete.autoatendimento.aplicacao.dto.PedidoResponseDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.ListarPedidos;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.PedidoRepositorio;
 import br.com.lanchonete.autoatendimento.dominio.modelo.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,7 +13,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;

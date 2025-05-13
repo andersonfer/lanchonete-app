@@ -1,6 +1,5 @@
-package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.entrada;
+package br.com.lanchonete.autoatendimento.adaptadores.rest;
 
-import br.com.lanchonete.autoatendimento.adaptadores.rest.TratarExcecaoController;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

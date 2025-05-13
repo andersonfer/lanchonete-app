@@ -1,8 +1,5 @@
-package br.com.lanchonete.autoatendimento.aplicacao.adaptadores.saida;
+package br.com.lanchonete.autoatendimento.adaptadores.persistencia;
 
-import br.com.lanchonete.autoatendimento.adaptadores.persistencia.ClienteRepositorioJDBC;
-import br.com.lanchonete.autoatendimento.adaptadores.persistencia.PedidoRepositorioJDBC;
-import br.com.lanchonete.autoatendimento.adaptadores.persistencia.ProdutoRepositorioJDBC;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RegistroNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
@@ -16,7 +13,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 

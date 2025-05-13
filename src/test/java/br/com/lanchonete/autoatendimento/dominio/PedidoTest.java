@@ -69,7 +69,7 @@ class PedidoTest {
 
         // Valida o pedido
         assertDoesNotThrow(
-                () -> pedido.validar(),
+                pedido::validar,
                 "Não deve lançar exceção para um pedido válido"
         );
     }
@@ -87,7 +87,7 @@ class PedidoTest {
         // Tenta validar o pedido sem itens
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> pedido.validar(),
+                pedido::validar,
                 "Deve lançar exceção para pedido sem itens"
         );
 
@@ -125,7 +125,7 @@ class PedidoTest {
         // Tenta validar o pedido com item inválido
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> pedido.validar(),
+                pedido::validar,
                 "Deve lançar exceção para pedido com item inválido"
         );
 
@@ -154,7 +154,7 @@ class PedidoTest {
         // Tenta validar o pedido com status nulo
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> pedido.validar(),
+                pedido::validar,
                 "Deve lançar exceção para pedido com status nulo"
         );
 
@@ -183,7 +183,7 @@ class PedidoTest {
         // Tenta validar o pedido com data de criação nula
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> pedido.validar(),
+                pedido::validar,
                 "Deve lançar exceção para pedido com data de criação nula"
         );
 

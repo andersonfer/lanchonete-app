@@ -6,7 +6,6 @@ import br.com.lanchonete.autoatendimento.dominio.modelo.StatusPedido;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public record PedidoResponseDTO(
         Long id,
@@ -32,7 +31,7 @@ public record PedidoResponseDTO(
 
         List<ItemPedidoResponseDTO> itensDTO = pedido.getItens().stream()
                 .map(ItemPedidoResponseDTO::converterParaDTO)
-                .collect(Collectors.toList());
+                .toList();
 
         return new PedidoResponseDTO(
                 pedido.getId(),

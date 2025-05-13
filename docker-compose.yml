@@ -10,18 +10,15 @@ services:
       - "8080:8080"
     environment:
       - SERVER_PORT=8080
-      # Desabilitar o console H2
-      - SPRING_H2_CONSOLE_ENABLED=false
-      # Configurações do PostgreSQL
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/lanchonetedb
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=postgres
-      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
-      - SPRING_JPA_DATABASE-PLATFORM=org.hibernate.dialect.PostgreSQLDialect
-      # Configurações de perfil e inicialização
       - SPRING_PROFILES_ACTIVE=prod
-      - SPRING_SQL_INIT_PLATFORM=postgresql
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=lanchonetedb
+      - DB_USERNAME=lanchonete
+      - DB_PASSWORD=lanchonete
+      - SPRING_SQL_INIT_PLATFORM=mysql
+      - SPRING_SQL_INIT_MODE=always
+      - SPRING_H2_CONSOLE_ENABLED=false
     depends_on:
       - db
     healthcheck:
@@ -35,20 +32,20 @@ services:
       - lanchonete-network
 
   db:
-    image: postgres:14-alpine
+    image: mysql:8.0
     container_name: lanchonete-db
     ports:
-      - "5432:5432"
+      - "3306:3306"
     environment:
-      - POSTGRES_DB=lanchonetedb
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - MYSQL_DATABASE=lanchonetedb
+      - MYSQL_USER=lanchonete
+      - MYSQL_PASSWORD=lanchonete
+      - MYSQL_ROOT_PASSWORD=root
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
-      - ./src/main/resources/data.sql:/docker-entrypoint-initdb.d/2-data.sql
+      - mysql_data:/var/lib/mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -61,4 +58,4 @@ networks:
     driver: bridge
 
 volumes:
-  postgres_data:
+  mysql_data:

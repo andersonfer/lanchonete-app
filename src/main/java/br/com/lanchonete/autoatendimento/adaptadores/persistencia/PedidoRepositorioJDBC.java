@@ -4,7 +4,7 @@ import br.com.lanchonete.autoatendimento.aplicacao.excecao.RegistroNaoEncontrado
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.PedidoRepositorio;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
-import br.com.lanchonete.autoatendimento.dominio.modelo.*;
+import br.com.lanchonete.autoatendimento.dominio.*;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;

@@ -6,7 +6,7 @@ import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoE
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.produto.EditarProdutoUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
-import br.com.lanchonete.autoatendimento.dominio.modelo.Produto;
+import br.com.lanchonete.autoatendimento.dominio.Produto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

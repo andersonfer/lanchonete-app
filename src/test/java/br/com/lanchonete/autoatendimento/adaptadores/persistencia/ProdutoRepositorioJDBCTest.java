@@ -1,8 +1,8 @@
 package br.com.lanchonete.autoatendimento.adaptadores.persistencia;
 
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RegistroNaoEncontradoException;
-import br.com.lanchonete.autoatendimento.dominio.modelo.Categoria;
-import br.com.lanchonete.autoatendimento.dominio.modelo.Produto;
+import br.com.lanchonete.autoatendimento.dominio.Categoria;
+import br.com.lanchonete.autoatendimento.dominio.Produto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -2,7 +2,7 @@ package br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido;
 
 import br.com.lanchonete.autoatendimento.aplicacao.dto.PedidoResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.PedidoRepositorio;
-import br.com.lanchonete.autoatendimento.dominio.modelo.*;
+import br.com.lanchonete.autoatendimento.dominio.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -57,7 +57,7 @@ class ListarPedidosTest {
                 Categoria.BEBIDA);
 
         // Criar pedido com cliente
-        pedidoComCliente = Pedido.criar(cliente,StatusPedido.RECEBIDO,LocalDateTime.now());
+        pedidoComCliente = Pedido.criar(cliente, StatusPedido.RECEBIDO,LocalDateTime.now());
         pedidoComCliente.setId(1L);
 
         // Adicionar item ao pedido com cliente

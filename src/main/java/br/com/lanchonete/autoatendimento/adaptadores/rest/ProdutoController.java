@@ -6,7 +6,7 @@ import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.produto.Buscar
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.produto.CriarProdutoUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.produto.EditarProdutoUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.produto.RemoverProdutoUC;
-import br.com.lanchonete.autoatendimento.dominio.modelo.Categoria;
+import br.com.lanchonete.autoatendimento.dominio.Categoria;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;

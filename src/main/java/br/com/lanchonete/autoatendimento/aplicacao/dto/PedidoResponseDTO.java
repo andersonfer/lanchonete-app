@@ -1,7 +1,7 @@
 package br.com.lanchonete.autoatendimento.aplicacao.dto;
 
-import br.com.lanchonete.autoatendimento.dominio.modelo.Pedido;
-import br.com.lanchonete.autoatendimento.dominio.modelo.StatusPedido;
+import br.com.lanchonete.autoatendimento.dominio.Pedido;
+import br.com.lanchonete.autoatendimento.dominio.StatusPedido;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

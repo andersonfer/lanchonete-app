@@ -1,4 +1,4 @@
-package br.com.lanchonete.autoatendimento.dominio.modelo;
+package br.com.lanchonete.autoatendimento.dominio;
 
 import lombok.Builder;
 import lombok.Data;

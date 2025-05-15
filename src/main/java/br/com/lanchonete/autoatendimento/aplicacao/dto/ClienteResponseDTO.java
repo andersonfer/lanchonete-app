@@ -1,6 +1,6 @@
 package br.com.lanchonete.autoatendimento.aplicacao.dto;
 
-import br.com.lanchonete.autoatendimento.dominio.modelo.Cliente;
+import br.com.lanchonete.autoatendimento.dominio.Cliente;
 
 public record ClienteResponseDTO(Long id, String nome, String cpf, String email) {
 

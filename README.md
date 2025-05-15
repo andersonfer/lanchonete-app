@@ -9,38 +9,96 @@ Sistema de autoatendimento para uma lanchonete de bairro, permitindo que os clie
 ## Tecnologias Utilizadas
 
 - Java 17
-- Spring Boot
+- Spring Boot 3.4.4
 - Spring JDBC
-- H2 Database
+- H2 Database (desenvolvimento)
+- MySQL (produção)
 - Lombok
 - SpringDoc OpenAPI (Swagger)
+- Docker / Docker Compose
 
 ## Estrutura do Projeto
 
 O projeto segue os princípios da Arquitetura Hexagonal (Ports and Adapters):
 
-- **Domínio**: Contém as entidades e regras de negócio
-- **Aplicação**: Contém as portas e adaptadores
-    - **Portas de Entrada**: Interfaces para os serviços da aplicação
-    - **Portas de Saída**: Interfaces para recursos externos como banco de dados
-    - **Adaptadores de Entrada**: Implementações das interfaces de entrada (REST Controllers)
-    - **Adaptadores de Saída**: Implementações das interfaces de saída (Repositórios)
+```
+br.com.lanchonete.autoatendimento
+├── dominio                          # Entidades e regras de negócio
+├── aplicacao
+│   ├── dto                          # DTOs para request e response
+│   ├── excecao                      # Exceções personalizadas
+│   ├── portas
+│   │   ├── entrada                  # Interfaces de casos de uso (UC)
+│   │   └── saida                    # Interfaces para recursos externos
+│   └── casosdeuso                   # Implementações dos casos de uso
+├── adaptadores
+│   ├── rest                         # Controllers REST (adaptadores de entrada)
+│   ├── persistencia                 # Implementações JDBCs (adaptadores de saída)
+│   └── util                         # Classes utilitárias
+└── infra                            # Configurações de infraestrutura
+```
 
 ## Como Executar
 
 ### Pré-requisitos
 - Java 17 ou superior
 - Maven
+- Docker e Docker Compose
+- Git
 
-### Passos
-1. Clone o repositório
-2. Execute `mvn spring-boot:run`
-3. Acesse o Swagger: `http://localhost:8080/swagger-ui.html`
-4. Acesse o console H2: `http://localhost:8080/h2-console`
 
-## Funcionalidades Implementadas
+### Executando com Docker Compose
 
-- Cadastro de Cliente
-- Identificação de Cliente por CPF
-- Gerenciamento de Produtos
-- Criação e Acompanhamento de Pedidos
+1. Clone o repositório:
+```bash
+git clone https://github.com/andersonfer/lanchonete-app.git
+cd lanchonete-app
+```
+
+2. Execute o Docker Compose:
+```bash
+docker-compose up
+```
+
+3. Acesse a documentação Swagger:
+```
+http://localhost:8080/swagger-ui.html
+```
+
+### Executando Localmente (Desenvolvimento)
+
+1. Clone o repositório:
+```bash
+git clone https://github.com/andersonfer/lanchonete-app.git
+cd lanchonete-app
+```
+
+2. Execute o aplicativo com Maven:
+```bash
+mvn spring-boot:run
+```
+
+3. Acesse o console H2 (ambiente de desenvolvimento):
+```
+http://localhost:8080/h2-console
+```
+- JDBC URL: `jdbc:h2:mem:lanchonetedb`
+- Usuário: `sa`
+- Senha: (deixar em branco)
+
+4. Acesse a documentação Swagger:
+```
+http://localhost:8080/swagger-ui.html
+```
+
+## APIs Implementadas
+
+- **Cliente**:
+  - Cadastro do Cliente
+  - Identificação do Cliente via CPF
+- **Produto**:
+  - Criar, editar e remover produtos
+  - Buscar produtos por categoria
+- **Pedido**:
+  - Realizar Pedido
+  - Listar pedidos

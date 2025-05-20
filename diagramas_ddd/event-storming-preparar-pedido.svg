@@ -1,4 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870">
+  <rect width="100%" height="100%" fill="white"/>
   <!-- Estilo para os post-its -->
   <style>
     .read-model { fill: #66cc66; }

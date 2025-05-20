@@ -60,6 +60,10 @@
   
   <!-- Fluxo 2 -->
   <g transform="translate(0, 150)">
+    <!-- Ator: Cliente (vertical e colado ao comando) -->
+    <rect class="actor post-it" x="355" y="0" width="35" height="70" />
+    <text class="post-it-text" transform="translate(372, 40) rotate(-90)">Cliente</text>
+
     <!-- Comando: AdicionarItemAoPedido -->
     <rect class="command post-it" x="390" y="0" width="100" height="70" />
     <text class="post-it-text" x="440" y="30">Adicionar Produto</text>
@@ -93,7 +97,11 @@
     
     <!-- Seta do Read Model para o Comando -->
     <line class="arrow" x1="275" y1="35" x2="355" y2="35" />
-    
+
+    <!-- Ator: Cliente (vertical e colado ao comando) -->
+    <rect class="actor post-it" x="355" y="0" width="35" height="70" />
+    <text class="post-it-text" transform="translate(372, 40) rotate(-90)">Cliente</text>
+
     <!-- Comando: ConfirmarPedido -->
     <rect class="command post-it" x="390" y="0" width="100" height="70" />
     <text class="post-it-text" x="440" y="40">Confirmar Pedido</text>
@@ -138,7 +146,7 @@
     <text class="post-it-text" x="780" y="50">Gerado</text>
     
     <!-- Setas conectando os elementos -->
-    <line class="arrow" x1="490" y1="35" x2="560" y2="35" />
+    <line class ="arrow" x1="490" y1="35" x2="560" y2="35" />
     <line class="arrow" x1="595" y1="35" x2="730" y2="35" />
   </g>
   
@@ -208,9 +216,16 @@
     <rect class="event post-it" x="730" y="0" width="100" height="70" />
     <text class="post-it-text" x="780" y="30">Pedido</text>
     <text class="post-it-text" x="780" y="50">Enviado</text>
+
+    <!-- Política: QuandoPedidoRecebidoEntãoIniciarPreparacao -->
+    <rect class="policy post-it" x="900" y="0" width="100" height="70" />
+    <text class="post-it-text" x="950" y="25">Quando Pedido</text>
+    <text class="post-it-text" x="950" y="40">Recebido Então</text>
+    <text class="post-it-text" x="950" y="55">Iniciar Preparação</text>
     
     <!-- Setas conectando os elementos -->
     <line class="arrow" x1="490" y1="35" x2="560" y2="35" />
     <line class="arrow" x1="660" y1="35" x2="730" y2="35" />
+    <line class="arrow" x1="830" y1="35" x2="900" y2="35" />
   </g>
 </svg>

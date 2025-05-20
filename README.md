@@ -109,6 +109,8 @@ O diagrama abaixo apresenta o fluxo completo da realização do pedido e pagamen
 
 ![Event Storming - Realização pedido e pagamento](./diagramas_ddd/event-storming-realizar-pedido.svg)
 
+![Event Storming - Preparação e entrega de pedidos](./diagramas_ddd/event-storming-preparar-pedido.svg)
+
 ### Legenda:
 - 🟩 Modelo de Leitura
 - 🟨 Agregado

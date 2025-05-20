@@ -21,6 +21,9 @@
     </marker>
   </defs>
 
+  <!-- Título do diagrama -->
+  <text x="500" y="30" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle">Event Storming - Realização do Pedido e Pagamento</text>
+
   <!-- Fluxo 1 -->
   <g transform="translate(0, 50)">
     <!-- Read Model: ListaDeProdutos -->

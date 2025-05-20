@@ -21,9 +21,6 @@
     </marker>
   </defs>
 
-  <!-- Título do diagrama -->
-  <text x="500" y="30" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle">Event Storming - Preparação e Entrega do Pedido</text>
-
   <!-- Fluxo 1 -->
   <g transform="translate(0, 50)">
     <!-- Read Model: FilaDePedidos -->
@@ -55,8 +52,8 @@
     <rect class="policy post-it" x="900" y="0" width="100" height="70" />
     <text class="post-it-text" x="950" y="20">Quando Preparação</text>
     <text class="post-it-text" x="950" y="35">Iniciada Então</text>
-    <text class="post-it-text" x="950" y="50">Iniciar Tempo</text>
-    <text class="post-it-text" x="950" y="65">De Espera</text>
+    <text class="post-it-text" x="950" y="50">Iniciar Contagem</text>
+    <text class="post-it-text" x="950" y="65">Regressiva</text>
 
     <!-- Setas conectando os elementos -->
     <line class="arrow" x1="490" y1="35" x2="560" y2="35" />

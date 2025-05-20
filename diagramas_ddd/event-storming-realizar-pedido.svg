@@ -20,10 +20,7 @@
       <polygon points="0 0, 10 3.5, 0 7" />
     </marker>
   </defs>
-  
-  <!-- Título do diagrama -->
-  <text x="500" y="30" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle">Event Storming - Realização do pedido e pagamento</text>
-  
+
   <!-- Fluxo 1 -->
   <g transform="translate(0, 50)">
     <!-- Read Model: ListaDeProdutos -->

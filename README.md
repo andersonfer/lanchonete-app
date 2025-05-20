@@ -103,11 +103,11 @@ http://localhost:8080/swagger-ui.html
   - Realizar Pedido
   - Listar pedidos
 
-## Event Storming - Fluxo de Pedido e Pagamento
-
-O diagrama abaixo apresenta o fluxo completo da realização do pedido e pagamento, desde a seleção de produtos até o envio do pedido para a cozinha. Este diagrama foi desenvolvido seguindo os princípios de Event Storming no contexto de Domain-Driven Design.
+## Event Storming - Realização do pedido e pagamento
 
 ![Event Storming - Realização pedido e pagamento](./diagramas_ddd/event-storming-realizar-pedido.svg)
+
+## Event Storming - Preparação e entrega de pedidos
 
 ![Event Storming - Preparação e entrega de pedidos](./diagramas_ddd/event-storming-preparar-pedido.svg)
 

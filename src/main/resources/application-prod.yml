@@ -11,6 +11,8 @@ sql:
   init:
     mode: always
     platform: mysql
+    schema-locations: classpath:schema-mysql.sql
+    data-locations: classpath:data-mysql.sql
   h2:
     console:
       enabled: false

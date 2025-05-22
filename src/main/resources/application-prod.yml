@@ -16,18 +16,3 @@ spring:
   h2:
     console:
       enabled: false
-
-# Configurações de logging
-logging:
-  level:
-    root: WARN
-    org.springframework: INFO
-    org.springframework.web: WARN
-    org.springframework.security: WARN
-    org.springframework.boot: INFO
-    org.springframework.jdbc.datasource.init: WARN
-    org.springframework.jdbc.core: WARN
-    org.hibernate: WARN
-    com.mysql: WARN
-    com.zaxxer.hikari: WARN
-    br.com.lanchonete.autoatendimento: INFO

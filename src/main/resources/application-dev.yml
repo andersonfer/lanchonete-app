@@ -29,10 +29,3 @@ springdoc:
     path: /api-docs
   swagger-ui:
     path: /swagger-ui.html
-
-# Configurações de logging
-logging:
-  level:
-    org.springframework.jdbc.datasource.init: DEBUG
-    org.springframework.jdbc.core: DEBUG
-    br.com.lanchonete.autoatendimento: DEBUG

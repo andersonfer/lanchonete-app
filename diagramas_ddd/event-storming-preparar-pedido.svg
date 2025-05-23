@@ -24,8 +24,21 @@
   <!-- Título do diagrama -->
   <text x="500" y="30" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle">Event Storming - Preparação e Entrega do Pedido</text>
 
+  <!-- Linha divisória após PreparacaoIniciada (atrás do agregado) -->
+  <line x1="50" y1="135" x2="520" y2="135" stroke="#000000" stroke-width="1.5" />
+  <line x1="555" y1="135" x2="950" y2="135" stroke="#000000" stroke-width="1.5" />
+
+  <!-- Seta curva do Fluxo 1 para o Fluxo 2 (atrás do agregado) -->
+  <path class="curve-arrow" d="M 910,111 C 930,130 310,130 350,150" />
+
+  <!-- Agregado: Pedido (vertical para fluxos 1 e 2) -->
+  <g transform="translate(-40, 50)">
+    <rect class="aggregate post-it" x="560" y="0" width="35" height="170" />
+    <text class="post-it-text" transform="translate(577, 85) rotate(-90)">Pedido</text>
+  </g>
+
   <!-- Fluxo 1 -->
-  <g transform="translate(0, 50)">
+  <g transform="translate(-40, 50)">
     <!-- Read Model: FilaDePedidos -->
     <rect class="read-model post-it" x="175" y="0" width="100" height="70" />
     <text class="post-it-text" x="225" y="40">Fila De Pedidos</text>
@@ -42,10 +55,6 @@
     <rect class="actor post-it" x="355" y="0" width="35" height="70" />
     <text class="post-it-text" transform="translate(372, 40) rotate(-90)">Cozinheiro</text>
 
-    <!-- Agregado: Pedido -->
-    <rect class="aggregate post-it" x="560" y="0" width="100" height="70" />
-    <text class="post-it-text" x="610" y="40">Pedido</text>
-
     <!-- Evento: PreparacaoIniciada -->
     <rect class="event post-it" x="730" y="0" width="100" height="70" />
     <text class="post-it-text" x="780" y="30">Preparação</text>
@@ -60,26 +69,16 @@
 
     <!-- Setas conectando os elementos -->
     <line class="arrow" x1="490" y1="35" x2="560" y2="35" />
-    <line class="arrow" x1="660" y1="35" x2="730" y2="35" />
+    <line class="arrow" x1="595" y1="35" x2="730" y2="35" />
     <line class="arrow" x1="830" y1="35" x2="900" y2="35" />
   </g>
 
-  <!-- Linha divisória após PreparacaoIniciada -->
-  <line x1="50" y1="135" x2="950" y2="135" stroke="#000000" stroke-width="1.5" />
-
-  <!-- Seta curva do Fluxo 1 para o Fluxo 2 -->
-  <path class="curve-arrow" d="M 950,111 C 970,130 350,130 390,150" />
-
   <!-- Fluxo 2 -->
-  <g transform="translate(0, 150)">
+  <g transform="translate(-40, 150)">
     <!-- Comando: IniciarTempoDeEspera -->
     <rect class="command post-it" x="390" y="0" width="100" height="70" />
     <text class="post-it-text" x="440" y="30">Iniciar Contagem</text>
     <text class="post-it-text" x="440" y="50">Regressiva</text>
-
-    <!-- Agregado: Pedido -->
-    <rect class="aggregate post-it" x="560" y="0" width="100" height="70" />
-    <text class="post-it-text" x="610" y="40">Pedido</text>
 
     <!-- Evento: TempoDeEsperaIniciado -->
     <rect class="event post-it" x="730" y="0" width="100" height="70" />
@@ -88,14 +87,14 @@
 
     <!-- Setas conectando os elementos -->
     <line class="arrow" x1="490" y1="35" x2="560" y2="35" />
-    <line class="arrow" x1="660" y1="35" x2="730" y2="35" />
+    <line class="arrow" x1="595" y1="35" x2="730" y2="35" />
   </g>
 
   <!-- Seta curva do Fluxo 2 para o Fluxo 3 -->
-  <path class="curve-arrow" d="M 780,211 C 820,230 150,230 175,250" />
+  <path class="curve-arrow" d="M 740,211 C 780,230 110,230 135,250" />
 
   <!-- Fluxo 3 -->
-  <g transform="translate(0, 250)">
+  <g transform="translate(-40, 250)">
     <!-- Read Model: ListaDeProdutosDoPedido -->
     <rect class="read-model post-it" x="175" y="0" width="100" height="70" />
     <text class="post-it-text" x="225" y="25">Lista De</text>
@@ -136,19 +135,37 @@
     <line class="arrow" x1="830" y1="35" x2="900" y2="35" />
   </g>
 
-  <!-- Seta curva do Fluxo 3 para o Fluxo 4 -->
-  <path class="curve-arrow" d="M 950,311 C 970,330 350,330 390,350" />
+  <!-- Linha divisória após TodosProdutosProntos (atrás do agregado) -->
+  <line x1="50" y1="535" x2="520" y2="535" stroke="#000000" stroke-width="1.5" />
+  <line x1="555" y1="535" x2="950" y2="535" stroke="#000000" stroke-width="1.5" />
+
+  <!-- Seta curva do Fluxo 3 para o Fluxo 4 (atrás do agregado) -->
+  <path class="curve-arrow" d="M 910,311 C 930,330 310,330 350,350" />
+
+  <!-- Seta curva do Fluxo 4 para o Fluxo 5 (atrás do agregado) -->
+  <path class="curve-arrow" d="M 740,411 C 780,430 110,430 135,450" />
+
+  <!-- Seta curva do Fluxo 5 para o Fluxo 6 (atrás do agregado) -->
+  <path class="curve-arrow" d="M 910,511 C 930,530 310,530 350,550" />
+
+  <!-- Seta curva do Fluxo 6 para o Fluxo 7 (atrás do agregado) -->
+  <path class="curve-arrow" d="M 740,611 C 780,630 110,630 135,650" />
+
+  <!-- Seta curva do Fluxo 7 para o Fluxo 8 (atrás do agregado) -->
+  <path class="curve-arrow" d="M 910,711 C 930,730 310,730 350,750" />
+
+  <!-- Agregado: Pedido (vertical para fluxos 4-8) -->
+  <g transform="translate(-40, 350)">
+    <rect class="aggregate post-it" x="560" y="0" width="35" height="470" />
+    <text class="post-it-text" transform="translate(577, 235) rotate(-90)">Pedido</text>
+  </g>
 
   <!-- Fluxo 4 -->
-  <g transform="translate(0, 350)">
+  <g transform="translate(-40, 350)">
     <!-- Comando: AtualizarTempoDeEspera -->
     <rect class="command post-it" x="390" y="0" width="100" height="70" />
     <text class="post-it-text" x="440" y="30">Atualizar Contagem</text>
     <text class="post-it-text" x="440" y="50">Regressiva</text>
-
-    <!-- Agregado: Pedido -->
-    <rect class="aggregate post-it" x="560" y="0" width="100" height="70" />
-    <text class="post-it-text" x="610" y="40">Pedido</text>
 
     <!-- Evento: TempoDeEsperaAtualizado -->
     <rect class="event post-it" x="730" y="0" width="100" height="70" />
@@ -157,14 +174,11 @@
 
     <!-- Setas conectando os elementos -->
     <line class="arrow" x1="490" y1="35" x2="560" y2="35" />
-    <line class="arrow" x1="660" y1="35" x2="730" y2="35" />
+    <line class="arrow" x1="595" y1="35" x2="730" y2="35" />
   </g>
 
-  <!-- Seta curva do Fluxo 4 para o Fluxo 5 -->
-  <path class="curve-arrow" d="M 780,411 C 820,430 150,430 175,450" />
-
   <!-- Fluxo 5 -->
-  <g transform="translate(0, 450)">
+  <g transform="translate(-40, 450)">
     <!-- Read Model: StatusProdutosDoPedido -->
     <rect class="read-model post-it" x="175" y="0" width="100" height="70" />
     <text class="post-it-text" x="225" y="25">Status</text>
@@ -178,10 +192,6 @@
     <rect class="command post-it" x="390" y="0" width="100" height="70" />
     <text class="post-it-text" x="440" y="30">Verificar Todos</text>
     <text class="post-it-text" x="440" y="50">Produtos</text>
-
-    <!-- Agregado: Pedido -->
-    <rect class="aggregate post-it" x="560" y="0" width="100" height="70" />
-    <text class="post-it-text" x="610" y="40">Pedido</text>
 
     <!-- Evento: TodosProdutosProntos -->
     <rect class="event post-it" x="730" y="0" width="100" height="70" />
@@ -197,26 +207,16 @@
 
     <!-- Setas conectando os elementos -->
     <line class="arrow" x1="490" y1="35" x2="560" y2="35" />
-    <line class="arrow" x1="660" y1="35" x2="730" y2="35" />
+    <line class="arrow" x1="595" y1="35" x2="730" y2="35" />
     <line class="arrow" x1="830" y1="35" x2="900" y2="35" />
   </g>
 
-  <!-- Linha divisória após TodosProdutosProntos -->
-  <line x1="50" y1="535" x2="950" y2="535" stroke="#000000" stroke-width="1.5" />
-
-  <!-- Seta curva do Fluxo 5 para o Fluxo 6 -->
-  <path class="curve-arrow" d="M 950,511 C 970,530 350,530 390,550" />
-
   <!-- Fluxo 6 -->
-  <g transform="translate(0, 550)">
+  <g transform="translate(-40, 550)">
     <!-- Comando: EnviarNotificação -->
     <rect class="command post-it" x="390" y="0" width="100" height="70" />
     <text class="post-it-text" x="440" y="30">Enviar</text>
     <text class="post-it-text" x="440" y="50">Notificação</text>
-
-    <!-- Agregado: Pedido -->
-    <rect class="aggregate post-it" x="560" y="0" width="100" height="70" />
-    <text class="post-it-text" x="610" y="40">Pedido</text>
 
     <!-- Evento: NotificaçãoEnviada -->
     <rect class="event post-it" x="730" y="0" width="100" height="70" />
@@ -225,14 +225,15 @@
 
     <!-- Setas conectando os elementos -->
     <line class="arrow" x1="490" y1="35" x2="560" y2="35" />
-    <line class="arrow" x1="660" y1="35" x2="730" y2="35" />
+    <line class="arrow" x1="595" y1="35" x2="730" y2="35" />
   </g>
 
-  <!-- Seta curva para ligar ao próximo fluxo -->
-  <path class="curve-arrow" d="M 780,611 C 820,630 150,630 175,650" />
+  <!-- Linha divisória após PedidoRetirado (atrás do agregado) -->
+  <line x1="50" y1="735" x2="520" y2="735" stroke="#000000" stroke-width="1.5" />
+  <line x1="555" y1="735" x2="950" y2="735" stroke="#000000" stroke-width="1.5" />
 
   <!-- Fluxo 7 -->
-  <g transform="translate(100, 650)">
+  <g transform="translate(60, 650)">
     <!-- Read Model: PedidosProntosParaRetirada -->
     <rect class="read-model post-it" x="75" y="0" width="100" height="70" />
     <text class="post-it-text" x="125" y="25">Pedidos Prontos</text>
@@ -251,10 +252,6 @@
     <rect class="actor post-it" x="255" y="0" width="35" height="70" />
     <text class="post-it-text" transform="translate(272, 40) rotate(-90)">Cliente</text>
 
-    <!-- Agregado: Pedido -->
-    <rect class="aggregate post-it" x="460" y="0" width="100" height="70" />
-    <text class="post-it-text" x="510" y="40">Pedido</text>
-
     <!-- Evento: PedidoRetirado -->
     <rect class="event post-it" x="630" y="0" width="100" height="70" />
     <text class="post-it-text" x="680" y="30">Pedido</text>
@@ -269,26 +266,16 @@
 
     <!-- Setas conectando os elementos -->
     <line class="arrow" x1="390" y1="35" x2="460" y2="35" />
-    <line class="arrow" x1="560" y1="35" x2="630" y2="35" />
+    <line class="arrow" x1="495" y1="35" x2="630" y2="35" />
     <line class="arrow" x1="730" y1="35" x2="800" y2="35" />
   </g>
 
-  <!-- Linha divisória após PedidoRetirado -->
-  <line x1="50" y1="735" x2="950" y2="735" stroke="#000000" stroke-width="1.5" />
-
-  <!-- Seta curva do Fluxo 7 para o Fluxo 8 -->
-  <path class="curve-arrow" d="M 950,711 C 970,730 350,730 390,750" />
-
   <!-- Fluxo 8 -->
-  <g transform="translate(0, 750)">
+  <g transform="translate(-40, 750)">
     <!-- Comando: FinalizarPedido -->
     <rect class="command post-it" x="390" y="0" width="100" height="70" />
     <text class="post-it-text" x="440" y="30">Finalizar</text>
     <text class="post-it-text" x="440" y="50">Pedido</text>
-
-    <!-- Agregado: Pedido -->
-    <rect class="aggregate post-it" x="560" y="0" width="100" height="70" />
-    <text class="post-it-text" x="610" y="40">Pedido</text>
 
     <!-- Evento: PedidoFinalizado -->
     <rect class="event post-it" x="730" y="0" width="100" height="70" />
@@ -297,6 +284,6 @@
 
     <!-- Setas conectando os elementos -->
     <line class="arrow" x1="490" y1="35" x2="560" y2="35" />
-    <line class="arrow" x1="660" y1="35" x2="730" y2="35" />
+    <line class="arrow" x1="595" y1="35" x2="730" y2="35" />
   </g>
 </svg>

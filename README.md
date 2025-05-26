@@ -93,15 +93,71 @@ http://localhost:8080/swagger-ui.html
 
 ## APIs Implementadas
 
-- **Cliente**:
-  - Cadastro do Cliente
-  - Identificação do Cliente via CPF
-- **Produto**:
-  - Criar, editar e remover produtos
-  - Buscar produtos por categoria
-- **Pedido**:
-  - Realizar Pedido
-  - Listar pedidos
+### Cliente
+- **Cadastro do Cliente**
+  ```bash
+  curl -X POST http://localhost:8080/clientes \
+    -H "Content-Type: application/json" \
+    -d '{
+      "nome": "João Silva",
+      "cpf": "12345678901",
+      "email": "joao@email.com"
+    }'
+  ```
+
+- **Identificação do Cliente via CPF**
+  ```bash
+  curl -X GET http://localhost:8080/clientes/cpf/12345678901
+  ```
+
+### Produto
+- **Criar, editar e remover produtos**
+- **Buscar produtos por categoria**
+  ```bash
+  curl -X GET http://localhost:8080/produtos/categoria/LANCHE
+  curl -X GET http://localhost:8080/produtos/categoria/ACOMPANHAMENTO
+  curl -X GET http://localhost:8080/produtos/categoria/BEBIDA
+  curl -X GET http://localhost:8080/produtos/categoria/SOBREMESA
+  ```
+
+### Pedido
+- **Realizar Pedido**
+  ```bash
+  # Com cliente identificado
+  curl -X POST http://localhost:8080/pedidos/checkout \
+    -H "Content-Type: application/json" \
+    -d '{
+      "cpfCliente": "12345678901",
+      "itens": [
+        {
+          "produtoId": 1,
+          "quantidade": 2
+        },
+        {
+          "produtoId": 2,
+          "quantidade": 1
+        }
+      ]
+    }'
+
+  # Sem cliente identificado
+  curl -X POST http://localhost:8080/pedidos/checkout \
+    -H "Content-Type: application/json" \
+    -d '{
+      "cpfCliente": null,
+      "itens": [
+        {
+          "produtoId": 1,
+          "quantidade": 1
+        }
+      ]
+    }'
+  ```
+
+- **Listar pedidos**
+  ```bash
+  curl -X GET http://localhost:8080/pedidos
+  ```
 
 ## Event Storming - Realização do pedido e pagamento
 

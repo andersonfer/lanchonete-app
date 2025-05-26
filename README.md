@@ -15,7 +15,7 @@ Sistema de autoatendimento para uma lanchonete de bairro, permitindo que os clie
 - MySQL (produção)
 - Lombok
 - SpringDoc OpenAPI (Swagger)
-- Docker / Docker Compose
+- Docker
 
 ## Estrutura do Projeto
 
@@ -43,7 +43,7 @@ br.com.lanchonete.autoatendimento
 ### Pré-requisitos
 - Java 17 ou superior
 - Maven
-- Docker e Docker Compose
+- Docker
 - Git
 
 
@@ -57,7 +57,7 @@ cd lanchonete-app
 
 2. Execute o Docker Compose:
 ```bash
-docker-compose up
+docker compose up
 ```
 
 3. Acesse a documentação Swagger:

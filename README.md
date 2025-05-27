@@ -2,6 +2,9 @@
 
 Este é um projeto para o Tech Challenge da pós-graduação SOAT - fase 1.
 
+Aluno: Anderson Fér - rm363691
+Vídeo de demonstração:  https://youtu.be/lOOEKc5jY6I
+
 ## Descrição do Projeto
 
 Sistema de autoatendimento para uma lanchonete de bairro, permitindo que os clientes façam pedidos sem interagir com um atendente.

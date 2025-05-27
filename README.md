@@ -57,7 +57,7 @@ cd lanchonete-app
 
 2. Execute o Docker Compose:
 ```bash
-docker compose up
+docker compose up -d
 ```
 
 3. Acesse a documentação Swagger:

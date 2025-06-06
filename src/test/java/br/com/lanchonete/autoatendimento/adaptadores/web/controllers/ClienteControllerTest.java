@@ -3,8 +3,8 @@ package br.com.lanchonete.autoatendimento.adaptadores.web.controllers;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ClienteRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.cliente.CadastrarClienteUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.cliente.IdentificarClienteUC;
+import br.com.lanchonete.autoatendimento.casosdeuso.cliente.CadastrarCliente;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -35,7 +35,7 @@ class ClienteControllerTest {
     private ObjectMapper objectMapper;
 
     @MockitoBean
-    private CadastrarClienteUC cadastrarClienteUC;
+    private CadastrarCliente cadastrarCliente;
 
     @MockitoBean
     private IdentificarClienteUC identificarClienteUC;
@@ -55,7 +55,7 @@ class ClienteControllerTest {
                 "Teste da Silva","12345678901", "teste@email.com");
 
 
-        when(cadastrarClienteUC.executar(any(ClienteRequestDTO.class))).thenReturn(resposta);
+        when(cadastrarCliente.executar(any(ClienteRequestDTO.class))).thenReturn(resposta);
 
         mockMvc.perform(post("/clientes")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -74,7 +74,7 @@ class ClienteControllerTest {
     @DisplayName("Deve retornar status 400 quando o UC lançar ValidacaoException")
     void t2() throws Exception {
 
-        when(cadastrarClienteUC.executar(any(ClienteRequestDTO.class))).thenThrow(new ValidacaoException("Erro de validação ou duplicidade"));
+        when(cadastrarCliente.executar(any(ClienteRequestDTO.class))).thenThrow(new ValidacaoException("Erro de validação ou duplicidade"));
 
         mockMvc.perform(post("/clientes")
                 .contentType(MediaType.APPLICATION_JSON)

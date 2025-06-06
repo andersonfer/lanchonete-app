@@ -1,4 +1,4 @@
-package br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido;
+package br.com.lanchonete.autoatendimento.casosdeuso.pedido;
 
 import br.com.lanchonete.autoatendimento.aplicacao.dto.ItemPedidoDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.dto.PedidoRequestDTO;

@@ -1,4 +1,4 @@
-package br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.cliente;
+package br.com.lanchonete.autoatendimento.casosdeuso.cliente;
 
 import br.com.lanchonete.autoatendimento.aplicacao.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;

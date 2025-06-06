@@ -39,23 +39,34 @@ br.com.lanchonete.autoatendimento
 │       └── PedidoRepository.java
 │
 ├── adapters/                     # Camada 3 - Interface Adapters
-│   ├── controllers/
-│   │   ├── ClienteController.java
-│   │   ├── ProdutoController.java
-│   │   ├── PedidoController.java
-│   │   └── GlobalExceptionHandler.java
-│   ├── presenters/
-│   │   ├── ClientePresenter.java
-│   │   ├── ProdutoPresenter.java
-│   │   └── PedidoPresenter.java
-│   ├── repositories/
-│   │   ├── ClienteRepositoryImpl.java
-│   │   ├── ProdutoRepositoryImpl.java
-│   │   └── PedidoRepositoryImpl.java
-│   └── mappers/
-│       ├── ClienteMapper.java
-│       ├── ProdutoMapper.java
-│       └── PedidoMapper.java
+│   ├── web/
+│   │   ├── api/                  # Contratos REST (Interfaces)
+│   │   │   ├── ClienteApi.java
+│   │   │   ├── ProdutoApi.java
+│   │   │   └── PedidoApi.java
+│   │   └── controllers/          # Implementações REST
+│   │       ├── ClienteController.java
+│   │       ├── ProdutoController.java
+│   │       ├── PedidoController.java
+│   │       └── GlobalExceptionHandler.java
+│   ├── persistence/
+│   │   ├── repositories/
+│   │   │   ├── ClienteRepositoryImpl.java
+│   │   │   ├── ProdutoRepositoryImpl.java
+│   │   │   └── PedidoRepositoryImpl.java
+│   │   └── mappers/
+│   │       ├── ClienteMapper.java
+│   │       ├── ProdutoMapper.java
+│   │       └── PedidoMapper.java
+│   └── dto/                      # DTOs de entrada/saída
+│       ├── request/
+│       │   ├── ClienteRequestDTO.java
+│       │   ├── ProdutoRequestDTO.java
+│       │   └── PedidoRequestDTO.java
+│       └── response/
+│           ├── ClienteResponseDTO.java
+│           ├── ProdutoResponseDTO.java
+│           └── PedidoResponseDTO.java
 │
 ├── application/                  # Application Services (Orquestração)
 │   ├── ClienteApplicationService.java
@@ -87,9 +98,10 @@ br.com.lanchonete.autoatendimento
 - **Input/Output**: DTOs específicos para entrada/saída
 
 ### 3. Interface Adapters
-- **Controllers**: Apenas conversão HTTP ↔ Use Cases
-- **Presenters**: Formatação de saída específica
+- **Web APIs**: Interfaces com contratos REST e documentação Swagger
+- **Controllers**: Implementações das APIs, orquestração de use cases
 - **Repositories**: Implementação isolada da persistência
+- **DTOs**: Objetos de transferência organizados por request/response
 - **Mappers**: Conversão entre camadas
 
 ### 4. Application Services
@@ -160,19 +172,31 @@ ORIGEM → DESTINO
 ```
 ORIGEM → DESTINO
 
-# Controllers
-/adaptadores/rest/ClienteController.java → /adapters/controllers/ClienteController.java
-/adaptadores/rest/ProdutoController.java → /adapters/controllers/ProdutoController.java
-/adaptadores/rest/PedidoController.java → /adapters/controllers/PedidoController.java
-/adaptadores/rest/TratarExcecaoController.java → /adapters/controllers/GlobalExceptionHandler.java
+# Web Layer - APIs (NOVAS INTERFACES)
+(CRIAR NOVO) → /adapters/web/api/ClienteApi.java
+(CRIAR NOVO) → /adapters/web/api/ProdutoApi.java
+(CRIAR NOVO) → /adapters/web/api/PedidoApi.java
 
-# Repositories
-/adaptadores/persistencia/ClienteRepositorioJDBC.java → /adapters/repositories/ClienteRepositoryImpl.java
-/adaptadores/persistencia/ProdutoRepositorioJDBC.java → /adapters/repositories/ProdutoRepositoryImpl.java
-/adaptadores/persistencia/PedidoRepositorioJDBC.java → /adapters/repositories/PedidoRepositoryImpl.java
+# Web Layer - Controllers
+/adaptadores/rest/ClienteController.java → /adapters/web/controllers/ClienteController.java
+/adaptadores/rest/ProdutoController.java → /adapters/web/controllers/ProdutoController.java
+/adaptadores/rest/PedidoController.java → /adapters/web/controllers/PedidoController.java
+/adaptadores/rest/TratarExcecaoController.java → /adapters/web/controllers/GlobalExceptionHandler.java
 
-# DTOs (como Presenters/Request Objects)
-/aplicacao/dto/ → /adapters/dto/ (manter estrutura atual)
+# Persistence Layer - Repositories
+/adaptadores/persistencia/ClienteRepositorioJDBC.java → /adapters/persistence/repositories/ClienteRepositoryImpl.java
+/adaptadores/persistencia/ProdutoRepositorioJDBC.java → /adapters/persistence/repositories/ProdutoRepositoryImpl.java
+/adaptadores/persistencia/PedidoRepositorioJDBC.java → /adapters/persistence/repositories/PedidoRepositoryImpl.java
+
+# DTOs - Reorganização por tipo
+/aplicacao/dto/ClienteRequestDTO.java → /adapters/dto/request/ClienteRequestDTO.java
+/aplicacao/dto/ProdutoRequestDTO.java → /adapters/dto/request/ProdutoRequestDTO.java
+/aplicacao/dto/PedidoRequestDTO.java → /adapters/dto/request/PedidoRequestDTO.java
+/aplicacao/dto/ClienteResponseDTO.java → /adapters/dto/response/ClienteResponseDTO.java
+/aplicacao/dto/ProdutoResponseDTO.java → /adapters/dto/response/ProdutoResponseDTO.java
+/aplicacao/dto/PedidoResponseDTO.java → /adapters/dto/response/PedidoResponseDTO.java
+/aplicacao/dto/ItemPedidoDTO.java → /adapters/dto/request/ItemPedidoDTO.java
+/aplicacao/dto/ItemPedidoResponseDTO.java → /adapters/dto/response/ItemPedidoResponseDTO.java
 ```
 
 #### 1.4 Camada FRAMEWORKS & DRIVERS
@@ -215,8 +239,19 @@ Classes a modificar:
 - ItemPedido.java: revisar dependências Lombok
 ```
 
-#### 2.3 Renomeação de Interfaces
+#### 2.3 Novas Interfaces e Refatorações
 ```
+CRIAR NOVAS INTERFACES API:
+- ClienteApi.java: extrair anotações REST do ClienteController
+- ProdutoApi.java: extrair anotações REST do ProdutoController  
+- PedidoApi.java: extrair anotações REST do PedidoController
+
+REFATORAR CONTROLLERS:
+- ClienteController: implementar ClienteApi, remover anotações REST
+- ProdutoController: implementar ProdutoApi, remover anotações REST
+- PedidoController: implementar PedidoApi, remover anotações REST
+
+RENOMEAR INTERFACES:
 - ClienteRepositorio → ClienteRepository
 - ProdutoRepositorio → ProdutoRepository  
 - PedidoRepositorio → PedidoRepository
@@ -238,10 +273,12 @@ Classes a modificar:
 4. Atualizar imports
 
 #### 3.3 TERCEIRA ETAPA - Adapters
-1. Mover controllers
-2. Mover implementações de repositório
-3. Mover DTOs
-4. Renomear TratarExcecaoController → GlobalExceptionHandler
+1. Criar interfaces API (ClienteApi, ProdutoApi, PedidoApi)
+2. Refatorar controllers para implementar as APIs
+3. Mover controllers para nova estrutura web/
+4. Mover implementações de repositório para persistence/
+5. Reorganizar DTOs por request/response
+6. Renomear TratarExcecaoController → GlobalExceptionHandler
 
 #### 3.4 QUARTA ETAPA - Frameworks
 1. Mover configurações
@@ -259,8 +296,9 @@ Classes a modificar:
 ```
 - Todas as referências a /dominio/ → /entities/
 - Todas as referências a /aplicacao/casosdeuso/ → /usecases/
-- Todas as referências a /adaptadores/rest/ → /adapters/controllers/
-- Todas as referências a /adaptadores/persistencia/ → /adapters/repositories/
+- Todas as referências a /adaptadores/rest/ → /adapters/web/controllers/
+- Todas as referências a /adaptadores/persistencia/ → /adapters/persistence/repositories/
+- Todas as referências a /aplicacao/dto/ → /adapters/dto/request/ ou /adapters/dto/response/
 - Todas as referências a /infra/ → /frameworks/config/
 ```
 
@@ -298,4 +336,49 @@ Todos os testes em /test/ precisarão atualizar imports:
 - [ ] Testes executando
 - [ ] Documentação atualizada
 
-Este plano reorganiza completamente a estrutura seguindo Clean Architecture usando apenas as classes existentes, sem criar código novo.
+## ADIÇÕES À MIGRAÇÃO - Separação API/Controller
+
+### Padrão API/Controller Implementado
+
+A nova estrutura separa **contratos** de **implementações** na camada web:
+
+#### Responsabilidades das APIs (/adapters/web/api/)
+- **Contratos REST**: `@RestController`, `@RequestMapping`, `@PostMapping`, etc.
+- **Documentação Swagger**: `@Operation`, `@ApiResponse`, `@Parameter`, `@Tag`
+- **Validações HTTP**: `@Valid`, `@PathVariable`, `@RequestBody`
+- **Definição pura**: assinatura dos métodos, tipos de retorno, sem lógica
+
+#### Responsabilidades dos Controllers (/adapters/web/controllers/)
+- **Implementação das APIs**: classes que implementam as interfaces
+- **Orquestração**: chamadas para use cases via application services
+- **Conversão de DTOs**: transformação entre request/response
+- **Tratamento de exceções**: conversão de domain exceptions para HTTP responses
+- **Sem anotações REST**: apenas `@Component` ou `@Service`
+
+### Benefícios da Separação
+1. **Documentação centralizada**: todo Swagger fica nas interfaces API
+2. **Testabilidade melhorada**: pode mockar APIs nos testes de integração
+3. **Flexibilidade**: permite múltiplas implementações (REST, GraphQL, etc.)
+4. **Clean Architecture**: controllers focados apenas na orquestração
+5. **Manutenibilidade**: contratos claros e separados das implementações
+
+### Exemplo de Implementação
+```java
+// /adapters/web/api/ClienteApi.java
+@RestController
+@RequestMapping("/clientes")
+@Tag(name = "Cliente")
+public interface ClienteApi {
+    @PostMapping
+    @Operation(summary = "Cadastrar cliente")
+    ResponseEntity<ClienteResponseDTO> cadastrarCliente(@Valid @RequestBody ClienteRequestDTO request);
+}
+
+// /adapters/web/controllers/ClienteController.java
+@Component
+public class ClienteController implements ClienteApi {
+    // Implementação sem anotações REST
+}
+```
+
+Este plano reorganiza completamente a estrutura seguindo Clean Architecture com padrão API/Controller, usando classes existentes e criando apenas as interfaces de contrato necessárias.

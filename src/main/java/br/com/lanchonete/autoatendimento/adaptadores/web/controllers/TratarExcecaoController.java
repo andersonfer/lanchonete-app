@@ -1,4 +1,4 @@
-package br.com.lanchonete.autoatendimento.adaptadores.rest;
+package br.com.lanchonete.autoatendimento.adaptadores.web.controllers;
 
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;

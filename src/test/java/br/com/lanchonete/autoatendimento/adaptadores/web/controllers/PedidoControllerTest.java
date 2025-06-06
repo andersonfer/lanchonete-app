@@ -6,8 +6,8 @@ import br.com.lanchonete.autoatendimento.adaptadores.web.dto.PedidoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.PedidoResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.pedido.ListarPedidosUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.pedido.RealizarPedidoUC;
+import br.com.lanchonete.autoatendimento.casosdeuso.pedido.ListarPedidos;
 import br.com.lanchonete.autoatendimento.entidades.pedido.StatusPedido;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,7 +45,7 @@ class PedidoControllerTest {
     private RealizarPedidoUC realizarPedidoUC;
 
     @MockitoBean
-    private ListarPedidosUC listarPedidosUC;
+    private ListarPedidos listarPedidos;
 
     private PedidoRequestDTO pedidoRequest;
     private PedidoResponseDTO pedidoResponse;
@@ -152,7 +152,7 @@ class PedidoControllerTest {
     @DisplayName("Deve listar todos os pedidos")
     void t4() throws Exception {
         // Mock do serviço
-        when(listarPedidosUC.executar())
+        when(listarPedidos.executar())
                 .thenReturn(Arrays.asList(pedidoResponse, pedidoResponseSemCliente));
 
         // Executar e verificar
@@ -169,14 +169,14 @@ class PedidoControllerTest {
                 .andExpect(jsonPath("$[1].valorTotal").value(6.00));
 
         // Verificar que o serviço foi chamado
-        verify(listarPedidosUC).executar();
+        verify(listarPedidos).executar();
     }
 
     @Test
     @DisplayName("Deve retornar lista vazia quando não há pedidos")
     void t5() throws Exception {
         // Mock do serviço
-        when(listarPedidosUC.executar())
+        when(listarPedidos.executar())
                 .thenReturn(Collections.emptyList());
 
         // Executar e verificar
@@ -185,6 +185,6 @@ class PedidoControllerTest {
                 .andExpect(jsonPath("$.length()").value(0));
 
         // Verificar que o serviço foi chamado
-        verify(listarPedidosUC).executar();
+        verify(listarPedidos).executar();
     }
 }

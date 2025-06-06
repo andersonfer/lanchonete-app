@@ -2,7 +2,6 @@ package br.com.lanchonete.autoatendimento.casosdeuso.produto;
 
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ProdutoResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.produto.BuscarProdutosPorCategoriaUC;
 import br.com.lanchonete.autoatendimento.interfaces.ProdutoRepositorio;
 import br.com.lanchonete.autoatendimento.entidades.produto.Categoria;
 import br.com.lanchonete.autoatendimento.entidades.produto.Produto;
@@ -14,11 +13,10 @@ import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
-public class BuscarProdutosPorCategoria implements BuscarProdutosPorCategoriaUC {
+public class BuscarProdutosPorCategoria {
 
     private final ProdutoRepositorio produtoRepositorio;
 
-    @Override
     public List<ProdutoResponseDTO> executar(final Categoria categoria) {
         if (categoria == null) {
             throw new ValidacaoException("Categoria é obrigatória");

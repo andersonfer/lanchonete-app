@@ -2,10 +2,10 @@ package br.com.lanchonete.autoatendimento.adaptadores.web.controllers;
 
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ProdutoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ProdutoResponseDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.produto.BuscarProdutosPorCategoriaUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.produto.CriarProdutoUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.produto.EditarProdutoUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.produto.RemoverProdutoUC;
+import br.com.lanchonete.autoatendimento.casosdeuso.produto.BuscarProdutosPorCategoria;
 import br.com.lanchonete.autoatendimento.entidades.produto.Categoria;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -26,7 +26,7 @@ public class ProdutoController {
     private final CriarProdutoUC criarProdutoUC;
     private final EditarProdutoUC editarProdutoUC;
     private final RemoverProdutoUC removerProdutoUC;
-    private final BuscarProdutosPorCategoriaUC buscarProdutosPorCategoriaUC;
+    private final BuscarProdutosPorCategoria buscarProdutosPorCategoria;
 
     @PostMapping
     @Operation(
@@ -81,7 +81,7 @@ public class ProdutoController {
             }
     )
     public ResponseEntity<List<ProdutoResponseDTO>> buscarPorCategoria(@PathVariable final Categoria categoria) {
-        final List<ProdutoResponseDTO> produtos = buscarProdutosPorCategoriaUC.executar(categoria);
+        final List<ProdutoResponseDTO> produtos = buscarProdutosPorCategoria.executar(categoria);
         return ResponseEntity.ok(produtos);
     }
 }

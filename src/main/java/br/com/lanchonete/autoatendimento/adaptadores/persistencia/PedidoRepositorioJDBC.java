@@ -1,9 +1,9 @@
 package br.com.lanchonete.autoatendimento.adaptadores.persistencia;
 
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RegistroNaoEncontradoException;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.PedidoRepositorio;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ClienteRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.PedidoRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ProdutoRepositorio;
 import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
 import br.com.lanchonete.autoatendimento.entidades.pedido.ItemPedido;
 import br.com.lanchonete.autoatendimento.entidades.pedido.Pedido;

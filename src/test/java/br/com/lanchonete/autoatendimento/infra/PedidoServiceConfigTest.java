@@ -2,9 +2,9 @@ package br.com.lanchonete.autoatendimento.infra;
 
 import br.com.lanchonete.autoatendimento.casosdeuso.pedido.ListarPedidos;
 import br.com.lanchonete.autoatendimento.casosdeuso.pedido.RealizarPedido;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.PedidoRepositorio;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ClienteRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.PedidoRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ProdutoRepositorio;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;

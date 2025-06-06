@@ -1,8 +1,8 @@
 package br.com.lanchonete.autoatendimento.infra;
 
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.PedidoRepositorio;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ClienteRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.PedidoRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ProdutoRepositorio;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

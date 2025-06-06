@@ -1,384 +1,104 @@
-# Plano de Migração: Hexagonal → Clean Architecture
+# Plano de Migração: Tarefas Restantes
 
-## Nova Estrutura de Packages
+## Status Atual vs Desejado
+
+### ✅ JÁ IMPLEMENTADO:
+- ✅ Separação API/Controller (contratos vs implementações)
+- ✅ Estrutura básica com /entidades/, /casosdeuso/, /interfaces/
+- ✅ Controllers implementando interfaces API
+
+### 🚧 TAREFAS RESTANTES:
+
+### **1. CRIAR VALUE OBJECTS**
+**Status:** Pendente
+**Descrição:** Criar classes para encapsular validações
+**Arquivos a criar:**
+- `/entidades/shared/Cpf.java`
+- `/entidades/shared/Email.java`
+- `/entidades/produto/Preco.java`
+- `/entidades/pedido/NumeroPedido.java`
+
+**Arquivos a modificar:**
+- `Cliente.java` - usar Cpf e Email
+- `Produto.java` - usar Preco  
+- `Pedido.java` - usar NumeroPedido
+- Todos os DTOs, repositories e use cases relacionados
+
+---
+
+### **2. LIMPAR USE CASES**
+**Status:** Pendente
+**Descrição:** Remover anotações Spring dos use cases
+**Localização:** Manter em `/casosdeuso/` (sem mover)
+**Nomes:** Manter atuais (sem renomear)
+
+**Classes a modificar:**
+- `CadastrarCliente.java` - remover @Service, @Transactional
+- `IdentificarCliente.java` - remover @Service
+- `CriarProduto.java` - remover @Service, @Transactional
+- `EditarProduto.java` - remover @Service, @Transactional
+- `RemoverProduto.java` - remover @Service, @Transactional
+- `BuscarProdutosPorCategoria.java` - remover @Service
+- `RealizarPedido.java` - remover @Service, @Transactional
+- `ListarPedidos.java` - remover @Service
+
+---
+
+### **3. CRIAR APPLICATION SERVICES**
+**Status:** Pendente
+**Descrição:** Camada de orquestração na Interface Adapters
+**Localização:** Criar `/application/`
+
+**Arquivos a criar:**
+- `/application/ClienteApplicationService.java`
+- `/application/ProdutoApplicationService.java`
+- `/application/PedidoApplicationService.java`
+
+**Arquivos a modificar:**
+- Todos os controllers (injetar App Service ao invés de Use Cases)
+- Configurações (adicionar beans de App Services)
+
+---
+
+### **4. LIMPAR DEPENDÊNCIAS DAS ENTITIES**
+**Status:** Pendente
+**Descrição:** Remover dependências externas das entities
+
+**Classes a modificar:**
+- `Cliente.java` - remover import Utils.validarCpf
+- `Produto.java` - revisar dependências Lombok
+- `Pedido.java` - revisar dependências Lombok  
+- `ItemPedido.java` - revisar dependências Lombok
+
+---
+
+## 🎯 ESTRUTURA FINAL ESPERADA
 
 ```
 br.com.lanchonete.autoatendimento
-├── entities/                     # Camada 1 - Entities (Core)
+├── entidades/                    # Mantém atual + Value Objects
 │   ├── cliente/
-│   │   ├── Cliente.java
-│   │   ├── Cpf.java              # Value Object
-│   │   └── Email.java            # Value Object  
+│   │   └── Cliente.java         # ✅ Limpar dependencies
 │   ├── produto/
-│   │   ├── Produto.java
-│   │   ├── Categoria.java
-│   │   └── Preco.java            # Value Object
+│   │   ├── Produto.java         # ✅ Limpar dependencies  
+│   │   └── Preco.java           # 📦 NOVO Value Object
 │   ├── pedido/
-│   │   ├── Pedido.java
-│   │   ├── ItemPedido.java
-│   │   ├── StatusPedido.java
-│   │   └── NumePedido.java       # Value Object
+│   │   ├── Pedido.java          # ✅ Limpar dependencies
+│   │   ├── ItemPedido.java      # ✅ Limpar dependencies
+│   │   └── NumeroPedido.java    # 📦 NOVO Value Object
 │   └── shared/
-│       └── DomainException.java
-│
-├── usecases/                     # Camada 2 - Use Cases
-│   ├── cliente/
-│   │   ├── CadastrarClienteUseCase.java
-│   │   └── IdentificarClienteUseCase.java
-│   ├── produto/
-│   │   ├── CriarProdutoUseCase.java
-│   │   ├── EditarProdutoUseCase.java
-│   │   ├── RemoverProdutoUseCase.java
-│   │   └── BuscarProdutosPorCategoriaUseCase.java
-│   ├── pedido/
-│   │   ├── RealizarPedidoUseCase.java
-│   │   └── ListarPedidosUseCase.java
-│   └── ports/                    # Interfaces de Use Cases
-│       ├── ClienteRepository.java
-│       ├── ProdutoRepository.java
-│       └── PedidoRepository.java
-│
-├── adapters/                     # Camada 3 - Interface Adapters
-│   ├── web/
-│   │   ├── api/                  # Contratos REST (Interfaces)
-│   │   │   ├── ClienteApi.java
-│   │   │   ├── ProdutoApi.java
-│   │   │   └── PedidoApi.java
-│   │   └── controllers/          # Implementações REST
-│   │       ├── ClienteController.java
-│   │       ├── ProdutoController.java
-│   │       ├── PedidoController.java
-│   │       └── GlobalExceptionHandler.java
-│   ├── persistence/
-│   │   ├── repositories/
-│   │   │   ├── ClienteRepositoryImpl.java
-│   │   │   ├── ProdutoRepositoryImpl.java
-│   │   │   └── PedidoRepositoryImpl.java
-│   │   └── mappers/
-│   │       ├── ClienteMapper.java
-│   │       ├── ProdutoMapper.java
-│   │       └── PedidoMapper.java
-│   └── dto/                      # DTOs de entrada/saída
-│       ├── request/
-│       │   ├── ClienteRequestDTO.java
-│       │   ├── ProdutoRequestDTO.java
-│       │   └── PedidoRequestDTO.java
-│       └── response/
-│           ├── ClienteResponseDTO.java
-│           ├── ProdutoResponseDTO.java
-│           └── PedidoResponseDTO.java
-│
-├── application/                  # Application Services (Orquestração)
-│   ├── ClienteApplicationService.java
-│   ├── ProdutoApplicationService.java
-│   └── PedidoApplicationService.java
-│
-└── frameworks/                   # Camada 4 - Frameworks & Drivers
-    ├── config/
-    │   ├── DatabaseConfig.java
-    │   ├── WebConfig.java
-    │   ├── SwaggerConfig.java
-    │   └── ApplicationConfig.java
-    ├── security/
-    └── monitoring/
+│       ├── Cpf.java             # 📦 NOVO Value Object
+│       └── Email.java           # 📦 NOVO Value Object
+├── casosdeuso/                   # ✅ Limpar anotações Spring
+├── application/                  # 📦 NOVO - Application Services
+├── adaptadores/                  # Mantém atual
+├── frameworks/                   # Mantém /infra/ atual
+└── interfaces/                   # Mantém atual
 ```
 
-## Principais Mudanças
+## ⚡ ORDEM DE EXECUÇÃO RECOMENDADA
 
-### 1. Entities (Camada Mais Interna)
-- **Value Objects**: Criar `Cpf`, `Email`, `Preco`, `NumeroPedido`
-- **Remoção de dependências**: Eliminar `Utils` e Lombok das entities
-- **Imutabilidade**: Entities 100% imutáveis
-- **Business Rules**: Centralizar regras de negócio nas entities
-
-### 2. Use Cases (Casos de Uso Puros)
-- **Remoção de `@Service` e `@Transactional`**
-- **Interfaces puras**: Sem dependência de Spring
-- **Single Responsibility**: Um use case por operação
-- **Input/Output**: DTOs específicos para entrada/saída
-
-### 3. Interface Adapters
-- **Web APIs**: Interfaces com contratos REST e documentação Swagger
-- **Controllers**: Implementações das APIs, orquestração de use cases
-- **Repositories**: Implementação isolada da persistência
-- **DTOs**: Objetos de transferência organizados por request/response
-- **Mappers**: Conversão entre camadas
-
-### 4. Application Services
-- **Orquestração**: Coordenar múltiplos use cases
-- **Transações**: Controle transacional aqui
-- **Framework Integration**: Anotações Spring aqui
-
-### 5. Frameworks & Drivers
-- **Configurações centralizadas**
-- **Detalhes de infraestrutura**
-- **Dependências externas**
-
-## Benefícios da Migração
-
-1. **Testabilidade**: Use cases testáveis sem Spring
-2. **Independência**: Core isolado de frameworks
-3. **Flexibilidade**: Trocar frameworks sem impactar business
-4. **Manutenibilidade**: Responsabilidades mais claras
-5. **Performance**: Menor overhead de anotações
-
-## Etapas de Execução
-
-1. **Criar Value Objects** e refatorar entities
-2. **Extrair use cases puros** sem anotações
-3. **Implementar Application Services** com Spring
-4. **Reorganizar adapters** em camadas específicas
-5. **Centralizar configurações**
-6. **Migrar testes** para estrutura limpa
-
-A migração manterá a funcionalidade atual mas organizará o código de forma mais limpa e testável.
-
-## Plano de Reorganização - Classes Existentes → Clean Architecture
-
-### FASE 1: Mapeamento de Movimentações
-
-#### 1.1 Camada ENTITIES (Core Domain)
-```
-ORIGEM → DESTINO
-
-/dominio/Cliente.java → /entities/cliente/Cliente.java
-/dominio/Produto.java → /entities/produto/Produto.java  
-/dominio/Pedido.java → /entities/pedido/Pedido.java
-/dominio/ItemPedido.java → /entities/pedido/ItemPedido.java
-/dominio/StatusPedido.java → /entities/pedido/StatusPedido.java
-/dominio/Categoria.java → /entities/produto/Categoria.java
-```
-
-#### 1.2 Camada USE CASES
-```
-ORIGEM → DESTINO
-
-/aplicacao/casosdeuso/cliente/CadastrarCliente.java → /usecases/cliente/CadastrarClienteUseCase.java
-/aplicacao/casosdeuso/cliente/IdentificarCliente.java → /usecases/cliente/IdentificarClienteUseCase.java
-/aplicacao/casosdeuso/produto/CriarProduto.java → /usecases/produto/CriarProdutoUseCase.java
-/aplicacao/casosdeuso/produto/EditarProduto.java → /usecases/produto/EditarProdutoUseCase.java
-/aplicacao/casosdeuso/produto/RemoverProduto.java → /usecases/produto/RemoverProdutoUseCase.java
-/aplicacao/casosdeuso/produto/BuscarProdutosPorCategoria.java → /usecases/produto/BuscarProdutosPorCategoriaUseCase.java
-/aplicacao/casosdeuso/pedido/RealizarPedido.java → /usecases/pedido/RealizarPedidoUseCase.java
-/aplicacao/casosdeuso/pedido/ListarPedidos.java → /usecases/pedido/ListarPedidosUseCase.java
-
-# Interfaces (Ports)
-/aplicacao/portas/saida/ClienteRepositorio.java → /usecases/ports/ClienteRepository.java
-/aplicacao/portas/saida/ProdutoRepositorio.java → /usecases/ports/ProdutoRepository.java
-/aplicacao/portas/saida/PedidoRepositorio.java → /usecases/ports/PedidoRepository.java
-```
-
-#### 1.3 Camada INTERFACE ADAPTERS
-```
-ORIGEM → DESTINO
-
-# Web Layer - APIs (NOVAS INTERFACES)
-(CRIAR NOVO) → /adapters/web/api/ClienteApi.java
-(CRIAR NOVO) → /adapters/web/api/ProdutoApi.java
-(CRIAR NOVO) → /adapters/web/api/PedidoApi.java
-
-# Web Layer - Controllers
-/adaptadores/rest/ClienteController.java → /adapters/web/controllers/ClienteController.java
-/adaptadores/rest/ProdutoController.java → /adapters/web/controllers/ProdutoController.java
-/adaptadores/rest/PedidoController.java → /adapters/web/controllers/PedidoController.java
-/adaptadores/rest/TratarExcecaoController.java → /adapters/web/controllers/GlobalExceptionHandler.java
-
-# Persistence Layer - Repositories
-/adaptadores/persistencia/ClienteRepositorioJDBC.java → /adapters/persistence/repositories/ClienteRepositoryImpl.java
-/adaptadores/persistencia/ProdutoRepositorioJDBC.java → /adapters/persistence/repositories/ProdutoRepositoryImpl.java
-/adaptadores/persistencia/PedidoRepositorioJDBC.java → /adapters/persistence/repositories/PedidoRepositoryImpl.java
-
-# DTOs - Reorganização por tipo
-/aplicacao/dto/ClienteRequestDTO.java → /adapters/dto/request/ClienteRequestDTO.java
-/aplicacao/dto/ProdutoRequestDTO.java → /adapters/dto/request/ProdutoRequestDTO.java
-/aplicacao/dto/PedidoRequestDTO.java → /adapters/dto/request/PedidoRequestDTO.java
-/aplicacao/dto/ClienteResponseDTO.java → /adapters/dto/response/ClienteResponseDTO.java
-/aplicacao/dto/ProdutoResponseDTO.java → /adapters/dto/response/ProdutoResponseDTO.java
-/aplicacao/dto/PedidoResponseDTO.java → /adapters/dto/response/PedidoResponseDTO.java
-/aplicacao/dto/ItemPedidoDTO.java → /adapters/dto/request/ItemPedidoDTO.java
-/aplicacao/dto/ItemPedidoResponseDTO.java → /adapters/dto/response/ItemPedidoResponseDTO.java
-```
-
-#### 1.4 Camada FRAMEWORKS & DRIVERS
-```
-ORIGEM → DESTINO
-
-# Configurações
-/infra/JdbcConfig.java → /frameworks/config/DatabaseConfig.java
-/infra/SwaggerConfig.java → /frameworks/config/SwaggerConfig.java
-/infra/RepositorioConfig.java → /frameworks/config/RepositoryConfig.java
-/infra/ClienteServiceConfig.java → /frameworks/config/UseCaseConfig.java
-/infra/PedidoServiceConfig.java → (mesclar com UseCaseConfig.java)
-/infra/ProdutoServiceConfig.java → (mesclar com UseCaseConfig.java)
-
-# Utilitários
-/adaptadores/util/Utils.java → /frameworks/util/Utils.java
-```
-
-### FASE 2: Refatorações Necessárias (SEM CÓDIGO NOVO)
-
-#### 2.1 Use Cases - Remoção de Anotações Spring
-```
-Classes a modificar:
-- CadastrarClienteUseCase: remover @Service, @Transactional
-- IdentificarClienteUseCase: remover @Service
-- CriarProdutoUseCase: remover @Service, @Transactional
-- EditarProdutoUseCase: remover @Service, @Transactional
-- RemoverProdutoUseCase: remover @Service, @Transactional
-- BuscarProdutosPorCategoriaUseCase: remover @Service
-- RealizarPedidoUseCase: remover @Service, @Transactional
-- ListarPedidosUseCase: remover @Service
-```
-
-#### 2.2 Entities - Limpeza de Dependências
-```
-Classes a modificar:
-- Cliente.java: remover import Utils.validarCpf
-- Produto.java: revisar dependências Lombok
-- Pedido.java: revisar dependências Lombok
-- ItemPedido.java: revisar dependências Lombok
-```
-
-#### 2.3 Novas Interfaces e Refatorações
-```
-CRIAR NOVAS INTERFACES API:
-- ClienteApi.java: extrair anotações REST do ClienteController
-- ProdutoApi.java: extrair anotações REST do ProdutoController  
-- PedidoApi.java: extrair anotações REST do PedidoController
-
-REFATORAR CONTROLLERS:
-- ClienteController: implementar ClienteApi, remover anotações REST
-- ProdutoController: implementar ProdutoApi, remover anotações REST
-- PedidoController: implementar PedidoApi, remover anotações REST
-
-RENOMEAR INTERFACES:
-- ClienteRepositorio → ClienteRepository
-- ProdutoRepositorio → ProdutoRepository  
-- PedidoRepositorio → PedidoRepository
-- Todas as interfaces UC de /portas/entrada/ → deletar (usar classes direto)
-```
-
-### FASE 3: Ordem de Execução
-
-#### 3.1 PRIMEIRA ETAPA - Movimentação Base
-1. Criar novos packages vazios
-2. Mover classes de domínio (entities)
-3. Mover interfaces de repositório
-4. Atualizar imports nas classes movidas
-
-#### 3.2 SEGUNDA ETAPA - Use Cases
-1. Mover use cases para nova estrutura
-2. Renomear classes (adicionar UseCase suffix)
-3. Remover anotações Spring
-4. Atualizar imports
-
-#### 3.3 TERCEIRA ETAPA - Adapters
-1. Criar interfaces API (ClienteApi, ProdutoApi, PedidoApi)
-2. Refatorar controllers para implementar as APIs
-3. Mover controllers para nova estrutura web/
-4. Mover implementações de repositório para persistence/
-5. Reorganizar DTOs por request/response
-6. Renomear TratarExcecaoController → GlobalExceptionHandler
-
-#### 3.4 QUARTA ETAPA - Frameworks
-1. Mover configurações
-2. Consolidar configs separadas em uma única
-3. Mover utilitários
-
-#### 3.5 QUINTA ETAPA - Limpeza
-1. Deletar packages vazios antigos
-2. Deletar interfaces UC desnecessárias
-3. Verificar todos os imports
-
-### FASE 4: Impactos de Dependências
-
-#### 4.1 Imports que Mudarão
-```
-- Todas as referências a /dominio/ → /entities/
-- Todas as referências a /aplicacao/casosdeuso/ → /usecases/
-- Todas as referências a /adaptadores/rest/ → /adapters/web/controllers/
-- Todas as referências a /adaptadores/persistencia/ → /adapters/persistence/repositories/
-- Todas as referências a /aplicacao/dto/ → /adapters/dto/request/ ou /adapters/dto/response/
-- Todas as referências a /infra/ → /frameworks/config/
-```
-
-#### 4.2 Classes Configuration que Precisam Atualizar
-```
-- RepositorioConfig: atualizar paths dos repositories
-- ClienteServiceConfig: atualizar paths dos use cases
-- PedidoServiceConfig: atualizar paths dos use cases  
-- ProdutoServiceConfig: atualizar paths dos use cases
-```
-
-#### 4.3 Testes que Precisam Atualizar Imports
-```
-Todos os testes em /test/ precisarão atualizar imports:
-- Testes de domínio
-- Testes de use cases
-- Testes de controllers
-- Testes de repositórios
-- Testes E2E
-```
-
-### FASE 5: Validação Pós-Reorganização
-
-#### 5.1 Verificações Obrigatórias
-1. Compilação sem erros
-2. Todos os testes passando
-3. Aplicação iniciando corretamente
-4. Swagger funcionando
-5. Endpoints respondendo
-
-#### 5.2 Checklist de Completude
-- [ ] Todos os packages antigos removidos
-- [ ] Imports atualizados
-- [ ] Configurações funcionando
-- [ ] Testes executando
-- [ ] Documentação atualizada
-
-## ADIÇÕES À MIGRAÇÃO - Separação API/Controller
-
-### Padrão API/Controller Implementado
-
-A nova estrutura separa **contratos** de **implementações** na camada web:
-
-#### Responsabilidades das APIs (/adapters/web/api/)
-- **Contratos REST**: `@RestController`, `@RequestMapping`, `@PostMapping`, etc.
-- **Documentação Swagger**: `@Operation`, `@ApiResponse`, `@Parameter`, `@Tag`
-- **Validações HTTP**: `@Valid`, `@PathVariable`, `@RequestBody`
-- **Definição pura**: assinatura dos métodos, tipos de retorno, sem lógica
-
-#### Responsabilidades dos Controllers (/adapters/web/controllers/)
-- **Implementação das APIs**: classes que implementam as interfaces
-- **Orquestração**: chamadas para use cases via application services
-- **Conversão de DTOs**: transformação entre request/response
-- **Tratamento de exceções**: conversão de domain exceptions para HTTP responses
-- **Sem anotações REST**: apenas `@Component` ou `@Service`
-
-### Benefícios da Separação
-1. **Documentação centralizada**: todo Swagger fica nas interfaces API
-2. **Testabilidade melhorada**: pode mockar APIs nos testes de integração
-3. **Flexibilidade**: permite múltiplas implementações (REST, GraphQL, etc.)
-4. **Clean Architecture**: controllers focados apenas na orquestração
-5. **Manutenibilidade**: contratos claros e separados das implementações
-
-### Exemplo de Implementação
-```java
-// /adapters/web/api/ClienteApi.java
-@RestController
-@RequestMapping("/clientes")
-@Tag(name = "Cliente")
-public interface ClienteApi {
-    @PostMapping
-    @Operation(summary = "Cadastrar cliente")
-    ResponseEntity<ClienteResponseDTO> cadastrarCliente(@Valid @RequestBody ClienteRequestDTO request);
-}
-
-// /adapters/web/controllers/ClienteController.java
-@Component
-public class ClienteController implements ClienteApi {
-    // Implementação sem anotações REST
-}
-```
-
-Este plano reorganiza completamente a estrutura seguindo Clean Architecture com padrão API/Controller, usando classes existentes e criando apenas as interfaces de contrato necessárias.
+1. **Value Objects** - Base para todas as outras mudanças
+2. **Limpar Dependencies** - Remove dependências externas  
+3. **Limpar Use Cases** - Remove anotações Spring
+4. **Application Services** - Camada de orquestração

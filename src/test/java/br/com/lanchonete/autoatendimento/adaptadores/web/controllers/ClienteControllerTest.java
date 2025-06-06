@@ -3,8 +3,8 @@ package br.com.lanchonete.autoatendimento.adaptadores.web.controllers;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ClienteRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.cliente.IdentificarClienteUC;
 import br.com.lanchonete.autoatendimento.casosdeuso.cliente.CadastrarCliente;
+import br.com.lanchonete.autoatendimento.casosdeuso.cliente.IdentificarCliente;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -38,7 +38,7 @@ class ClienteControllerTest {
     private CadastrarCliente cadastrarCliente;
 
     @MockitoBean
-    private IdentificarClienteUC identificarClienteUC;
+    private IdentificarCliente identificarCliente;
 
     private ClienteRequestDTO novoCliente;
 
@@ -92,7 +92,7 @@ class ClienteControllerTest {
         ClienteResponseDTO resposta = new ClienteResponseDTO(1L,
                 "Teste da Silva",cpf, "teste@email.com");
 
-        when(identificarClienteUC.executar(cpf)).thenReturn(Optional.of(resposta));
+        when(identificarCliente.executar(cpf)).thenReturn(Optional.of(resposta));
 
         mockMvc.perform(get("/clientes/cpf/{cpf}", cpf))
                 .andExpect(status().isOk())
@@ -109,7 +109,7 @@ class ClienteControllerTest {
 
         String cpfInexistente = "99999999999";
 
-        when(identificarClienteUC.executar(cpfInexistente)).thenReturn(Optional.empty());
+        when(identificarCliente.executar(cpfInexistente)).thenReturn(Optional.empty());
 
 
         mockMvc.perform(get("/clientes/cpf/{cpf}", cpfInexistente))
@@ -122,7 +122,7 @@ class ClienteControllerTest {
 
         String cpfInvalido = "123";
 
-        when(identificarClienteUC.executar(anyString()))
+        when(identificarCliente.executar(anyString()))
                 .thenThrow(new ValidacaoException("CPF deve conter 11 dígitos numéricos"));
 
 

@@ -2,8 +2,8 @@ package br.com.lanchonete.autoatendimento.adaptadores.web.controllers;
 
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ClienteRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ClienteResponseDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.cliente.IdentificarClienteUC;
 import br.com.lanchonete.autoatendimento.casosdeuso.cliente.CadastrarCliente;
+import br.com.lanchonete.autoatendimento.casosdeuso.cliente.IdentificarCliente;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class ClienteController {
 
     private final CadastrarCliente cadastrarCliente;
-    private final IdentificarClienteUC identificarClienteUC;
+    private final IdentificarCliente identificarCliente;
 
     @PostMapping
     @Operation(
@@ -45,7 +45,7 @@ public class ClienteController {
             }
     )
     public ResponseEntity<ClienteResponseDTO> identificarPorCpf(@PathVariable final String cpf) {
-        return identificarClienteUC.executar(cpf)
+        return identificarCliente.executar(cpf)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

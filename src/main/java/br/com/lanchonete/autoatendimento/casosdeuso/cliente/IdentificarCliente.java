@@ -1,7 +1,6 @@
 package br.com.lanchonete.autoatendimento.casosdeuso.cliente;
 
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ClienteResponseDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.cliente.IdentificarClienteUC;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.interfaces.ClienteRepositorio;
@@ -12,11 +11,10 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class IdentificarCliente implements IdentificarClienteUC {
+public class IdentificarCliente {
 
     private final ClienteRepositorio clienteRepositorio;
 
-    @Override
     public Optional<ClienteResponseDTO> executar(final String cpf) {
 
         if (cpf == null || cpf.isBlank()) {

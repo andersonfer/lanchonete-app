@@ -1,6 +1,5 @@
 package br.com.lanchonete.autoatendimento.casosdeuso.produto;
 
-import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.produto.RemoverProdutoUC;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.interfaces.ProdutoRepositorio;
@@ -12,11 +11,10 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class RemoverProduto implements RemoverProdutoUC {
+public class RemoverProduto {
 
     private final ProdutoRepositorio produtoRepositorio;
 
-    @Override
     public void executar(final Long id) {
 
         if (id == null) {

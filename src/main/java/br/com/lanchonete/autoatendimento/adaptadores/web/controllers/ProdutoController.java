@@ -2,10 +2,10 @@ package br.com.lanchonete.autoatendimento.adaptadores.web.controllers;
 
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ProdutoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ProdutoResponseDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.produto.CriarProdutoUC;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.produto.EditarProdutoUC;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.produto.RemoverProdutoUC;
 import br.com.lanchonete.autoatendimento.casosdeuso.produto.BuscarProdutosPorCategoria;
+import br.com.lanchonete.autoatendimento.casosdeuso.produto.CriarProduto;
+import br.com.lanchonete.autoatendimento.casosdeuso.produto.EditarProduto;
+import br.com.lanchonete.autoatendimento.casosdeuso.produto.RemoverProduto;
 import br.com.lanchonete.autoatendimento.entidades.produto.Categoria;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -23,9 +23,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProdutoController {
 
-    private final CriarProdutoUC criarProdutoUC;
-    private final EditarProdutoUC editarProdutoUC;
-    private final RemoverProdutoUC removerProdutoUC;
+    private final CriarProduto criarProduto;
+    private final EditarProduto editarProdutoUC;
+    private final RemoverProduto removerProdutoUC;
     private final BuscarProdutosPorCategoria buscarProdutosPorCategoria;
 
     @PostMapping
@@ -38,7 +38,7 @@ public class ProdutoController {
             }
     )
     public ResponseEntity<ProdutoResponseDTO> criar(@RequestBody final ProdutoRequestDTO produtoRequest) {
-        final ProdutoResponseDTO produto = criarProdutoUC.executar(produtoRequest);
+        final ProdutoResponseDTO produto = criarProduto.executar(produtoRequest);
         return new ResponseEntity<>(produto, HttpStatus.CREATED);
     }
 

@@ -3,7 +3,6 @@ package br.com.lanchonete.autoatendimento.casosdeuso.produto;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ProdutoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ProdutoResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.produto.CriarProdutoUC;
 import br.com.lanchonete.autoatendimento.interfaces.ProdutoRepositorio;
 import br.com.lanchonete.autoatendimento.entidades.produto.Produto;
 import lombok.RequiredArgsConstructor;
@@ -11,11 +10,10 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class CriarProduto implements CriarProdutoUC {
+public class CriarProduto {
 
     private final ProdutoRepositorio produtoRepositorio;
 
-    @Override
     public ProdutoResponseDTO executar(final ProdutoRequestDTO novoProduto) {
         try {
             if (produtoRepositorio.existePorNome(novoProduto.nome())) {

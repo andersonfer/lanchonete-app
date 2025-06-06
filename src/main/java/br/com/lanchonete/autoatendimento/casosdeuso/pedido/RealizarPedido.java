@@ -5,7 +5,6 @@ import br.com.lanchonete.autoatendimento.adaptadores.web.dto.PedidoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.PedidoResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.pedido.RealizarPedidoUC;
 import br.com.lanchonete.autoatendimento.interfaces.ClienteRepositorio;
 import br.com.lanchonete.autoatendimento.interfaces.PedidoRepositorio;
 import br.com.lanchonete.autoatendimento.interfaces.ProdutoRepositorio;
@@ -24,13 +23,13 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class RealizarPedido implements RealizarPedidoUC {
+public class RealizarPedido {
 
     private final PedidoRepositorio pedidoRepositorio;
     private final ClienteRepositorio clienteRepositorio;
     private final ProdutoRepositorio produtoRepositorio;
 
-    @Override
+
     @Transactional
     public PedidoResponseDTO executar(final PedidoRequestDTO novoPedido) {
 

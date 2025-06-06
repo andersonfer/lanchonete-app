@@ -1,7 +1,7 @@
 package br.com.lanchonete.autoatendimento.adaptadores.web.controllers;
 
-import br.com.lanchonete.autoatendimento.aplicacao.dto.ProdutoRequestDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.dto.ProdutoResponseDTO;
+import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ProdutoRequestDTO;
+import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ProdutoResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.produto.BuscarProdutosPorCategoriaUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.produto.CriarProdutoUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.produto.EditarProdutoUC;

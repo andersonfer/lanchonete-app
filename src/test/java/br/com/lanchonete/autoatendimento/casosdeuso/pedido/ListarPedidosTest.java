@@ -1,6 +1,6 @@
 package br.com.lanchonete.autoatendimento.casosdeuso.pedido;
 
-import br.com.lanchonete.autoatendimento.aplicacao.dto.PedidoResponseDTO;
+import br.com.lanchonete.autoatendimento.adaptadores.web.dto.PedidoResponseDTO;
 import br.com.lanchonete.autoatendimento.interfaces.PedidoRepositorio;
 import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
 import br.com.lanchonete.autoatendimento.entidades.pedido.ItemPedido;

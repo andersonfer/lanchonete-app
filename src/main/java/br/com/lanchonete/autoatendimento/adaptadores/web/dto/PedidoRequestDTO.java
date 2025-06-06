@@ -1,4 +1,4 @@
-package br.com.lanchonete.autoatendimento.aplicacao.dto;
+package br.com.lanchonete.autoatendimento.adaptadores.web.dto;
 
 import java.util.List;
 

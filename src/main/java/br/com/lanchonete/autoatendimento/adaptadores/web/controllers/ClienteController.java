@@ -1,7 +1,7 @@
 package br.com.lanchonete.autoatendimento.adaptadores.web.controllers;
 
-import br.com.lanchonete.autoatendimento.aplicacao.dto.ClienteRequestDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.dto.ClienteResponseDTO;
+import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ClienteRequestDTO;
+import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.cliente.CadastrarClienteUC;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.cliente.IdentificarClienteUC;
 import io.swagger.v3.oas.annotations.Operation;

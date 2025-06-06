@@ -1,5 +1,6 @@
-package br.com.lanchonete.autoatendimento.dominio;
+package br.com.lanchonete.autoatendimento.entidades.pedido;
 
+import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
 import lombok.Data;
 
 import java.math.BigDecimal;

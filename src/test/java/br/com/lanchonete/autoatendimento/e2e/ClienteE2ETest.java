@@ -4,7 +4,7 @@ package br.com.lanchonete.autoatendimento.e2e;
 import br.com.lanchonete.autoatendimento.aplicacao.dto.ClienteRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
-import br.com.lanchonete.autoatendimento.dominio.Cliente;
+import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

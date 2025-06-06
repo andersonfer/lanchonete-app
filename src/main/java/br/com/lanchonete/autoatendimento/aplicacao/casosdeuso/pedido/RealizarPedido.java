@@ -9,7 +9,11 @@ import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.pedido.Realiza
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteRepositorio;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.PedidoRepositorio;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoRepositorio;
-import br.com.lanchonete.autoatendimento.dominio.*;
+import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
+import br.com.lanchonete.autoatendimento.entidades.pedido.ItemPedido;
+import br.com.lanchonete.autoatendimento.entidades.pedido.Pedido;
+import br.com.lanchonete.autoatendimento.entidades.pedido.StatusPedido;
+import br.com.lanchonete.autoatendimento.entidades.produto.Produto;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;

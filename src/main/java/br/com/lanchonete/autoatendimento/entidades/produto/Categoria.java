@@ -1,4 +1,4 @@
-package br.com.lanchonete.autoatendimento.dominio;
+package br.com.lanchonete.autoatendimento.entidades.produto;
 
 public enum Categoria {
     LANCHE,

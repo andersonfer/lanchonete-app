@@ -1,4 +1,4 @@
-package br.com.lanchonete.autoatendimento.infra;
+package br.com.lanchonete.autoatendimento.frameworks.config;
 
 
 import org.springframework.context.annotation.Bean;

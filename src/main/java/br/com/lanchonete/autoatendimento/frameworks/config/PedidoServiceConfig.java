@@ -1,4 +1,4 @@
-package br.com.lanchonete.autoatendimento.infra;
+package br.com.lanchonete.autoatendimento.frameworks.config;
 
 import br.com.lanchonete.autoatendimento.casosdeuso.pedido.ListarPedidos;
 import br.com.lanchonete.autoatendimento.casosdeuso.pedido.RealizarPedido;

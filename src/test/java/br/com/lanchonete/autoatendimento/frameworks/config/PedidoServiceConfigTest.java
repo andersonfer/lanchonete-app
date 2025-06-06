@@ -1,40 +1,42 @@
-package br.com.lanchonete.autoatendimento.infra;
+package br.com.lanchonete.autoatendimento.frameworks.config;
 
+import br.com.lanchonete.autoatendimento.casosdeuso.pedido.ListarPedidos;
+import br.com.lanchonete.autoatendimento.casosdeuso.pedido.RealizarPedido;
 import br.com.lanchonete.autoatendimento.interfaces.ClienteRepositorio;
 import br.com.lanchonete.autoatendimento.interfaces.PedidoRepositorio;
 import br.com.lanchonete.autoatendimento.interfaces.ProdutoRepositorio;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {RepositorioConfig.class, JdbcConfig.class})
-class RepositorioConfigTest {
+@ContextConfiguration(classes = {PedidoServiceConfig.class})
+class PedidoServiceConfigTest {
 
     @MockitoBean
-    private JdbcTemplate jdbcTemplate;
+    private PedidoRepositorio pedidoRepositorio;
 
-    @Autowired
+    @MockitoBean
     private ClienteRepositorio clienteRepositorio;
 
-    @Autowired
+    @MockitoBean
     private ProdutoRepositorio produtoRepositorio;
 
     @Autowired
-    private PedidoRepositorio pedidoRepositorio;
+    private RealizarPedido realizarCheckout;
+
+    @Autowired
+    private ListarPedidos listarPedidos;
 
     @Test
-    @DisplayName( "Deve criar os beans de repositorio")
     void t1() {
-        assertNotNull(clienteRepositorio);
-        assertNotNull(produtoRepositorio);
-        assertNotNull(pedidoRepositorio);
+        assertNotNull(realizarCheckout);
+        assertNotNull(listarPedidos);
     }
+
 }

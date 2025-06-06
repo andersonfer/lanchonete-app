@@ -1,42 +1,40 @@
-package br.com.lanchonete.autoatendimento.infra;
+package br.com.lanchonete.autoatendimento.frameworks.config;
 
-import br.com.lanchonete.autoatendimento.casosdeuso.pedido.ListarPedidos;
-import br.com.lanchonete.autoatendimento.casosdeuso.pedido.RealizarPedido;
 import br.com.lanchonete.autoatendimento.interfaces.ClienteRepositorio;
 import br.com.lanchonete.autoatendimento.interfaces.PedidoRepositorio;
 import br.com.lanchonete.autoatendimento.interfaces.ProdutoRepositorio;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {PedidoServiceConfig.class})
-class PedidoServiceConfigTest {
+@ContextConfiguration(classes = {RepositorioConfig.class, JdbcConfig.class})
+class RepositorioConfigTest {
 
     @MockitoBean
-    private PedidoRepositorio pedidoRepositorio;
+    private JdbcTemplate jdbcTemplate;
 
-    @MockitoBean
+    @Autowired
     private ClienteRepositorio clienteRepositorio;
 
-    @MockitoBean
+    @Autowired
     private ProdutoRepositorio produtoRepositorio;
 
     @Autowired
-    private RealizarPedido realizarCheckout;
-
-    @Autowired
-    private ListarPedidos listarPedidos;
+    private PedidoRepositorio pedidoRepositorio;
 
     @Test
+    @DisplayName( "Deve criar os beans de repositorio")
     void t1() {
-        assertNotNull(realizarCheckout);
-        assertNotNull(listarPedidos);
+        assertNotNull(clienteRepositorio);
+        assertNotNull(produtoRepositorio);
+        assertNotNull(pedidoRepositorio);
     }
-
 }

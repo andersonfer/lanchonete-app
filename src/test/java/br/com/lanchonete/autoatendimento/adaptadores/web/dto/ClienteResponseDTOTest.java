@@ -1,6 +1,5 @@
-package br.com.lanchonete.autoatendimento.aplicacao.dto;
+package br.com.lanchonete.autoatendimento.adaptadores.web.dto;
 
-import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

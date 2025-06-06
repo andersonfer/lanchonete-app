@@ -1,51 +1,34 @@
 package br.com.lanchonete.autoatendimento.adaptadores.web.controllers;
 
+import br.com.lanchonete.autoatendimento.adaptadores.web.api.ClienteApi;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ClienteRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.casosdeuso.cliente.CadastrarCliente;
 import br.com.lanchonete.autoatendimento.casosdeuso.cliente.IdentificarCliente;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.stereotype.Component;
 
-@RestController
-@RequestMapping("/clientes")
-@Tag(name = "Clientes", description = "API para gerenciamento de clientes")
+import java.util.Optional;
+
+@Component
 @RequiredArgsConstructor
-public class ClienteController {
+public class ClienteController implements ClienteApi {
 
     private final CadastrarCliente cadastrarCliente;
     private final IdentificarCliente identificarCliente;
 
-    @PostMapping
-    @Operation(
-        summary = "Cadastrar cliente",
-        description = "Cadastra um novo cliente no sistema",
-        responses = {
-                @ApiResponse(responseCode = "201", description = "Cliente cadastrado com sucesso"),
-                @ApiResponse(responseCode = "400", description = "Dados inválidos ou CPF já cadastrado")
-        }
-    )
-    public ResponseEntity<ClienteResponseDTO> cadastrarCliente(@RequestBody final ClienteRequestDTO novoCliente) {
+    @Override
+    public ResponseEntity<ClienteResponseDTO> cadastrarCliente(final ClienteRequestDTO novoCliente) {
         final ClienteResponseDTO clienteCadastrado = cadastrarCliente.executar(novoCliente);
         return new ResponseEntity<>(clienteCadastrado, HttpStatus.CREATED);
     }
 
-    @GetMapping("/cpf/{cpf}")
-    @Operation(
-            summary = "Buscar cliente por CPF",
-            description = "Identifica um novo cliente no sistema",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Cliente encontrado"),
-                    @ApiResponse(responseCode = "404", description = "Cliente não encontrado")
-            }
-    )
-    public ResponseEntity<ClienteResponseDTO> identificarPorCpf(@PathVariable final String cpf) {
-        return identificarCliente.executar(cpf)
+    @Override
+    public ResponseEntity<ClienteResponseDTO> identificarPorCpf(final String cpf) {
+        final Optional<ClienteResponseDTO> clienteEncontrado = identificarCliente.executar(cpf);
+        return clienteEncontrado
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

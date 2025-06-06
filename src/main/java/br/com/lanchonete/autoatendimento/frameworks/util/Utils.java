@@ -1,4 +1,4 @@
-package br.com.lanchonete.autoatendimento.adaptadores.util;
+package br.com.lanchonete.autoatendimento.frameworks.util;
 
 import java.util.Objects;
 

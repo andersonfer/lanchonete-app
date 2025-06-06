@@ -1,6 +1,6 @@
 package br.com.lanchonete.autoatendimento.entidades.produto;
 
-import br.com.lanchonete.autoatendimento.adaptadores.util.Utils;
+import br.com.lanchonete.autoatendimento.frameworks.util.Utils;
 import lombok.Data;
 
 import java.math.BigDecimal;

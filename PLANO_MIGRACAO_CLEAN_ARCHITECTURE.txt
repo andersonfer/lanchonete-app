@@ -1,0 +1,301 @@
+# Plano de Migração: Hexagonal → Clean Architecture
+
+## Nova Estrutura de Packages
+
+```
+br.com.lanchonete.autoatendimento
+├── entities/                     # Camada 1 - Entities (Core)
+│   ├── cliente/
+│   │   ├── Cliente.java
+│   │   ├── Cpf.java              # Value Object
+│   │   └── Email.java            # Value Object  
+│   ├── produto/
+│   │   ├── Produto.java
+│   │   ├── Categoria.java
+│   │   └── Preco.java            # Value Object
+│   ├── pedido/
+│   │   ├── Pedido.java
+│   │   ├── ItemPedido.java
+│   │   ├── StatusPedido.java
+│   │   └── NumePedido.java       # Value Object
+│   └── shared/
+│       └── DomainException.java
+│
+├── usecases/                     # Camada 2 - Use Cases
+│   ├── cliente/
+│   │   ├── CadastrarClienteUseCase.java
+│   │   └── IdentificarClienteUseCase.java
+│   ├── produto/
+│   │   ├── CriarProdutoUseCase.java
+│   │   ├── EditarProdutoUseCase.java
+│   │   ├── RemoverProdutoUseCase.java
+│   │   └── BuscarProdutosPorCategoriaUseCase.java
+│   ├── pedido/
+│   │   ├── RealizarPedidoUseCase.java
+│   │   └── ListarPedidosUseCase.java
+│   └── ports/                    # Interfaces de Use Cases
+│       ├── ClienteRepository.java
+│       ├── ProdutoRepository.java
+│       └── PedidoRepository.java
+│
+├── adapters/                     # Camada 3 - Interface Adapters
+│   ├── controllers/
+│   │   ├── ClienteController.java
+│   │   ├── ProdutoController.java
+│   │   ├── PedidoController.java
+│   │   └── GlobalExceptionHandler.java
+│   ├── presenters/
+│   │   ├── ClientePresenter.java
+│   │   ├── ProdutoPresenter.java
+│   │   └── PedidoPresenter.java
+│   ├── repositories/
+│   │   ├── ClienteRepositoryImpl.java
+│   │   ├── ProdutoRepositoryImpl.java
+│   │   └── PedidoRepositoryImpl.java
+│   └── mappers/
+│       ├── ClienteMapper.java
+│       ├── ProdutoMapper.java
+│       └── PedidoMapper.java
+│
+├── application/                  # Application Services (Orquestração)
+│   ├── ClienteApplicationService.java
+│   ├── ProdutoApplicationService.java
+│   └── PedidoApplicationService.java
+│
+└── frameworks/                   # Camada 4 - Frameworks & Drivers
+    ├── config/
+    │   ├── DatabaseConfig.java
+    │   ├── WebConfig.java
+    │   ├── SwaggerConfig.java
+    │   └── ApplicationConfig.java
+    ├── security/
+    └── monitoring/
+```
+
+## Principais Mudanças
+
+### 1. Entities (Camada Mais Interna)
+- **Value Objects**: Criar `Cpf`, `Email`, `Preco`, `NumeroPedido`
+- **Remoção de dependências**: Eliminar `Utils` e Lombok das entities
+- **Imutabilidade**: Entities 100% imutáveis
+- **Business Rules**: Centralizar regras de negócio nas entities
+
+### 2. Use Cases (Casos de Uso Puros)
+- **Remoção de `@Service` e `@Transactional`**
+- **Interfaces puras**: Sem dependência de Spring
+- **Single Responsibility**: Um use case por operação
+- **Input/Output**: DTOs específicos para entrada/saída
+
+### 3. Interface Adapters
+- **Controllers**: Apenas conversão HTTP ↔ Use Cases
+- **Presenters**: Formatação de saída específica
+- **Repositories**: Implementação isolada da persistência
+- **Mappers**: Conversão entre camadas
+
+### 4. Application Services
+- **Orquestração**: Coordenar múltiplos use cases
+- **Transações**: Controle transacional aqui
+- **Framework Integration**: Anotações Spring aqui
+
+### 5. Frameworks & Drivers
+- **Configurações centralizadas**
+- **Detalhes de infraestrutura**
+- **Dependências externas**
+
+## Benefícios da Migração
+
+1. **Testabilidade**: Use cases testáveis sem Spring
+2. **Independência**: Core isolado de frameworks
+3. **Flexibilidade**: Trocar frameworks sem impactar business
+4. **Manutenibilidade**: Responsabilidades mais claras
+5. **Performance**: Menor overhead de anotações
+
+## Etapas de Execução
+
+1. **Criar Value Objects** e refatorar entities
+2. **Extrair use cases puros** sem anotações
+3. **Implementar Application Services** com Spring
+4. **Reorganizar adapters** em camadas específicas
+5. **Centralizar configurações**
+6. **Migrar testes** para estrutura limpa
+
+A migração manterá a funcionalidade atual mas organizará o código de forma mais limpa e testável.
+
+## Plano de Reorganização - Classes Existentes → Clean Architecture
+
+### FASE 1: Mapeamento de Movimentações
+
+#### 1.1 Camada ENTITIES (Core Domain)
+```
+ORIGEM → DESTINO
+
+/dominio/Cliente.java → /entities/cliente/Cliente.java
+/dominio/Produto.java → /entities/produto/Produto.java  
+/dominio/Pedido.java → /entities/pedido/Pedido.java
+/dominio/ItemPedido.java → /entities/pedido/ItemPedido.java
+/dominio/StatusPedido.java → /entities/pedido/StatusPedido.java
+/dominio/Categoria.java → /entities/produto/Categoria.java
+```
+
+#### 1.2 Camada USE CASES
+```
+ORIGEM → DESTINO
+
+/aplicacao/casosdeuso/cliente/CadastrarCliente.java → /usecases/cliente/CadastrarClienteUseCase.java
+/aplicacao/casosdeuso/cliente/IdentificarCliente.java → /usecases/cliente/IdentificarClienteUseCase.java
+/aplicacao/casosdeuso/produto/CriarProduto.java → /usecases/produto/CriarProdutoUseCase.java
+/aplicacao/casosdeuso/produto/EditarProduto.java → /usecases/produto/EditarProdutoUseCase.java
+/aplicacao/casosdeuso/produto/RemoverProduto.java → /usecases/produto/RemoverProdutoUseCase.java
+/aplicacao/casosdeuso/produto/BuscarProdutosPorCategoria.java → /usecases/produto/BuscarProdutosPorCategoriaUseCase.java
+/aplicacao/casosdeuso/pedido/RealizarPedido.java → /usecases/pedido/RealizarPedidoUseCase.java
+/aplicacao/casosdeuso/pedido/ListarPedidos.java → /usecases/pedido/ListarPedidosUseCase.java
+
+# Interfaces (Ports)
+/aplicacao/portas/saida/ClienteRepositorio.java → /usecases/ports/ClienteRepository.java
+/aplicacao/portas/saida/ProdutoRepositorio.java → /usecases/ports/ProdutoRepository.java
+/aplicacao/portas/saida/PedidoRepositorio.java → /usecases/ports/PedidoRepository.java
+```
+
+#### 1.3 Camada INTERFACE ADAPTERS
+```
+ORIGEM → DESTINO
+
+# Controllers
+/adaptadores/rest/ClienteController.java → /adapters/controllers/ClienteController.java
+/adaptadores/rest/ProdutoController.java → /adapters/controllers/ProdutoController.java
+/adaptadores/rest/PedidoController.java → /adapters/controllers/PedidoController.java
+/adaptadores/rest/TratarExcecaoController.java → /adapters/controllers/GlobalExceptionHandler.java
+
+# Repositories
+/adaptadores/persistencia/ClienteRepositorioJDBC.java → /adapters/repositories/ClienteRepositoryImpl.java
+/adaptadores/persistencia/ProdutoRepositorioJDBC.java → /adapters/repositories/ProdutoRepositoryImpl.java
+/adaptadores/persistencia/PedidoRepositorioJDBC.java → /adapters/repositories/PedidoRepositoryImpl.java
+
+# DTOs (como Presenters/Request Objects)
+/aplicacao/dto/ → /adapters/dto/ (manter estrutura atual)
+```
+
+#### 1.4 Camada FRAMEWORKS & DRIVERS
+```
+ORIGEM → DESTINO
+
+# Configurações
+/infra/JdbcConfig.java → /frameworks/config/DatabaseConfig.java
+/infra/SwaggerConfig.java → /frameworks/config/SwaggerConfig.java
+/infra/RepositorioConfig.java → /frameworks/config/RepositoryConfig.java
+/infra/ClienteServiceConfig.java → /frameworks/config/UseCaseConfig.java
+/infra/PedidoServiceConfig.java → (mesclar com UseCaseConfig.java)
+/infra/ProdutoServiceConfig.java → (mesclar com UseCaseConfig.java)
+
+# Utilitários
+/adaptadores/util/Utils.java → /frameworks/util/Utils.java
+```
+
+### FASE 2: Refatorações Necessárias (SEM CÓDIGO NOVO)
+
+#### 2.1 Use Cases - Remoção de Anotações Spring
+```
+Classes a modificar:
+- CadastrarClienteUseCase: remover @Service, @Transactional
+- IdentificarClienteUseCase: remover @Service
+- CriarProdutoUseCase: remover @Service, @Transactional
+- EditarProdutoUseCase: remover @Service, @Transactional
+- RemoverProdutoUseCase: remover @Service, @Transactional
+- BuscarProdutosPorCategoriaUseCase: remover @Service
+- RealizarPedidoUseCase: remover @Service, @Transactional
+- ListarPedidosUseCase: remover @Service
+```
+
+#### 2.2 Entities - Limpeza de Dependências
+```
+Classes a modificar:
+- Cliente.java: remover import Utils.validarCpf
+- Produto.java: revisar dependências Lombok
+- Pedido.java: revisar dependências Lombok
+- ItemPedido.java: revisar dependências Lombok
+```
+
+#### 2.3 Renomeação de Interfaces
+```
+- ClienteRepositorio → ClienteRepository
+- ProdutoRepositorio → ProdutoRepository  
+- PedidoRepositorio → PedidoRepository
+- Todas as interfaces UC de /portas/entrada/ → deletar (usar classes direto)
+```
+
+### FASE 3: Ordem de Execução
+
+#### 3.1 PRIMEIRA ETAPA - Movimentação Base
+1. Criar novos packages vazios
+2. Mover classes de domínio (entities)
+3. Mover interfaces de repositório
+4. Atualizar imports nas classes movidas
+
+#### 3.2 SEGUNDA ETAPA - Use Cases
+1. Mover use cases para nova estrutura
+2. Renomear classes (adicionar UseCase suffix)
+3. Remover anotações Spring
+4. Atualizar imports
+
+#### 3.3 TERCEIRA ETAPA - Adapters
+1. Mover controllers
+2. Mover implementações de repositório
+3. Mover DTOs
+4. Renomear TratarExcecaoController → GlobalExceptionHandler
+
+#### 3.4 QUARTA ETAPA - Frameworks
+1. Mover configurações
+2. Consolidar configs separadas em uma única
+3. Mover utilitários
+
+#### 3.5 QUINTA ETAPA - Limpeza
+1. Deletar packages vazios antigos
+2. Deletar interfaces UC desnecessárias
+3. Verificar todos os imports
+
+### FASE 4: Impactos de Dependências
+
+#### 4.1 Imports que Mudarão
+```
+- Todas as referências a /dominio/ → /entities/
+- Todas as referências a /aplicacao/casosdeuso/ → /usecases/
+- Todas as referências a /adaptadores/rest/ → /adapters/controllers/
+- Todas as referências a /adaptadores/persistencia/ → /adapters/repositories/
+- Todas as referências a /infra/ → /frameworks/config/
+```
+
+#### 4.2 Classes Configuration que Precisam Atualizar
+```
+- RepositorioConfig: atualizar paths dos repositories
+- ClienteServiceConfig: atualizar paths dos use cases
+- PedidoServiceConfig: atualizar paths dos use cases  
+- ProdutoServiceConfig: atualizar paths dos use cases
+```
+
+#### 4.3 Testes que Precisam Atualizar Imports
+```
+Todos os testes em /test/ precisarão atualizar imports:
+- Testes de domínio
+- Testes de use cases
+- Testes de controllers
+- Testes de repositórios
+- Testes E2E
+```
+
+### FASE 5: Validação Pós-Reorganização
+
+#### 5.1 Verificações Obrigatórias
+1. Compilação sem erros
+2. Todos os testes passando
+3. Aplicação iniciando corretamente
+4. Swagger funcionando
+5. Endpoints respondendo
+
+#### 5.2 Checklist de Completude
+- [ ] Todos os packages antigos removidos
+- [ ] Imports atualizados
+- [ ] Configurações funcionando
+- [ ] Testes executando
+- [ ] Documentação atualizada
+
+Este plano reorganiza completamente a estrutura seguindo Clean Architecture usando apenas as classes existentes, sem criar código novo.

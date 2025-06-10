@@ -46,7 +46,7 @@ class IdentificarClienteTest {
         assertEquals(cliente.getId(), dto.id(), "O ID do cliente não está correto");
         assertEquals(cliente.getNome(), dto.nome(), "O nome do cliente não está correto");
         assertEquals(cliente.getEmail(), dto.email(), "O email do cliente não está correto");
-        assertEquals(cliente.getCpf(), dto.cpf(), "O CPF do cliente não está correto");
+        assertEquals(cliente.getCpf().getValor(), dto.cpf(), "O CPF do cliente não está correto");
     }
 
     @Test

@@ -10,7 +10,7 @@ public record ClienteResponseDTO(Long id, String nome, String cpf, String email)
                 ? new ClienteResponseDTO(
                 cliente.getId(),
                 cliente.getNome(),
-                cliente.getCpf(),
+                cliente.getCpf().getValor(),
                 cliente.getEmail())
                 : null;
     }

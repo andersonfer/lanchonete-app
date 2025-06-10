@@ -46,7 +46,7 @@ class ClienteGatewayJDBCTest {
 
         assertTrue(resultado.isPresent(), "Cliente deve ser encontrado pelo CPF");
         Cliente cliente = resultado.get();
-        assertEquals(CPF_JA_CASTRADADO, cliente.getCpf());
+        assertEquals(CPF_JA_CASTRADADO, cliente.getCpf().getValor());
         assertEquals("João Silva", cliente.getNome());
         assertEquals("joao@email.com", cliente.getEmail());
     }

@@ -80,7 +80,7 @@ class ImutabilidadePrecoPedidoE2ETest {
         List<ItemPedidoDTO> itens = Collections.singletonList(
                 new ItemPedidoDTO(produto.getId(), 2) // 2 unidades do produto
         );
-        PedidoRequestDTO pedidoRequest = new PedidoRequestDTO(cliente.getCpf(), itens);
+        PedidoRequestDTO pedidoRequest = new PedidoRequestDTO(cliente.getCpf().getValor(), itens);
 
         // Realizar checkout
         MvcResult resultadoCheckout = mockMvc.perform(post("/pedidos/checkout")
@@ -168,7 +168,7 @@ class ImutabilidadePrecoPedidoE2ETest {
         List<ItemPedidoDTO> itens = Collections.singletonList(
                 new ItemPedidoDTO(produto.getId(), 1)
         );
-        PedidoRequestDTO pedidoRequest = new PedidoRequestDTO(cliente.getCpf(), itens);
+        PedidoRequestDTO pedidoRequest = new PedidoRequestDTO(cliente.getCpf().getValor(), itens);
 
         // Realizar checkout do primeiro pedido
         MvcResult resultadoPrimeiroPedido = mockMvc.perform(post("/pedidos/checkout")

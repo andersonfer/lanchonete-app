@@ -127,7 +127,7 @@ class ClienteE2ETest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(clientePreCadastrado.getId()))
                 .andExpect(jsonPath("$.nome").value(clientePreCadastrado.getNome()))
-                .andExpect(jsonPath("$.cpf").value(clientePreCadastrado.getCpf()))
+                .andExpect(jsonPath("$.cpf").value(clientePreCadastrado.getCpf().getValor()))
                 .andExpect(jsonPath("$.email").value(clientePreCadastrado.getEmail()))
                 .andReturn();
 
@@ -136,7 +136,7 @@ class ClienteE2ETest {
 
         assertEquals(clientePreCadastrado.getId(), respostaDTO.id());
         assertEquals(clientePreCadastrado.getNome(), respostaDTO.nome());
-        assertEquals(clientePreCadastrado.getCpf(), respostaDTO.cpf());
+        assertEquals(clientePreCadastrado.getCpf().getValor(), respostaDTO.cpf());
         assertEquals(clientePreCadastrado.getEmail(), respostaDTO.email());
     }
 

@@ -80,7 +80,7 @@ class PedidoE2ETest {
                 new ItemPedidoDTO(produto1.getId(), 2),
                 new ItemPedidoDTO(produto2.getId(), 1)
         );
-        PedidoRequestDTO pedidoRequest = new PedidoRequestDTO(cliente.getCpf(), itens);
+        PedidoRequestDTO pedidoRequest = new PedidoRequestDTO(cliente.getCpf().getValor(), itens);
 
         // Realizar checkout do pedido
         MvcResult resultado = mockMvc.perform(post("/pedidos/checkout")
@@ -176,7 +176,7 @@ class PedidoE2ETest {
         List<ItemPedidoDTO> itens = Arrays.asList(
                 new ItemPedidoDTO(999L, 1)
         );
-        PedidoRequestDTO pedidoRequest = new PedidoRequestDTO(cliente.getCpf(), itens);
+        PedidoRequestDTO pedidoRequest = new PedidoRequestDTO(cliente.getCpf().getValor(), itens);
 
         // Executar e verificar erro
         mockMvc.perform(post("/pedidos/checkout")
@@ -192,7 +192,7 @@ class PedidoE2ETest {
         List<ItemPedidoDTO> itens = Arrays.asList(
                 new ItemPedidoDTO(produto1.getId(), 0)
         );
-        PedidoRequestDTO pedidoRequest = new PedidoRequestDTO(cliente.getCpf(), itens);
+        PedidoRequestDTO pedidoRequest = new PedidoRequestDTO(cliente.getCpf().getValor(), itens);
 
         // Executar e verificar erro
         mockMvc.perform(post("/pedidos/checkout")

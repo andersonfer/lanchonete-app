@@ -7,6 +7,7 @@
 - ✅ Estrutura básica com /entidades/, /casosdeuso/, /interfaces/
 - ✅ Controllers implementando interfaces API
 - ✅ Renomeação Repositórios → Gateways (pacote /gateways/ criado)
+- ✅ Reorganização: /api/ e /controllers/ independentes, DTOs em /controllers/dto/
 
 ### 🚧 TAREFAS RESTANTES:
 
@@ -48,12 +49,12 @@
 ### **3. CRIAR APPLICATION SERVICES**
 **Status:** Pendente
 **Descrição:** Camada de orquestração na Interface Adapters
-**Localização:** Criar `/application/`
+**Localização:** Expandir `/aplicacao/` existente
 
 **Arquivos a criar:**
-- `/application/ClienteApplicationService.java`
-- `/application/ProdutoApplicationService.java`
-- `/application/PedidoApplicationService.java`
+- `/aplicacao/ClienteApplicationService.java`
+- `/aplicacao/ProdutoApplicationService.java`
+- `/aplicacao/PedidoApplicationService.java`
 
 **Arquivos a modificar:**
 - Todos os controllers (injetar App Service ao invés de Use Cases)
@@ -92,8 +93,9 @@ br.com.lanchonete.autoatendimento
 │       ├── Cpf.java             # 📦 NOVO Value Object
 │       └── Email.java           # 📦 NOVO Value Object
 ├── casosdeuso/                   # ✅ Limpar anotações Spring
-├── application/                  # 📦 NOVO - Application Services
-├── adaptadores/                  # Mantém atual (web)
+├── aplicacao/                    # ✅ EXPANDIR - Application Services + exceções
+├── api/                          # ✅ JÁ CRIADO - Contratos REST
+├── controllers/                  # ✅ JÁ REORGANIZADO - Implementações + DTOs
 ├── gateways/                     # ✅ JÁ CRIADO - Implementações JDBC
 ├── frameworks/                   # Mantém atual (config/util)
 └── interfaces/                   # ✅ JÁ ATUALIZADO - Interfaces Gateway

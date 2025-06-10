@@ -4,16 +4,15 @@ import br.com.lanchonete.autoatendimento.controllers.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.util.Optional;
 
-@Service
-@RequiredArgsConstructor
 public class IdentificarCliente {
 
     private final ClienteGateway clienteGateway;
+
+    public IdentificarCliente(final ClienteGateway clienteGateway) {
+        this.clienteGateway = clienteGateway;
+    }
 
     public Optional<ClienteResponseDTO> executar(final String cpf) {
 

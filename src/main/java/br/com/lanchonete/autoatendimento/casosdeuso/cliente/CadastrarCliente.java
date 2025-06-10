@@ -5,16 +5,15 @@ import br.com.lanchonete.autoatendimento.controllers.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
 import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.util.Optional;
 
-@Service
-@RequiredArgsConstructor
 public class CadastrarCliente {
 
     private final ClienteGateway clienteGateway;
+
+    public CadastrarCliente(final ClienteGateway clienteGateway) {
+        this.clienteGateway = clienteGateway;
+    }
 
 
     public ClienteResponseDTO executar(final ClienteRequestDTO novoCliente) {

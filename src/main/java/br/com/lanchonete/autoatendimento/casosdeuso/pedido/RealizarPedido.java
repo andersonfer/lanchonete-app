@@ -13,24 +13,26 @@ import br.com.lanchonete.autoatendimento.entidades.pedido.ItemPedido;
 import br.com.lanchonete.autoatendimento.entidades.pedido.Pedido;
 import br.com.lanchonete.autoatendimento.entidades.pedido.StatusPedido;
 import br.com.lanchonete.autoatendimento.entidades.produto.Produto;
-import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Service
-@RequiredArgsConstructor
 public class RealizarPedido {
 
     private final PedidoGateway pedidoGateway;
     private final ClienteGateway clienteGateway;
     private final ProdutoGateway produtoGateway;
 
+    public RealizarPedido(final PedidoGateway pedidoGateway,
+                          final ClienteGateway clienteGateway,
+                          final ProdutoGateway produtoGateway) {
+        this.pedidoGateway = pedidoGateway;
+        this.clienteGateway = clienteGateway;
+        this.produtoGateway = produtoGateway;
+    }
 
-    @Transactional
+
     public PedidoResponseDTO executar(final PedidoRequestDTO novoPedido) {
 
         if (novoPedido == null) {

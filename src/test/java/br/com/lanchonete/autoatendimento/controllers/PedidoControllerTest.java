@@ -6,8 +6,7 @@ import br.com.lanchonete.autoatendimento.controllers.dto.PedidoRequestDTO;
 import br.com.lanchonete.autoatendimento.controllers.dto.PedidoResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
-import br.com.lanchonete.autoatendimento.casosdeuso.pedido.ListarPedidos;
-import br.com.lanchonete.autoatendimento.casosdeuso.pedido.RealizarPedido;
+import br.com.lanchonete.autoatendimento.adaptadores.PedidoAdaptador;
 import br.com.lanchonete.autoatendimento.entidades.pedido.StatusPedido;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,10 +41,7 @@ class PedidoControllerTest {
     private ObjectMapper objectMapper;
 
     @MockitoBean
-    private RealizarPedido realizarPedido;
-
-    @MockitoBean
-    private ListarPedidos listarPedidos;
+    private PedidoAdaptador pedidoAdaptador;
 
     private PedidoRequestDTO pedidoRequest;
     private PedidoResponseDTO pedidoResponse;
@@ -94,7 +90,7 @@ class PedidoControllerTest {
     @DisplayName("Deve realizar checkout com sucesso")
     void t1() throws Exception {
         // Mock do serviço
-        when(realizarPedido.executar(any(PedidoRequestDTO.class)))
+        when(pedidoAdaptador.realizarCheckout(any(PedidoRequestDTO.class)))
                 .thenReturn(pedidoResponse);
 
         // Executar e verificar
@@ -110,14 +106,14 @@ class PedidoControllerTest {
                 .andExpect(jsonPath("$.itens.length()").value(2));
 
         // Verificar que o serviço foi chamado
-        verify(realizarPedido).executar(any(PedidoRequestDTO.class));
+        verify(pedidoAdaptador).realizarCheckout(any(PedidoRequestDTO.class));
     }
 
     @Test
     @DisplayName("Deve retornar erro 400 ao realizar checkout com dados inválidos")
     void t2() throws Exception {
         // Mock do serviço lançando exceção de validação
-        when(realizarPedido.executar(any(PedidoRequestDTO.class)))
+        when(pedidoAdaptador.realizarCheckout(any(PedidoRequestDTO.class)))
                 .thenThrow(new ValidacaoException("Pedido deve conter pelo menos um item"));
 
         // Executar e verificar
@@ -128,14 +124,14 @@ class PedidoControllerTest {
                 .andExpect(content().string("Pedido deve conter pelo menos um item"));
 
         // Verificar que o serviço foi chamado
-        verify(realizarPedido).executar(any(PedidoRequestDTO.class));
+        verify(pedidoAdaptador).realizarCheckout(any(PedidoRequestDTO.class));
     }
 
     @Test
     @DisplayName("Deve retornar erro 404 ao realizar checkout com cliente ou produto não encontrado")
     void t3() throws Exception {
         // Mock do serviço lançando exceção de recurso não encontrado
-        when(realizarPedido.executar(any(PedidoRequestDTO.class)))
+        when(pedidoAdaptador.realizarCheckout(any(PedidoRequestDTO.class)))
                 .thenThrow(new RecursoNaoEncontradoException("Cliente não encontrado com o CPF informado"));
 
         // Executar e verificar
@@ -145,14 +141,14 @@ class PedidoControllerTest {
                 .andExpect(status().isNotFound());
 
         // Verificar que o serviço foi chamado
-        verify(realizarPedido).executar(any(PedidoRequestDTO.class));
+        verify(pedidoAdaptador).realizarCheckout(any(PedidoRequestDTO.class));
     }
 
     @Test
     @DisplayName("Deve listar todos os pedidos")
     void t4() throws Exception {
         // Mock do serviço
-        when(listarPedidos.executar())
+        when(pedidoAdaptador.listarPedidos())
                 .thenReturn(Arrays.asList(pedidoResponse, pedidoResponseSemCliente));
 
         // Executar e verificar
@@ -169,14 +165,14 @@ class PedidoControllerTest {
                 .andExpect(jsonPath("$[1].valorTotal").value(6.00));
 
         // Verificar que o serviço foi chamado
-        verify(listarPedidos).executar();
+        verify(pedidoAdaptador).listarPedidos();
     }
 
     @Test
     @DisplayName("Deve retornar lista vazia quando não há pedidos")
     void t5() throws Exception {
         // Mock do serviço
-        when(listarPedidos.executar())
+        when(pedidoAdaptador.listarPedidos())
                 .thenReturn(Collections.emptyList());
 
         // Executar e verificar
@@ -185,6 +181,6 @@ class PedidoControllerTest {
                 .andExpect(jsonPath("$.length()").value(0));
 
         // Verificar que o serviço foi chamado
-        verify(listarPedidos).executar();
+        verify(pedidoAdaptador).listarPedidos();
     }
 }

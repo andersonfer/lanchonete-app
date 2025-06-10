@@ -4,16 +4,15 @@ import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoE
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
 import br.com.lanchonete.autoatendimento.entidades.produto.Produto;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.util.Optional;
 
-@Service
-@RequiredArgsConstructor
 public class RemoverProduto {
 
     private final ProdutoGateway produtoGateway;
+
+    public RemoverProduto(final ProdutoGateway produtoGateway) {
+        this.produtoGateway = produtoGateway;
+    }
 
     public void executar(final Long id) {
 

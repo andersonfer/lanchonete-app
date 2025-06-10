@@ -3,10 +3,7 @@ package br.com.lanchonete.autoatendimento.controllers;
 import br.com.lanchonete.autoatendimento.api.ProdutoApi;
 import br.com.lanchonete.autoatendimento.controllers.dto.ProdutoRequestDTO;
 import br.com.lanchonete.autoatendimento.controllers.dto.ProdutoResponseDTO;
-import br.com.lanchonete.autoatendimento.casosdeuso.produto.BuscarProdutosPorCategoria;
-import br.com.lanchonete.autoatendimento.casosdeuso.produto.CriarProduto;
-import br.com.lanchonete.autoatendimento.casosdeuso.produto.EditarProduto;
-import br.com.lanchonete.autoatendimento.casosdeuso.produto.RemoverProduto;
+import br.com.lanchonete.autoatendimento.adaptadores.ProdutoAdaptador;
 import br.com.lanchonete.autoatendimento.entidades.produto.Categoria;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,32 +16,29 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProdutoController implements ProdutoApi {
 
-    private final CriarProduto criarProduto;
-    private final EditarProduto editarProdutoUC;
-    private final RemoverProduto removerProdutoUC;
-    private final BuscarProdutosPorCategoria buscarProdutosPorCategoria;
+    private final ProdutoAdaptador produtoAdaptador;
 
     @Override
     public ResponseEntity<ProdutoResponseDTO> criar(final ProdutoRequestDTO produtoRequest) {
-        final ProdutoResponseDTO produto = criarProduto.executar(produtoRequest);
+        final ProdutoResponseDTO produto = produtoAdaptador.criar(produtoRequest);
         return new ResponseEntity<>(produto, HttpStatus.CREATED);
     }
 
     @Override
     public ResponseEntity<ProdutoResponseDTO> editar(final Long id, final ProdutoRequestDTO produtoRequest) {
-        final ProdutoResponseDTO produto = editarProdutoUC.executar(id, produtoRequest);
+        final ProdutoResponseDTO produto = produtoAdaptador.editar(id, produtoRequest);
         return ResponseEntity.ok(produto);
     }
 
     @Override
     public ResponseEntity<Void> remover(final Long id) {
-        removerProdutoUC.executar(id);
+        produtoAdaptador.remover(id);
         return ResponseEntity.noContent().build();
     }
 
     @Override
     public ResponseEntity<List<ProdutoResponseDTO>> buscarPorCategoria(final Categoria categoria) {
-        final List<ProdutoResponseDTO> produtos = buscarProdutosPorCategoria.executar(categoria);
+        final List<ProdutoResponseDTO> produtos = produtoAdaptador.buscarPorCategoria(categoria);
         return ResponseEntity.ok(produtos);
     }
 }

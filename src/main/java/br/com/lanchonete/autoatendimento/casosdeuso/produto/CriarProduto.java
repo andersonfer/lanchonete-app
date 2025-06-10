@@ -5,14 +5,13 @@ import br.com.lanchonete.autoatendimento.controllers.dto.ProdutoResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
 import br.com.lanchonete.autoatendimento.entidades.produto.Produto;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
-@Service
-@RequiredArgsConstructor
 public class CriarProduto {
 
     private final ProdutoGateway produtoGateway;
+
+    public CriarProduto(final ProdutoGateway produtoGateway) {
+        this.produtoGateway = produtoGateway;
+    }
 
     public ProdutoResponseDTO executar(final ProdutoRequestDTO novoProduto) {
         try {

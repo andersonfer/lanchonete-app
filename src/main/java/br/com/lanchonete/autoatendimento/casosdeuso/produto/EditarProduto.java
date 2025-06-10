@@ -6,14 +6,13 @@ import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoE
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
 import br.com.lanchonete.autoatendimento.entidades.produto.Produto;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
-@Service
-@RequiredArgsConstructor
 public class EditarProduto {
 
     private final ProdutoGateway produtoGateway;
+
+    public EditarProduto(final ProdutoGateway produtoGateway) {
+        this.produtoGateway = produtoGateway;
+    }
 
     public ProdutoResponseDTO executar(final Long id, final ProdutoRequestDTO produtoParaEditar) {
         try {

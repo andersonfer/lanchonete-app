@@ -2,7 +2,7 @@ package br.com.lanchonete.autoatendimento.casosdeuso.produto;
 
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
-import br.com.lanchonete.autoatendimento.interfaces.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
 import br.com.lanchonete.autoatendimento.entidades.produto.Produto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,7 +13,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class RemoverProduto {
 
-    private final ProdutoRepositorio produtoRepositorio;
+    private final ProdutoGateway produtoGateway;
 
     public void executar(final Long id) {
 
@@ -21,12 +21,12 @@ public class RemoverProduto {
             throw new ValidacaoException("ID do produto é obrigatório");
         }
 
-        final Optional<Produto> produto = produtoRepositorio.buscarPorId(id);
+        final Optional<Produto> produto = produtoGateway.buscarPorId(id);
         if (produto.isEmpty()) {
             throw new RecursoNaoEncontradoException("Produto não encontrado");
         }
 
-        produtoRepositorio.remover(id);
+        produtoGateway.remover(id);
     }
 
 }

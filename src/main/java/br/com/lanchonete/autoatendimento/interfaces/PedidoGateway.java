@@ -6,7 +6,7 @@ import br.com.lanchonete.autoatendimento.entidades.pedido.StatusPedido;
 import java.util.List;
 import java.util.Optional;
 
-public interface PedidoRepositorio {
+public interface PedidoGateway {
     Pedido salvar(Pedido pedido);
     Optional<Pedido> buscarPorId(Long id);
     List<Pedido> listarTodos();

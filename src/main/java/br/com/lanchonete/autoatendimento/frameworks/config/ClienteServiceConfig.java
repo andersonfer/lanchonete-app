@@ -2,7 +2,7 @@ package br.com.lanchonete.autoatendimento.frameworks.config;
 
 import br.com.lanchonete.autoatendimento.casosdeuso.cliente.CadastrarCliente;
 import br.com.lanchonete.autoatendimento.casosdeuso.cliente.IdentificarCliente;
-import br.com.lanchonete.autoatendimento.interfaces.ClienteRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -10,12 +10,12 @@ import org.springframework.context.annotation.Configuration;
 public class ClienteServiceConfig {
 
     @Bean
-    CadastrarCliente cadastrarCliente(final ClienteRepositorio clienteRepositorio) {
-        return new CadastrarCliente(clienteRepositorio);
+    CadastrarCliente cadastrarCliente(final ClienteGateway clienteGateway) {
+        return new CadastrarCliente(clienteGateway);
     }
 
     @Bean
-    IdentificarCliente identificarCliente(final ClienteRepositorio clienteRepositorio){
-        return new IdentificarCliente(clienteRepositorio);
+    IdentificarCliente identificarCliente(final ClienteGateway clienteGateway){
+        return new IdentificarCliente(clienteGateway);
     }
 }

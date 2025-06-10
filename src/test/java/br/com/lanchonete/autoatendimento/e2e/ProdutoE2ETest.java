@@ -2,7 +2,7 @@ package br.com.lanchonete.autoatendimento.e2e;
 
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ProdutoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ProdutoResponseDTO;
-import br.com.lanchonete.autoatendimento.interfaces.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
 import br.com.lanchonete.autoatendimento.entidades.produto.Categoria;
 import br.com.lanchonete.autoatendimento.entidades.produto.Produto;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,7 +36,7 @@ class ProdutoE2ETest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private ProdutoRepositorio produtoRepositorio;
+    private ProdutoGateway produtoGateway;
 
     private Produto produtoPreCadastrado;
 
@@ -48,7 +48,7 @@ class ProdutoE2ETest {
                 new BigDecimal("29.90"),
                 Categoria.LANCHE);
 
-        produtoPreCadastrado = produtoRepositorio.salvar(produtoPreCadastrado);
+        produtoPreCadastrado = produtoGateway.salvar(produtoPreCadastrado);
     }
 
     @Test
@@ -76,7 +76,7 @@ class ProdutoE2ETest {
         ProdutoResponseDTO produtoCriado = objectMapper.readValue(respostaJson, ProdutoResponseDTO.class);
 
         // Verifica se o produto foi realmente persistido no banco
-        Optional<Produto> produtoPersistido = produtoRepositorio.buscarPorId(produtoCriado.id());
+        Optional<Produto> produtoPersistido = produtoGateway.buscarPorId(produtoCriado.id());
         assertTrue(produtoPersistido.isPresent(), "O produto deve existir no banco de dados");
         assertEquals("Batata Frita", produtoPersistido.get().getNome());
         assertEquals(new BigDecimal("15.90"), produtoPersistido.get().getPreco());
@@ -101,7 +101,7 @@ class ProdutoE2ETest {
                 .andReturn();
 
         // Verifica se o produto foi realmente atualizado no banco
-        Optional<Produto> produtoAtualizado = produtoRepositorio.buscarPorId(produtoPreCadastrado.getId());
+        Optional<Produto> produtoAtualizado = produtoGateway.buscarPorId(produtoPreCadastrado.getId());
         assertTrue(produtoAtualizado.isPresent(), "O produto deve existir no banco de dados");
         assertEquals("X-Bacon Especial", produtoAtualizado.get().getNome());
         assertEquals(new BigDecimal("32.90"), produtoAtualizado.get().getPreco());
@@ -117,7 +117,7 @@ class ProdutoE2ETest {
                 .andExpect(status().isNoContent());
 
         // Verificar se o produto foi realmente removido do banco
-        Optional<Produto> produtoRemovido = produtoRepositorio.buscarPorId(produtoPreCadastrado.getId());
+        Optional<Produto> produtoRemovido = produtoGateway.buscarPorId(produtoPreCadastrado.getId());
         assertFalse(produtoRemovido.isPresent(), "O produto não deve existir mais no banco de dados");
     }
 
@@ -129,14 +129,14 @@ class ProdutoE2ETest {
                 "Hambúrguer com alface e tomate",
                 new BigDecimal("25.90"),
                 Categoria.LANCHE);
-        produtoRepositorio.salvar(outroLanche);
+        produtoGateway.salvar(outroLanche);
 
         // Adiciona produto de outra categoria
         Produto novaBebiba = Produto.criar("Refrigerante Cola",
                 "Refrigerante de cola 350ml",
                 new BigDecimal("5.90"),
                 Categoria.BEBIDA);
-        produtoRepositorio.salvar(novaBebiba);
+        produtoGateway.salvar(novaBebiba);
 
         // Busca produtos da categoria LANCHE
         mockMvc.perform(get("/produtos/categoria/{categoria}", "LANCHE"))

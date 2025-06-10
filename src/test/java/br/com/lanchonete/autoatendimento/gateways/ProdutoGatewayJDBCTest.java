@@ -1,4 +1,4 @@
-package br.com.lanchonete.autoatendimento.adaptadores.persistencia;
+package br.com.lanchonete.autoatendimento.gateways;
 
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RegistroNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.entidades.produto.Categoria;
@@ -18,18 +18,18 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJdbcTest
-class ProdutoRepositorioJDBCTest {
+class ProdutoGatewayJDBCTest {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    private ProdutoRepositorioJDBC produtoRepositorio;
+    private ProdutoGatewayJDBC produtoRepositorio;
 
     private Produto produtoPreCadastrado;
 
     @BeforeEach
     void configurar() {
-        produtoRepositorio = new ProdutoRepositorioJDBC(jdbcTemplate);
+        produtoRepositorio = new ProdutoGatewayJDBC(jdbcTemplate);
 
         produtoPreCadastrado = Produto.criar(
                 "Hambúrguer Clássico",

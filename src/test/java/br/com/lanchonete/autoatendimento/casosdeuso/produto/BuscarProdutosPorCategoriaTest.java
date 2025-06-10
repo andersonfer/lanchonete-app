@@ -2,7 +2,7 @@ package br.com.lanchonete.autoatendimento.casosdeuso.produto;
 
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ProdutoResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
-import br.com.lanchonete.autoatendimento.interfaces.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
 import br.com.lanchonete.autoatendimento.entidades.produto.Categoria;
 import br.com.lanchonete.autoatendimento.entidades.produto.Produto;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,7 +25,7 @@ import static org.mockito.Mockito.*;
 class BuscarProdutosPorCategoriaTest {
 
     @Mock
-    private ProdutoRepositorio produtoRepositorio;
+    private ProdutoGateway produtoGateway;
 
     @InjectMocks
     private BuscarProdutosPorCategoria buscarProdutosPorCategoria;
@@ -46,7 +46,7 @@ class BuscarProdutosPorCategoriaTest {
     @DisplayName("Deve retornar lista de produtos da categoria informada")
     void t1() {
 
-        when(produtoRepositorio.buscarPorCategoria(Categoria.LANCHE)).thenReturn(produtosLanche);
+        when(produtoGateway.buscarPorCategoria(Categoria.LANCHE)).thenReturn(produtosLanche);
 
 
         List<ProdutoResponseDTO> resultado = buscarProdutosPorCategoria.executar(Categoria.LANCHE);
@@ -69,14 +69,14 @@ class BuscarProdutosPorCategoriaTest {
         assertEquals(new BigDecimal("26.90"), segundo.preco());
         assertEquals(Categoria.LANCHE, segundo.categoria());
 
-        verify(produtoRepositorio).buscarPorCategoria(Categoria.LANCHE);
+        verify(produtoGateway).buscarPorCategoria(Categoria.LANCHE);
     }
 
     @Test
     @DisplayName("Deve retornar lista vazia quando não há produtos na categoria")
     void t2() {
 
-        when(produtoRepositorio.buscarPorCategoria(Categoria.SOBREMESA)).thenReturn(Collections.emptyList());
+        when(produtoGateway.buscarPorCategoria(Categoria.SOBREMESA)).thenReturn(Collections.emptyList());
 
 
         List<ProdutoResponseDTO> resultado = buscarProdutosPorCategoria.executar(Categoria.SOBREMESA);
@@ -85,7 +85,7 @@ class BuscarProdutosPorCategoriaTest {
         assertNotNull(resultado, "O resultado não deve ser nulo");
         assertTrue(resultado.isEmpty(), "A lista deve estar vazia");
 
-        verify(produtoRepositorio).buscarPorCategoria(Categoria.SOBREMESA);
+        verify(produtoGateway).buscarPorCategoria(Categoria.SOBREMESA);
     }
 
     @Test
@@ -99,6 +99,6 @@ class BuscarProdutosPorCategoriaTest {
         assertEquals("Categoria é obrigatória", exception.getMessage(),
                 "Mensagem de erro incorreta");
 
-        verify(produtoRepositorio, never()).buscarPorCategoria(any());
+        verify(produtoGateway, never()).buscarPorCategoria(any());
     }
 }

@@ -1,9 +1,9 @@
-package br.com.lanchonete.autoatendimento.adaptadores.persistencia;
+package br.com.lanchonete.autoatendimento.gateways;
 
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RegistroNaoEncontradoException;
-import br.com.lanchonete.autoatendimento.interfaces.ClienteRepositorio;
-import br.com.lanchonete.autoatendimento.interfaces.PedidoRepositorio;
-import br.com.lanchonete.autoatendimento.interfaces.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
+import br.com.lanchonete.autoatendimento.interfaces.PedidoGateway;
+import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
 import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
 import br.com.lanchonete.autoatendimento.entidades.pedido.ItemPedido;
 import br.com.lanchonete.autoatendimento.entidades.pedido.Pedido;
@@ -19,20 +19,20 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
 
-public class PedidoRepositorioJDBC implements PedidoRepositorio {
+public class PedidoGatewayJDBC implements PedidoGateway {
 
     private final JdbcTemplate jdbcTemplate;
     private final SimpleJdbcInsert pedidoInserter;
     private final SimpleJdbcInsert itemPedidoInserter;
-    private final ClienteRepositorio clienteRepositorio;
-    private final ProdutoRepositorio produtoRepositorio;
+    private final ClienteGateway clienteGateway;
+    private final ProdutoGateway produtoGateway;
 
-    public PedidoRepositorioJDBC(JdbcTemplate jdbcTemplate,
-                                 ClienteRepositorio clienteRepositorio,
-                                 ProdutoRepositorio produtoRepositorio) {
+    public PedidoGatewayJDBC(JdbcTemplate jdbcTemplate,
+                             ClienteGateway clienteGateway,
+                             ProdutoGateway produtoGateway) {
         this.jdbcTemplate = jdbcTemplate;
-        this.clienteRepositorio = clienteRepositorio;
-        this.produtoRepositorio = produtoRepositorio;
+        this.clienteGateway = clienteGateway;
+        this.produtoGateway = produtoGateway;
 
         this.pedidoInserter = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("pedido")
@@ -140,7 +140,7 @@ public class PedidoRepositorioJDBC implements PedidoRepositorio {
 
         // Se existir cliente_id, buscar o cliente
         if (!rs.wasNull()) {
-            cliente = clienteRepositorio.buscarPorId(clienteId)
+            cliente = clienteGateway.buscarPorId(clienteId)
                     .orElse(null);
         }
 
@@ -158,7 +158,7 @@ public class PedidoRepositorioJDBC implements PedidoRepositorio {
 
     private ItemPedido mapearItemPedido(final ResultSet rs, final Pedido pedido) throws SQLException {
         final Long produtoId = rs.getLong("produto_id");
-        final Produto produto = produtoRepositorio.buscarPorId(produtoId)
+        final Produto produto = produtoGateway.buscarPorId(produtoId)
                 .orElseThrow(() -> new RegistroNaoEncontradoException("Produto", produtoId));
 
         return ItemPedido.builder()

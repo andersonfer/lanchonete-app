@@ -4,7 +4,7 @@ import br.com.lanchonete.autoatendimento.casosdeuso.produto.BuscarProdutosPorCat
 import br.com.lanchonete.autoatendimento.casosdeuso.produto.CriarProduto;
 import br.com.lanchonete.autoatendimento.casosdeuso.produto.EditarProduto;
 import br.com.lanchonete.autoatendimento.casosdeuso.produto.RemoverProduto;
-import br.com.lanchonete.autoatendimento.interfaces.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class ProdutoServiceConfigTest {
 
     @MockitoBean
-    private ProdutoRepositorio produtoRepositorio;
+    private ProdutoGateway produtoGateway;
 
     @Autowired
     private BuscarProdutosPorCategoria buscarProdutosPorCategoria;

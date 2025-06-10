@@ -2,7 +2,7 @@ package br.com.lanchonete.autoatendimento.frameworks.config;
 
 import br.com.lanchonete.autoatendimento.casosdeuso.cliente.CadastrarCliente;
 import br.com.lanchonete.autoatendimento.casosdeuso.cliente.IdentificarCliente;
-import br.com.lanchonete.autoatendimento.interfaces.ClienteRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class ClienteServiceConfigTest {
 
     @MockitoBean
-    private ClienteRepositorio clienteRepositorio;
+    private ClienteGateway clienteGateway;
 
     @Autowired
     private CadastrarCliente cadastrarCliente;

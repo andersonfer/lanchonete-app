@@ -3,7 +3,7 @@ package br.com.lanchonete.autoatendimento.casosdeuso.cliente;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ClienteRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
-import br.com.lanchonete.autoatendimento.interfaces.ClienteRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
 import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,7 +14,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CadastrarCliente {
 
-    private final ClienteRepositorio clienteRepositorio;
+    private final ClienteGateway clienteGateway;
 
 
     public ClienteResponseDTO executar(final ClienteRequestDTO novoCliente) {
@@ -29,7 +29,7 @@ public class CadastrarCliente {
                     novoCliente.cpf()
             );
 
-            final Cliente clienteSalvo = clienteRepositorio.salvar(cliente);
+            final Cliente clienteSalvo = clienteGateway.salvar(cliente);
             return ClienteResponseDTO.converterParaDTO(clienteSalvo);
         } catch (IllegalArgumentException e) {
             throw new ValidacaoException(e.getMessage());
@@ -38,7 +38,7 @@ public class CadastrarCliente {
     }
 
     private void validarDuplicidade(final ClienteRequestDTO novoCliente){
-        final Optional<Cliente> clienteExistente = clienteRepositorio.buscarPorCpf(novoCliente.cpf());
+        final Optional<Cliente> clienteExistente = clienteGateway.buscarPorCpf(novoCliente.cpf());
         if (clienteExistente.isPresent()) {
             throw new ValidacaoException("CPF duplicado");
         }

@@ -3,7 +3,7 @@ package br.com.lanchonete.autoatendimento.casosdeuso.cliente;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ClienteRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
-import br.com.lanchonete.autoatendimento.interfaces.ClienteRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
 import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,7 +23,7 @@ import static org.mockito.Mockito.*;
 class CadastrarClienteTest {
 
     @Mock
-    private ClienteRepositorio clienteRepositorio;
+    private ClienteGateway clienteGateway;
 
     @InjectMocks
     private CadastrarCliente cadastrarCliente;
@@ -48,7 +48,7 @@ class CadastrarClienteTest {
     @DisplayName("Deve cadastrar cliente com sucesso quando os dados são válidos")
     void t1() {
 
-        when(clienteRepositorio.salvar(any(Cliente.class))).thenReturn(clienteSalvo);
+        when(clienteGateway.salvar(any(Cliente.class))).thenReturn(clienteSalvo);
 
         ClienteResponseDTO response = cadastrarCliente.executar(clienteValido);
 
@@ -123,13 +123,13 @@ class CadastrarClienteTest {
     @DisplayName("Deve lançar exceção quando CPF já existe")
     void t7() {
 
-        when(clienteRepositorio.buscarPorCpf(clienteValido.cpf())).thenReturn(Optional.of(clienteSalvo));
+        when(clienteGateway.buscarPorCpf(clienteValido.cpf())).thenReturn(Optional.of(clienteSalvo));
 
         ValidacaoException ex = assertThrows(ValidacaoException.class,
                 () -> cadastrarCliente.executar(clienteValido));
 
         assertEquals("CPF duplicado",ex.getMessage());
 
-        verify(clienteRepositorio, never()).salvar(any(Cliente.class));
+        verify(clienteGateway, never()).salvar(any(Cliente.class));
     }
 }

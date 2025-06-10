@@ -4,7 +4,7 @@ import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ProdutoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ProdutoResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
-import br.com.lanchonete.autoatendimento.interfaces.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
 import br.com.lanchonete.autoatendimento.entidades.produto.Categoria;
 import br.com.lanchonete.autoatendimento.entidades.produto.Produto;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +26,7 @@ import static org.mockito.Mockito.*;
 class EditarProdutoTest {
 
     @Mock
-    private ProdutoRepositorio produtoRepositorio;
+    private ProdutoGateway produtoGateway;
 
     @InjectMocks
     private EditarProduto editarProduto;
@@ -54,8 +54,8 @@ class EditarProdutoTest {
     @DisplayName("Deve editar produto com sucesso quando os dados são válidos")
     void t1() {
 
-        when(produtoRepositorio.buscarPorId(1L)).thenReturn(Optional.of(produtoExistente));
-        when(produtoRepositorio.atualizar(any(Produto.class))).thenReturn(produtoAtualizado);
+        when(produtoGateway.buscarPorId(1L)).thenReturn(Optional.of(produtoExistente));
+        when(produtoGateway.atualizar(any(Produto.class))).thenReturn(produtoAtualizado);
 
 
         ProdutoResponseDTO response = editarProduto.executar(1L, produtoValido);
@@ -66,8 +66,8 @@ class EditarProdutoTest {
         assertEquals(new BigDecimal("32.90"), response.preco(), "O preço do produto atualizado está incorreto");
         assertEquals(Categoria.LANCHE, response.categoria(), "A categoria do produto atualizado está incorreta");
 
-        verify(produtoRepositorio).buscarPorId(1L);
-        verify(produtoRepositorio).atualizar(any(Produto.class));
+        verify(produtoGateway).buscarPorId(1L);
+        verify(produtoGateway).atualizar(any(Produto.class));
     }
 
     @Test
@@ -81,23 +81,23 @@ class EditarProdutoTest {
         assertEquals("ID do produto é obrigatório", exception.getMessage(),
                 "Mensagem da exceção está incorreta");
 
-        verify(produtoRepositorio, never()).buscarPorId(any());
-        verify(produtoRepositorio, never()).atualizar(any());
+        verify(produtoGateway, never()).buscarPorId(any());
+        verify(produtoGateway, never()).atualizar(any());
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando produto não existe")
     void t3() {
 
-        when(produtoRepositorio.buscarPorId(999L)).thenReturn(Optional.empty());
+        when(produtoGateway.buscarPorId(999L)).thenReturn(Optional.empty());
 
 
         assertThrows(RecursoNaoEncontradoException.class,
                 () -> editarProduto.executar(999L, produtoValido),
                 "Deveria lançar uma exceção quando o produto não existe");
 
-        verify(produtoRepositorio).buscarPorId(999L);
-        verify(produtoRepositorio, never()).atualizar(any());
+        verify(produtoGateway).buscarPorId(999L);
+        verify(produtoGateway, never()).atualizar(any());
     }
 
     @Test
@@ -107,14 +107,14 @@ class EditarProdutoTest {
         Produto outroProduto = Produto.criarSemValidacao(2L, "X-Salada",
                 "Hambúrguer com salada", new BigDecimal("26.90"), Categoria.LANCHE);
 
-        when(produtoRepositorio.buscarPorId(2L)).thenReturn(Optional.of(outroProduto));
+        when(produtoGateway.buscarPorId(2L)).thenReturn(Optional.of(outroProduto));
 
         // Nome que já existe para o produto com ID 1
         ProdutoRequestDTO novoProdutoComNomeDuplicado = new ProdutoRequestDTO("X-Bacon",
                 "Hambúrguer com salada especial", new BigDecimal("27.90"), Categoria.LANCHE);
 
 
-        when(produtoRepositorio.existePorNome("X-Bacon")).thenReturn(true);
+        when(produtoGateway.existePorNome("X-Bacon")).thenReturn(true);
 
 
         ValidacaoException exception = assertThrows(ValidacaoException.class,
@@ -124,9 +124,9 @@ class EditarProdutoTest {
         assertEquals("Já existe um produto com este nome", exception.getMessage(),
                 "Mensagem da exceção está incorreta");
 
-        verify(produtoRepositorio).buscarPorId(2L);
-        verify(produtoRepositorio).existePorNome("X-Bacon");
-        verify(produtoRepositorio, never()).atualizar(any());
+        verify(produtoGateway).buscarPorId(2L);
+        verify(produtoGateway).existePorNome("X-Bacon");
+        verify(produtoGateway, never()).atualizar(any());
     }
 
     @Test
@@ -140,8 +140,8 @@ class EditarProdutoTest {
         Produto produtoAtualizadoMesmoNome = Produto.criarSemValidacao(1L, "X-Bacon",
                 "Hambúrguer com bacon e queijo", new BigDecimal("29.90"), Categoria.LANCHE);
 
-        when(produtoRepositorio.buscarPorId(1L)).thenReturn(Optional.of(produtoExistente));
-        when(produtoRepositorio.atualizar(any(Produto.class))).thenReturn(produtoAtualizadoMesmoNome);
+        when(produtoGateway.buscarPorId(1L)).thenReturn(Optional.of(produtoExistente));
+        when(produtoGateway.atualizar(any(Produto.class))).thenReturn(produtoAtualizadoMesmoNome);
 
 
         ProdutoResponseDTO response = editarProduto.executar(1L, produtoParaEditarMatendoNome);
@@ -151,16 +151,16 @@ class EditarProdutoTest {
         assertEquals("X-Bacon", response.nome());
         assertEquals(new BigDecimal("29.90"), response.preco());
 
-        verify(produtoRepositorio).buscarPorId(1L);
-        verify(produtoRepositorio).atualizar(any(Produto.class));
-        verify(produtoRepositorio, never()).existePorNome("X-Bacon");
+        verify(produtoGateway).buscarPorId(1L);
+        verify(produtoGateway).atualizar(any(Produto.class));
+        verify(produtoGateway, never()).existePorNome("X-Bacon");
     }
 
     @Test
     @DisplayName("Deve lançar exceção para campos inválidos")
     void t6() {
 
-        when(produtoRepositorio.buscarPorId(1L)).thenReturn(Optional.of(produtoExistente));
+        when(produtoGateway.buscarPorId(1L)).thenReturn(Optional.of(produtoExistente));
 
 
         ProdutoRequestDTO produtoParaEditarNomeVazio = new ProdutoRequestDTO("",
@@ -206,6 +206,6 @@ class EditarProdutoTest {
         assertEquals("Categoria do produto é obrigatória", exceptionCategoria.getMessage());
 
 
-        verify(produtoRepositorio, never()).atualizar(any());
+        verify(produtoGateway, never()).atualizar(any());
     }
 }

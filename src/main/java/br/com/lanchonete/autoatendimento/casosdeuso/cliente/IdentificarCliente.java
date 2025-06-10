@@ -3,7 +3,7 @@ package br.com.lanchonete.autoatendimento.casosdeuso.cliente;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
-import br.com.lanchonete.autoatendimento.interfaces.ClienteRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +13,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class IdentificarCliente {
 
-    private final ClienteRepositorio clienteRepositorio;
+    private final ClienteGateway clienteGateway;
 
     public Optional<ClienteResponseDTO> executar(final String cpf) {
 
@@ -21,7 +21,7 @@ public class IdentificarCliente {
             throw new ValidacaoException("CPF é obrigatório");
         }
 
-         return Optional.ofNullable(clienteRepositorio.buscarPorCpf(cpf)
+         return Optional.ofNullable(clienteGateway.buscarPorCpf(cpf)
                  .map(ClienteResponseDTO::converterParaDTO)
                  .orElseThrow(() -> new RecursoNaoEncontradoException("CPF não encontrado")));
 

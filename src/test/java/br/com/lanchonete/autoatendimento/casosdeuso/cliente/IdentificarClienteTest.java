@@ -3,7 +3,7 @@ package br.com.lanchonete.autoatendimento.casosdeuso.cliente;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
-import br.com.lanchonete.autoatendimento.interfaces.ClienteRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
 import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 class IdentificarClienteTest {
 
     @Mock
-    private ClienteRepositorio clienteRepositorio;
+    private ClienteGateway clienteGateway;
 
     @InjectMocks
     private IdentificarCliente identificarCliente;
@@ -37,7 +37,7 @@ class IdentificarClienteTest {
                 "maria.oliveira@email.com",
                 cpf
         );
-        when(clienteRepositorio.buscarPorCpf(cpf)).thenReturn(Optional.of(cliente));
+        when(clienteGateway.buscarPorCpf(cpf)).thenReturn(Optional.of(cliente));
 
         Optional<ClienteResponseDTO> resultado = identificarCliente.executar(cpf);
 
@@ -54,7 +54,7 @@ class IdentificarClienteTest {
     void t2() {
         String cpf = "12345678910";
 
-        when(clienteRepositorio.buscarPorCpf(cpf)).thenReturn(Optional.empty());
+        when(clienteGateway.buscarPorCpf(cpf)).thenReturn(Optional.empty());
 
         RecursoNaoEncontradoException excecao = assertThrows(RecursoNaoEncontradoException.class,
                 () -> identificarCliente.executar(cpf),

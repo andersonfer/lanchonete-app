@@ -1,8 +1,8 @@
-package br.com.lanchonete.autoatendimento.adaptadores.persistencia;
+package br.com.lanchonete.autoatendimento.gateways;
 
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RegistroNaoEncontradoException;
-import br.com.lanchonete.autoatendimento.interfaces.ClienteRepositorio;
-import br.com.lanchonete.autoatendimento.interfaces.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
+import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
 import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
 import br.com.lanchonete.autoatendimento.entidades.pedido.ItemPedido;
 import br.com.lanchonete.autoatendimento.entidades.pedido.Pedido;
@@ -24,12 +24,12 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJdbcTest
-class PedidoRepositorioJDBCTest {
+class PedidoGatewayJDBCTest {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    private PedidoRepositorioJDBC pedidoRepositorio;
+    private PedidoGatewayJDBC pedidoRepositorio;
 
     private Cliente cliente;
     private Produto produtoLanche;
@@ -39,24 +39,24 @@ class PedidoRepositorioJDBCTest {
     void configurar() {
 
         // Criar instâncias dos repositórios necessários
-        ClienteRepositorio clienteRepositorio = new ClienteRepositorioJDBC(jdbcTemplate);
-        ProdutoRepositorio produtoRepositorio = new ProdutoRepositorioJDBC(jdbcTemplate);
+        ClienteGateway clienteGateway = new ClienteGatewayJDBC(jdbcTemplate);
+        ProdutoGateway produtoGateway = new ProdutoGatewayJDBC(jdbcTemplate);
 
         // Criar o repositório de pedido para teste
-        pedidoRepositorio = new PedidoRepositorioJDBC(jdbcTemplate, clienteRepositorio, produtoRepositorio);
+        pedidoRepositorio = new PedidoGatewayJDBC(jdbcTemplate, clienteGateway, produtoGateway);
 
         // Criar e salvar cliente de teste no banco
         cliente = Cliente.criar("João Silva", "joao@email.com","12345678901");
-        cliente = clienteRepositorio.salvar(cliente);
+        cliente = clienteGateway.salvar(cliente);
 
         // Criar e salvar produtos de teste no banco
         produtoLanche = Produto.criar("X-Bacon", "Hambúrguer com bacon",
                 new BigDecimal("25.90"), Categoria.LANCHE);
-        produtoLanche = produtoRepositorio.salvar(produtoLanche);
+        produtoLanche = produtoGateway.salvar(produtoLanche);
 
         produtoBebida = Produto.criar("Refrigerante", "Refrigerante lata 350ml",
                 new BigDecimal("6.00"), Categoria.BEBIDA);
-        produtoBebida = produtoRepositorio.salvar(produtoBebida);
+        produtoBebida = produtoGateway.salvar(produtoBebida);
     }
 
     @Test

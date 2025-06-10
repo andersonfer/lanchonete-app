@@ -5,9 +5,9 @@ import br.com.lanchonete.autoatendimento.adaptadores.web.dto.PedidoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.PedidoResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
-import br.com.lanchonete.autoatendimento.interfaces.ClienteRepositorio;
-import br.com.lanchonete.autoatendimento.interfaces.PedidoRepositorio;
-import br.com.lanchonete.autoatendimento.interfaces.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
+import br.com.lanchonete.autoatendimento.interfaces.PedidoGateway;
+import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
 import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
 import br.com.lanchonete.autoatendimento.entidades.pedido.Pedido;
 import br.com.lanchonete.autoatendimento.entidades.pedido.StatusPedido;
@@ -35,13 +35,13 @@ import static org.mockito.Mockito.*;
 class RealizarPedidoTest {
 
     @Mock
-    private PedidoRepositorio pedidoRepositorio;
+    private PedidoGateway pedidoGateway;
 
     @Mock
-    private ClienteRepositorio clienteRepositorio;
+    private ClienteGateway clienteGateway;
 
     @Mock
-    private ProdutoRepositorio produtoRepositorio;
+    private ProdutoGateway produtoGateway;
 
     @InjectMocks
     private RealizarPedido realizarPedido;
@@ -63,14 +63,14 @@ class RealizarPedidoTest {
                 new BigDecimal("6.00"), Categoria.BEBIDA);
 
         // Mock para busca de cliente por CPF
-        when(clienteRepositorio.buscarPorCpf("12345678901")).thenReturn(Optional.of(cliente));
+        when(clienteGateway.buscarPorCpf("12345678901")).thenReturn(Optional.of(cliente));
 
         // Mock para busca de produtos por ID
-        when(produtoRepositorio.buscarPorId(1L)).thenReturn(Optional.of(produto1));
-        when(produtoRepositorio.buscarPorId(2L)).thenReturn(Optional.of(produto2));
+        when(produtoGateway.buscarPorId(1L)).thenReturn(Optional.of(produto1));
+        when(produtoGateway.buscarPorId(2L)).thenReturn(Optional.of(produto2));
 
         // Mock para salvar pedido (retorna o mesmo objeto)
-        when(pedidoRepositorio.salvar(any(Pedido.class))).thenAnswer(i -> {
+        when(pedidoGateway.salvar(any(Pedido.class))).thenAnswer(i -> {
             Pedido p = i.getArgument(0);
             p.setId(1L);
             return p;
@@ -108,7 +108,7 @@ class RealizarPedidoTest {
 
         // Verificar chamada para salvar pedido
         ArgumentCaptor<Pedido> pedidoCaptor = ArgumentCaptor.forClass(Pedido.class);
-        verify(pedidoRepositorio).salvar(pedidoCaptor.capture());
+        verify(pedidoGateway).salvar(pedidoCaptor.capture());
 
         Pedido pedidoSalvo = pedidoCaptor.getValue();
         assertEquals(cliente, pedidoSalvo.getCliente(), "O cliente deve ser o mesmo");
@@ -133,7 +133,7 @@ class RealizarPedidoTest {
                 "O valor total deve ser igual ao preço do produto");
 
         // Verificar que não buscou cliente
-        verify(clienteRepositorio, never()).buscarPorCpf(anyString());
+        verify(clienteGateway, never()).buscarPorCpf(anyString());
     }
 
     @Test
@@ -146,7 +146,7 @@ class RealizarPedidoTest {
         );
 
         // Mock para retornar cliente não encontrado
-        when(clienteRepositorio.buscarPorCpf("99999999999")).thenReturn(Optional.empty());
+        when(clienteGateway.buscarPorCpf("99999999999")).thenReturn(Optional.empty());
 
         // Verificar exceção
         RecursoNaoEncontradoException exception = assertThrows(
@@ -159,7 +159,7 @@ class RealizarPedidoTest {
                 "Mensagem de erro incorreta");
 
         // Verificar que não tentou salvar pedido
-        verify(pedidoRepositorio, never()).salvar(any());
+        verify(pedidoGateway, never()).salvar(any());
     }
 
     @Test
@@ -172,7 +172,7 @@ class RealizarPedidoTest {
         );
 
         // Mock para retornar produto não encontrado
-        when(produtoRepositorio.buscarPorId(999L)).thenReturn(Optional.empty());
+        when(produtoGateway.buscarPorId(999L)).thenReturn(Optional.empty());
 
         // Verificar exceção
         RecursoNaoEncontradoException exception = assertThrows(
@@ -185,7 +185,7 @@ class RealizarPedidoTest {
                 "Mensagem de erro incorreta");
 
         // Verificar que não tentou salvar pedido
-        verify(pedidoRepositorio, never()).salvar(any());
+        verify(pedidoGateway, never()).salvar(any());
     }
 
     @Test
@@ -208,7 +208,7 @@ class RealizarPedidoTest {
                 "Mensagem de erro incorreta");
 
         // Verificar que não tentou salvar pedido
-        verify(pedidoRepositorio, never()).salvar(any());
+        verify(pedidoGateway, never()).salvar(any());
     }
 
     @Test
@@ -231,6 +231,6 @@ class RealizarPedidoTest {
                 "Mensagem de erro incorreta");
 
         // Verificar que não tentou salvar pedido
-        verify(pedidoRepositorio, never()).salvar(any());
+        verify(pedidoGateway, never()).salvar(any());
     }
 }

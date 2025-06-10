@@ -4,9 +4,9 @@ import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ItemPedidoDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.PedidoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.PedidoResponseDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ProdutoRequestDTO;
-import br.com.lanchonete.autoatendimento.interfaces.ClienteRepositorio;
-import br.com.lanchonete.autoatendimento.interfaces.PedidoRepositorio;
-import br.com.lanchonete.autoatendimento.interfaces.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
+import br.com.lanchonete.autoatendimento.interfaces.PedidoGateway;
+import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
 import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
 import br.com.lanchonete.autoatendimento.entidades.pedido.ItemPedido;
 import br.com.lanchonete.autoatendimento.entidades.pedido.Pedido;
@@ -45,13 +45,13 @@ class ImutabilidadePrecoPedidoE2ETest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private ClienteRepositorio clienteRepositorio;
+    private ClienteGateway clienteGateway;
 
     @Autowired
-    private ProdutoRepositorio produtoRepositorio;
+    private ProdutoGateway produtoGateway;
 
     @Autowired
-    private PedidoRepositorio pedidoRepositorio;
+    private PedidoGateway pedidoGateway;
 
     private Cliente cliente;
     private Produto produto;
@@ -62,7 +62,7 @@ class ImutabilidadePrecoPedidoE2ETest {
     void configurar() {
         // Criar e salvar cliente para o teste
         cliente = Cliente.criar("João Silva", "joao@email.com","12345678901");
-        cliente = clienteRepositorio.salvar(cliente);
+        cliente = clienteGateway.salvar(cliente);
 
         // Criar e salvar produto com preço inicial
         produto = Produto.criar(
@@ -70,7 +70,7 @@ class ImutabilidadePrecoPedidoE2ETest {
                 "Hambúrguer com bacon e queijo especial",
                 precoInicial,
                 Categoria.LANCHE);
-        produto = produtoRepositorio.salvar(produto);
+        produto = produtoGateway.salvar(produto);
     }
 
     @Test
@@ -104,7 +104,7 @@ class ImutabilidadePrecoPedidoE2ETest {
         Long pedidoId = pedidoResponse.id();
 
         // ETAPA 2: Alterar o preço do produto (simulando uma atualização de preço na lanchonete)
-        Produto produtoParaAtualizar = produtoRepositorio.buscarPorId(produto.getId()).orElseThrow();
+        Produto produtoParaAtualizar = produtoGateway.buscarPorId(produto.getId()).orElseThrow();
         produtoParaAtualizar.setPreco(precoAlterado);
 
         // Atualizar o produto com o novo preço
@@ -118,12 +118,12 @@ class ImutabilidadePrecoPedidoE2ETest {
                 .andReturn();
 
         // ETAPA 3: Verificar se o produto foi atualizado corretamente no banco
-        Optional<Produto> produtoAtualizado = produtoRepositorio.buscarPorId(produto.getId());
+        Optional<Produto> produtoAtualizado = produtoGateway.buscarPorId(produto.getId());
         assertTrue(produtoAtualizado.isPresent());
         assertEquals(precoAlterado, produtoAtualizado.get().getPreco());
 
         // ETAPA 4: Recuperar o pedido e verificar se o valor total permanece inalterado
-        Optional<Pedido> pedidoPersistido = pedidoRepositorio.buscarPorId(pedidoId);
+        Optional<Pedido> pedidoPersistido = pedidoGateway.buscarPorId(pedidoId);
         assertTrue(pedidoPersistido.isPresent());
 
         Pedido pedido = pedidoPersistido.get();
@@ -182,7 +182,7 @@ class ImutabilidadePrecoPedidoE2ETest {
         PedidoResponseDTO primeiroPedidoResponse = objectMapper.readValue(respostaPrimeiroPedidoJson, PedidoResponseDTO.class);
 
         // ETAPA 2: Alterar o preço do produto
-        Produto produtoParaAtualizar = produtoRepositorio.buscarPorId(produto.getId()).orElseThrow();
+        Produto produtoParaAtualizar = produtoGateway.buscarPorId(produto.getId()).orElseThrow();
         produtoParaAtualizar.setPreco(precoAlterado);
 
         mockMvc.perform(put("/produtos/{id}", produto.getId())
@@ -237,8 +237,8 @@ class ImutabilidadePrecoPedidoE2ETest {
         assertEquals(precoAlterado, segundoPedidoNaLista.get().itens().get(0).valorUnitario());
 
         // Verificar diretamente no banco de dados
-        Optional<Pedido> primeiroPedidoPersistido = pedidoRepositorio.buscarPorId(primeiroPedidoResponse.id());
-        Optional<Pedido> segundoPedidoPersistido = pedidoRepositorio.buscarPorId(segundoPedidoResponse.id());
+        Optional<Pedido> primeiroPedidoPersistido = pedidoGateway.buscarPorId(primeiroPedidoResponse.id());
+        Optional<Pedido> segundoPedidoPersistido = pedidoGateway.buscarPorId(segundoPedidoResponse.id());
 
         assertTrue(primeiroPedidoPersistido.isPresent());
         assertTrue(segundoPedidoPersistido.isPresent());

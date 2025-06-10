@@ -4,7 +4,7 @@ import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ProdutoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ProdutoResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
-import br.com.lanchonete.autoatendimento.interfaces.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
 import br.com.lanchonete.autoatendimento.entidades.produto.Produto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class EditarProduto {
 
-    private final ProdutoRepositorio produtoRepositorio;
+    private final ProdutoGateway produtoGateway;
 
     public ProdutoResponseDTO executar(final Long id, final ProdutoRequestDTO produtoParaEditar) {
         try {
@@ -21,7 +21,7 @@ public class EditarProduto {
                 throw new ValidacaoException("ID do produto é obrigatório");
             }
 
-            final Produto produto = produtoRepositorio.buscarPorId(id)
+            final Produto produto = produtoGateway.buscarPorId(id)
                     .orElseThrow(() -> new RecursoNaoEncontradoException("Produto não encontrado"));
 
             validarDuplicidade(produto, produtoParaEditar);
@@ -31,7 +31,7 @@ public class EditarProduto {
             produto.setPreco(produtoParaEditar.preco());
             produto.setCategoria(produtoParaEditar.categoria());
 
-            final Produto produtoAtualizado = produtoRepositorio.atualizar(produto);
+            final Produto produtoAtualizado = produtoGateway.atualizar(produto);
 
             return ProdutoResponseDTO.converterParaDTO(produtoAtualizado);
         } catch (IllegalArgumentException e) {
@@ -43,7 +43,7 @@ public class EditarProduto {
     private void validarDuplicidade(Produto produto, ProdutoRequestDTO produtoRequest) {
         final boolean houveAlteracaoNoNome = !produto.getNome().equals(produtoRequest.nome());
         if (houveAlteracaoNoNome) {
-            final boolean existeOutroProdutoComMesmoNome = produtoRepositorio.existePorNome(produtoRequest.nome());
+            final boolean existeOutroProdutoComMesmoNome = produtoGateway.existePorNome(produtoRequest.nome());
             if (existeOutroProdutoComMesmoNome) {
                 throw new ValidacaoException("Já existe um produto com este nome");
             }

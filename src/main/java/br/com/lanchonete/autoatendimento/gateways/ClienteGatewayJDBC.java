@@ -1,6 +1,6 @@
-package br.com.lanchonete.autoatendimento.adaptadores.persistencia;
+package br.com.lanchonete.autoatendimento.gateways;
 
-import br.com.lanchonete.autoatendimento.interfaces.ClienteRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
 import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -10,7 +10,7 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import java.util.Map;
 import java.util.Optional;
 
-public class ClienteRepositorioJDBC implements ClienteRepositorio {
+public class ClienteGatewayJDBC implements ClienteGateway {
 
     private final JdbcTemplate jdbcTemplate;
     private final SimpleJdbcInsert inserter;
@@ -22,7 +22,7 @@ public class ClienteRepositorioJDBC implements ClienteRepositorio {
                     rs.getString("cpf")
             );
 
-    public ClienteRepositorioJDBC(JdbcTemplate jdbcTemplate) {
+    public ClienteGatewayJDBC(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
         this.inserter = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("cliente")

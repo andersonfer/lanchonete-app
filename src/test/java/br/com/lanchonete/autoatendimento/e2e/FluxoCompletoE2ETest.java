@@ -1,7 +1,7 @@
 package br.com.lanchonete.autoatendimento.e2e;
 
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.*;
-import br.com.lanchonete.autoatendimento.interfaces.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
 import br.com.lanchonete.autoatendimento.entidades.produto.Categoria;
 import br.com.lanchonete.autoatendimento.entidades.produto.Produto;
 import br.com.lanchonete.autoatendimento.entidades.pedido.StatusPedido;
@@ -39,7 +39,7 @@ class FluxoCompletoE2ETest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private ProdutoRepositorio produtoRepositorio;
+    private ProdutoGateway produtoGateway;
 
     private Produto lanche;
     private Produto bebida;
@@ -53,25 +53,25 @@ class FluxoCompletoE2ETest {
                 "Hambúrguer completo com todos os ingredientes",
                 new BigDecimal("32.90"),
                 Categoria.LANCHE);
-        lanche = produtoRepositorio.salvar(lanche);
+        lanche = produtoGateway.salvar(lanche);
 
         bebida = Produto.criar( "Refrigerante Cola",
                 "Refrigerante cola 350ml",
                 new BigDecimal("6.90"),
                 Categoria.BEBIDA);
-        bebida = produtoRepositorio.salvar(bebida);
+        bebida = produtoGateway.salvar(bebida);
 
         acompanhamento = Produto.criar("Batata Frita",
                 "Porção de batata frita crocante",
                 new BigDecimal("12.90"),
                 Categoria.ACOMPANHAMENTO);
-        acompanhamento = produtoRepositorio.salvar(acompanhamento);
+        acompanhamento = produtoGateway.salvar(acompanhamento);
 
         sobremesa = Produto.criar( "Sundae de Chocolate",
                 "Sorvete com calda de chocolate e amendoim",
                 new BigDecimal("9.90"),
                 Categoria.SOBREMESA);
-        sobremesa = produtoRepositorio.salvar(sobremesa);
+        sobremesa = produtoGateway.salvar(sobremesa);
     }
 
     @Test

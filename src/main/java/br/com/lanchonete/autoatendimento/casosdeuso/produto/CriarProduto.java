@@ -3,7 +3,7 @@ package br.com.lanchonete.autoatendimento.casosdeuso.produto;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ProdutoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ProdutoResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
-import br.com.lanchonete.autoatendimento.interfaces.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
 import br.com.lanchonete.autoatendimento.entidades.produto.Produto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,11 +12,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CriarProduto {
 
-    private final ProdutoRepositorio produtoRepositorio;
+    private final ProdutoGateway produtoGateway;
 
     public ProdutoResponseDTO executar(final ProdutoRequestDTO novoProduto) {
         try {
-            if (produtoRepositorio.existePorNome(novoProduto.nome())) {
+            if (produtoGateway.existePorNome(novoProduto.nome())) {
                 throw new ValidacaoException("Já existe um produto com este nome");
             }
 
@@ -26,7 +26,7 @@ public class CriarProduto {
                     novoProduto.preco(),
                     novoProduto.categoria());
 
-            final Produto produtoSalvo = produtoRepositorio.salvar(produto);
+            final Produto produtoSalvo = produtoGateway.salvar(produto);
 
             return ProdutoResponseDTO.converterParaDTO(produtoSalvo);
         } catch (IllegalArgumentException e) {

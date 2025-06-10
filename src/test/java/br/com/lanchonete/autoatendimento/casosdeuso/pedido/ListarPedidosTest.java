@@ -1,7 +1,7 @@
 package br.com.lanchonete.autoatendimento.casosdeuso.pedido;
 
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.PedidoResponseDTO;
-import br.com.lanchonete.autoatendimento.interfaces.PedidoRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.PedidoGateway;
 import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
 import br.com.lanchonete.autoatendimento.entidades.pedido.ItemPedido;
 import br.com.lanchonete.autoatendimento.entidades.pedido.Pedido;
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.*;
 class ListarPedidosTest {
 
     @Mock
-    private PedidoRepositorio pedidoRepositorio;
+    private PedidoGateway pedidoGateway;
 
     @InjectMocks
     private ListarPedidos listarPedidos;
@@ -98,7 +98,7 @@ class ListarPedidosTest {
     @DisplayName("Deve listar todos os pedidos")
     void t1() {
         // Mock do repositório retornando 2 pedidos
-        when(pedidoRepositorio.listarTodos()).thenReturn(Arrays.asList(pedidoComCliente, pedidoSemCliente));
+        when(pedidoGateway.listarTodos()).thenReturn(Arrays.asList(pedidoComCliente, pedidoSemCliente));
 
         // Executar o serviço
         List<PedidoResponseDTO> pedidos = listarPedidos.executar();
@@ -126,14 +126,14 @@ class ListarPedidosTest {
         assertEquals(new BigDecimal("6.00"), segundoPedidoDTO.valorTotal(), "Valor total deve ser 6.00");
 
         // Verificar que o repositório foi chamado
-        verify(pedidoRepositorio).listarTodos();
+        verify(pedidoGateway).listarTodos();
     }
 
     @Test
     @DisplayName("Deve retornar lista vazia quando não há pedidos")
     void t2() {
         // Mock do repositório retornando lista vazia
-        when(pedidoRepositorio.listarTodos()).thenReturn(Collections.emptyList());
+        when(pedidoGateway.listarTodos()).thenReturn(Collections.emptyList());
 
         // Executar o serviço
         List<PedidoResponseDTO> pedidos = listarPedidos.executar();
@@ -143,6 +143,6 @@ class ListarPedidosTest {
         assertTrue(pedidos.isEmpty(), "A lista de pedidos deve estar vazia");
 
         // Verificar que o repositório foi chamado
-        verify(pedidoRepositorio).listarTodos();
+        verify(pedidoGateway).listarTodos();
     }
 }

@@ -1,8 +1,8 @@
 package br.com.lanchonete.autoatendimento.frameworks.config;
 
-import br.com.lanchonete.autoatendimento.interfaces.ClienteRepositorio;
-import br.com.lanchonete.autoatendimento.interfaces.PedidoRepositorio;
-import br.com.lanchonete.autoatendimento.interfaces.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
+import br.com.lanchonete.autoatendimento.interfaces.PedidoGateway;
+import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,19 +22,19 @@ class RepositorioConfigTest {
     private JdbcTemplate jdbcTemplate;
 
     @Autowired
-    private ClienteRepositorio clienteRepositorio;
+    private ClienteGateway clienteGateway;
 
     @Autowired
-    private ProdutoRepositorio produtoRepositorio;
+    private ProdutoGateway produtoGateway;
 
     @Autowired
-    private PedidoRepositorio pedidoRepositorio;
+    private PedidoGateway pedidoGateway;
 
     @Test
     @DisplayName( "Deve criar os beans de repositorio")
     void t1() {
-        assertNotNull(clienteRepositorio);
-        assertNotNull(produtoRepositorio);
-        assertNotNull(pedidoRepositorio);
+        assertNotNull(clienteGateway);
+        assertNotNull(produtoGateway);
+        assertNotNull(pedidoGateway);
     }
 }

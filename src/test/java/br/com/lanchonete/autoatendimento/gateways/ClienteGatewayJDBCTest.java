@@ -1,4 +1,4 @@
-package br.com.lanchonete.autoatendimento.adaptadores.persistencia;
+package br.com.lanchonete.autoatendimento.gateways;
 
 import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,12 +14,12 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJdbcTest
-class ClienteRepositorioJDBCTest {
+class ClienteGatewayJDBCTest {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    private ClienteRepositorioJDBC clienteRepositorio;
+    private ClienteGatewayJDBC clienteRepositorio;
 
     private final String CPF_JA_CASTRADADO = "12345678901";
 
@@ -27,7 +27,7 @@ class ClienteRepositorioJDBCTest {
 
     @BeforeEach
     void configurar() {
-        clienteRepositorio = new ClienteRepositorioJDBC(jdbcTemplate);
+        clienteRepositorio = new ClienteGatewayJDBC(jdbcTemplate);
 
         clientePreCadastrado = Cliente.criar(
                 "João Silva",

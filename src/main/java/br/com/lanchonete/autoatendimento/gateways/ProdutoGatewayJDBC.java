@@ -1,7 +1,7 @@
-package br.com.lanchonete.autoatendimento.adaptadores.persistencia;
+package br.com.lanchonete.autoatendimento.gateways;
 
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RegistroNaoEncontradoException;
-import br.com.lanchonete.autoatendimento.interfaces.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
 import br.com.lanchonete.autoatendimento.entidades.produto.Categoria;
 import br.com.lanchonete.autoatendimento.entidades.produto.Produto;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class ProdutoRepositorioJDBC implements ProdutoRepositorio {
+public class ProdutoGatewayJDBC implements ProdutoGateway {
 
     private final JdbcTemplate jdbcTemplate;
     private final SimpleJdbcInsert inserter;
@@ -27,7 +27,7 @@ public class ProdutoRepositorioJDBC implements ProdutoRepositorio {
                     rs.getBigDecimal("preco"),
                     Categoria.valueOf(rs.getString("categoria")));
 
-    public ProdutoRepositorioJDBC(JdbcTemplate jdbcTemplate) {
+    public ProdutoGatewayJDBC(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
         this.inserter = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("produto")

@@ -2,9 +2,9 @@ package br.com.lanchonete.autoatendimento.frameworks.config;
 
 import br.com.lanchonete.autoatendimento.casosdeuso.pedido.ListarPedidos;
 import br.com.lanchonete.autoatendimento.casosdeuso.pedido.RealizarPedido;
-import br.com.lanchonete.autoatendimento.interfaces.ClienteRepositorio;
-import br.com.lanchonete.autoatendimento.interfaces.PedidoRepositorio;
-import br.com.lanchonete.autoatendimento.interfaces.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
+import br.com.lanchonete.autoatendimento.interfaces.PedidoGateway;
+import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,13 +19,13 @@ import static org.junit.jupiter.api.Assertions.*;
 class PedidoServiceConfigTest {
 
     @MockitoBean
-    private PedidoRepositorio pedidoRepositorio;
+    private PedidoGateway pedidoGateway;
 
     @MockitoBean
-    private ClienteRepositorio clienteRepositorio;
+    private ClienteGateway clienteGateway;
 
     @MockitoBean
-    private ProdutoRepositorio produtoRepositorio;
+    private ProdutoGateway produtoGateway;
 
     @Autowired
     private RealizarPedido realizarCheckout;

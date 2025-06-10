@@ -3,9 +3,9 @@ package br.com.lanchonete.autoatendimento.e2e;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ItemPedidoDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.PedidoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.PedidoResponseDTO;
-import br.com.lanchonete.autoatendimento.interfaces.ClienteRepositorio;
-import br.com.lanchonete.autoatendimento.interfaces.PedidoRepositorio;
-import br.com.lanchonete.autoatendimento.interfaces.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
+import br.com.lanchonete.autoatendimento.interfaces.PedidoGateway;
+import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
 import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
 import br.com.lanchonete.autoatendimento.entidades.pedido.Pedido;
 import br.com.lanchonete.autoatendimento.entidades.pedido.StatusPedido;
@@ -44,13 +44,13 @@ class PedidoE2ETest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private ClienteRepositorio clienteRepositorio;
+    private ClienteGateway clienteGateway;
 
     @Autowired
-    private ProdutoRepositorio produtoRepositorio;
+    private ProdutoGateway produtoGateway;
 
     @Autowired
-    private PedidoRepositorio pedidoRepositorio;
+    private PedidoGateway pedidoGateway;
 
     private Cliente cliente;
     private Produto produto1;
@@ -59,17 +59,17 @@ class PedidoE2ETest {
     @BeforeEach
     void configurar() {
         // Criar e salvar cliente para o teste
-        cliente = clienteRepositorio.salvar(Cliente.criar("João Silva", "joao@email.com", "12345678901"));
-        cliente = clienteRepositorio.salvar(cliente);
+        cliente = clienteGateway.salvar(Cliente.criar("João Silva", "joao@email.com", "12345678901"));
+        cliente = clienteGateway.salvar(cliente);
 
         // Criar e salvar produtos para o teste
         produto1 = Produto.criar("X-Bacon", "Hambúrguer com bacon",
                 new BigDecimal("25.90"), Categoria.LANCHE);
-        produto1 = produtoRepositorio.salvar(produto1);
+        produto1 = produtoGateway.salvar(produto1);
 
         produto2 = Produto.criar("Refrigerante", "Refrigerante lata 350ml",
                 new BigDecimal("6.00"), Categoria.BEBIDA);
-        produto2 = produtoRepositorio.salvar(produto2);
+        produto2 = produtoGateway.salvar(produto2);
     }
 
     @Test
@@ -101,7 +101,7 @@ class PedidoE2ETest {
         assertNotNull(pedidoId, "O ID do pedido não deveria ser nulo");
 
         // Verificar se o pedido foi salvo no banco
-        Optional<Pedido> pedidoSalvo = pedidoRepositorio.buscarPorId(pedidoId);
+        Optional<Pedido> pedidoSalvo = pedidoGateway.buscarPorId(pedidoId);
         assertTrue(pedidoSalvo.isPresent(), "O pedido deveria estar salvo no banco");
         assertEquals(StatusPedido.RECEBIDO, pedidoSalvo.get().getStatus(), "O status deveria ser RECEBIDO");
         assertEquals(2, pedidoSalvo.get().getItens().size(), "O pedido deveria ter 2 itens");
@@ -145,7 +145,7 @@ class PedidoE2ETest {
         assertNotNull(pedidoId, "O ID do pedido não deveria ser nulo");
 
         // Verificar se o pedido foi salvo no banco
-        Optional<Pedido> pedidoSalvo = pedidoRepositorio.buscarPorId(pedidoId);
+        Optional<Pedido> pedidoSalvo = pedidoGateway.buscarPorId(pedidoId);
         assertTrue(pedidoSalvo.isPresent(), "O pedido deveria estar salvo no banco");
         assertNull(pedidoSalvo.get().getCliente(), "O cliente do pedido deveria ser nulo");
         assertEquals(1, pedidoSalvo.get().getItens().size(), "O pedido deveria ter 1 item");

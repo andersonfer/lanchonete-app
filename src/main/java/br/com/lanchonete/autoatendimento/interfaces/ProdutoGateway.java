@@ -6,7 +6,7 @@ import br.com.lanchonete.autoatendimento.entidades.produto.Produto;
 import java.util.List;
 import java.util.Optional;
 
-public interface ProdutoRepositorio {
+public interface ProdutoGateway {
     Produto salvar(Produto produto);
     Produto atualizar(Produto produto);
     void remover(Long id);

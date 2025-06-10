@@ -2,9 +2,9 @@ package br.com.lanchonete.autoatendimento.frameworks.config;
 
 import br.com.lanchonete.autoatendimento.casosdeuso.pedido.ListarPedidos;
 import br.com.lanchonete.autoatendimento.casosdeuso.pedido.RealizarPedido;
-import br.com.lanchonete.autoatendimento.interfaces.ClienteRepositorio;
-import br.com.lanchonete.autoatendimento.interfaces.PedidoRepositorio;
-import br.com.lanchonete.autoatendimento.interfaces.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
+import br.com.lanchonete.autoatendimento.interfaces.PedidoGateway;
+import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,14 +12,14 @@ import org.springframework.context.annotation.Configuration;
 public class PedidoServiceConfig {
 
     @Bean
-    ListarPedidos listarPedidos(final PedidoRepositorio pedidoRepositorio) {
-        return new ListarPedidos(pedidoRepositorio);
+    ListarPedidos listarPedidos(final PedidoGateway pedidoGateway) {
+        return new ListarPedidos(pedidoGateway);
     }
 
     @Bean
-    RealizarPedido realizarPedido(final PedidoRepositorio pedidoRepositorio,
-                                  final ClienteRepositorio clienteRepositorio,
-                                  final ProdutoRepositorio produtoRepositorio) {
-        return new RealizarPedido(pedidoRepositorio, clienteRepositorio, produtoRepositorio);
+    RealizarPedido realizarPedido(final PedidoGateway pedidoGateway,
+                                  final ClienteGateway clienteGateway,
+                                  final ProdutoGateway produtoGateway) {
+        return new RealizarPedido(pedidoGateway, clienteGateway, produtoGateway);
     }
 }

@@ -3,7 +3,7 @@ package br.com.lanchonete.autoatendimento.casosdeuso.produto;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ProdutoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ProdutoResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
-import br.com.lanchonete.autoatendimento.interfaces.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
 import br.com.lanchonete.autoatendimento.entidades.produto.Categoria;
 import br.com.lanchonete.autoatendimento.entidades.produto.Produto;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +24,7 @@ import static org.mockito.Mockito.*;
 class CriarProdutoTest {
 
     @Mock
-    private ProdutoRepositorio produtoRepositorio;
+    private ProdutoGateway produtoGateway;
 
     @InjectMocks
     private CriarProduto criarProduto;
@@ -45,8 +45,8 @@ class CriarProdutoTest {
     @DisplayName("Deve criar produto com sucesso quando os dados são válidos")
     void t1() {
         // Arrange
-        when(produtoRepositorio.existePorNome(produtoValido.nome())).thenReturn(false);
-        when(produtoRepositorio.salvar(any(Produto.class))).thenReturn(produtoSalvo);
+        when(produtoGateway.existePorNome(produtoValido.nome())).thenReturn(false);
+        when(produtoGateway.salvar(any(Produto.class))).thenReturn(produtoSalvo);
 
         // Act
         ProdutoResponseDTO response = criarProduto.executar(produtoValido);
@@ -58,15 +58,15 @@ class CriarProdutoTest {
         assertEquals(new BigDecimal("28.90"), response.preco(), "O preço do produto salvo está incorreto");
         assertEquals(Categoria.LANCHE, response.categoria(), "A categoria do produto salvo está incorreta");
 
-        verify(produtoRepositorio).existePorNome(produtoValido.nome());
-        verify(produtoRepositorio).salvar(any(Produto.class));
+        verify(produtoGateway).existePorNome(produtoValido.nome());
+        verify(produtoGateway).salvar(any(Produto.class));
     }
 
     @Test
     @DisplayName("Deve lançar exceção ao tentar criar produto com nome duplicado")
     void t2() {
         // Arrange
-        when(produtoRepositorio.existePorNome(produtoValido.nome())).thenReturn(true);
+        when(produtoGateway.existePorNome(produtoValido.nome())).thenReturn(true);
 
         // Act & Assert
         ValidacaoException exception = assertThrows(ValidacaoException.class,
@@ -76,8 +76,8 @@ class CriarProdutoTest {
         assertEquals("Já existe um produto com este nome", exception.getMessage(),
                 "Mensagem da exceção está incorreta");
 
-        verify(produtoRepositorio).existePorNome(produtoValido.nome());
-        verify(produtoRepositorio, never()).salvar(any(Produto.class));
+        verify(produtoGateway).existePorNome(produtoValido.nome());
+        verify(produtoGateway, never()).salvar(any(Produto.class));
     }
 
     @Test
@@ -95,7 +95,7 @@ class CriarProdutoTest {
         assertEquals("Nome do produto é obrigatório", exception.getMessage(),
                 "Mensagem da exceção está incorreta");
 
-        verify(produtoRepositorio, never()).salvar(any(Produto.class));
+        verify(produtoGateway, never()).salvar(any(Produto.class));
     }
 
     @Test
@@ -113,7 +113,7 @@ class CriarProdutoTest {
         assertEquals("Preço do produto é obrigatório", exception.getMessage(),
                 "Mensagem da exceção está incorreta");
 
-        verify(produtoRepositorio, never()).salvar(any(Produto.class));
+        verify(produtoGateway, never()).salvar(any(Produto.class));
     }
 
     @Test
@@ -143,7 +143,7 @@ class CriarProdutoTest {
         assertEquals("Preço deve ser maior que zero", exception2.getMessage(),
                 "Mensagem da exceção está incorreta");
 
-        verify(produtoRepositorio, never()).salvar(any(Produto.class));
+        verify(produtoGateway, never()).salvar(any(Produto.class));
     }
 
     @Test
@@ -161,6 +161,6 @@ class CriarProdutoTest {
         assertEquals("Categoria do produto é obrigatória", exception.getMessage(),
                 "Mensagem da exceção está incorreta");
 
-        verify(produtoRepositorio, never()).salvar(any(Produto.class));
+        verify(produtoGateway, never()).salvar(any(Produto.class));
     }
 }

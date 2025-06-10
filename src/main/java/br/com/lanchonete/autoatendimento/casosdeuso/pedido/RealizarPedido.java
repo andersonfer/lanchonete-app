@@ -5,9 +5,9 @@ import br.com.lanchonete.autoatendimento.adaptadores.web.dto.PedidoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.PedidoResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
-import br.com.lanchonete.autoatendimento.interfaces.ClienteRepositorio;
-import br.com.lanchonete.autoatendimento.interfaces.PedidoRepositorio;
-import br.com.lanchonete.autoatendimento.interfaces.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
+import br.com.lanchonete.autoatendimento.interfaces.PedidoGateway;
+import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
 import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
 import br.com.lanchonete.autoatendimento.entidades.pedido.ItemPedido;
 import br.com.lanchonete.autoatendimento.entidades.pedido.Pedido;
@@ -25,9 +25,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RealizarPedido {
 
-    private final PedidoRepositorio pedidoRepositorio;
-    private final ClienteRepositorio clienteRepositorio;
-    private final ProdutoRepositorio produtoRepositorio;
+    private final PedidoGateway pedidoGateway;
+    private final ClienteGateway clienteGateway;
+    private final ProdutoGateway produtoGateway;
 
 
     @Transactional
@@ -50,7 +50,7 @@ public class RealizarPedido {
 
             pedido.validar();
 
-            final Pedido pedidoSalvo = pedidoRepositorio.salvar(pedido);
+            final Pedido pedidoSalvo = pedidoGateway.salvar(pedido);
 
             return PedidoResponseDTO.converterParaDTO(pedidoSalvo);
         } catch (IllegalArgumentException e) {
@@ -62,7 +62,7 @@ public class RealizarPedido {
     private void adicionarItensAoPedido(final Pedido pedido, final List<ItemPedidoDTO> itens) {
 
         for (final ItemPedidoDTO itemDTO : itens) {
-            final Produto produto = produtoRepositorio.buscarPorId(itemDTO.produtoId())
+            final Produto produto = produtoGateway.buscarPorId(itemDTO.produtoId())
                     .orElseThrow(() -> new RecursoNaoEncontradoException("Produto não encontrado: " + itemDTO.produtoId()));
 
             final ItemPedido item = ItemPedido.builder()
@@ -78,7 +78,7 @@ public class RealizarPedido {
 
     private Cliente buscarCliente(final String cpf) {
        if (StringUtils.isNotBlank(cpf)) {
-           return clienteRepositorio.buscarPorCpf(cpf)
+           return clienteGateway.buscarPorCpf(cpf)
                    .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado com o CPF informado"));
        } else {
            return null;

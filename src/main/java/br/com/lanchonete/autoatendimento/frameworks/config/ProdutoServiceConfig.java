@@ -4,7 +4,7 @@ import br.com.lanchonete.autoatendimento.casosdeuso.produto.BuscarProdutosPorCat
 import br.com.lanchonete.autoatendimento.casosdeuso.produto.CriarProduto;
 import br.com.lanchonete.autoatendimento.casosdeuso.produto.EditarProduto;
 import br.com.lanchonete.autoatendimento.casosdeuso.produto.RemoverProduto;
-import br.com.lanchonete.autoatendimento.interfaces.ProdutoRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,22 +12,22 @@ import org.springframework.context.annotation.Configuration;
 public class ProdutoServiceConfig {
 
     @Bean
-    BuscarProdutosPorCategoria buscarProdutosPorCategoria(final ProdutoRepositorio produtoRepositorio) {
-        return new BuscarProdutosPorCategoria(produtoRepositorio);
+    BuscarProdutosPorCategoria buscarProdutosPorCategoria(final ProdutoGateway produtoGateway) {
+        return new BuscarProdutosPorCategoria(produtoGateway);
     }
 
     @Bean
-    CriarProduto criarProduto(final ProdutoRepositorio produtoRepositorio) {
-        return new CriarProduto(produtoRepositorio);
+    CriarProduto criarProduto(final ProdutoGateway produtoGateway) {
+        return new CriarProduto(produtoGateway);
     }
 
     @Bean
-    EditarProduto editarProduto(final ProdutoRepositorio produtoRepositorio) {
-        return new EditarProduto(produtoRepositorio);
+    EditarProduto editarProduto(final ProdutoGateway produtoGateway) {
+        return new EditarProduto(produtoGateway);
     }
 
     @Bean
-    public RemoverProduto removerProduto(final ProdutoRepositorio produtoRepositorio) {
-        return new RemoverProduto(produtoRepositorio);
+    public RemoverProduto removerProduto(final ProdutoGateway produtoGateway) {
+        return new RemoverProduto(produtoGateway);
     }
 }

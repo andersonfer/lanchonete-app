@@ -3,7 +3,7 @@ package br.com.lanchonete.autoatendimento.e2e;
 
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ClienteRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ClienteResponseDTO;
-import br.com.lanchonete.autoatendimento.interfaces.ClienteRepositorio;
+import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
 import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -40,7 +40,7 @@ class ClienteE2ETest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private ClienteRepositorio clienteRepositorio;
+    private ClienteGateway clienteGateway;
 
     @Test
     @DisplayName("Deve cadastrar um cliente")
@@ -65,7 +65,7 @@ class ClienteE2ETest {
         assertEquals(novoCliente.email(), respostaDTO.email());
 
         // Verifica se o cliente foi realmente persistido no banco de dados
-        Optional<Cliente> clientePersistido = clienteRepositorio.buscarPorCpf(novoCliente.cpf());
+        Optional<Cliente> clientePersistido = clienteGateway.buscarPorCpf(novoCliente.cpf());
         assertTrue(clientePersistido.isPresent());
         assertEquals(novoCliente.nome(), clientePersistido.get().getNome());
         assertEquals(novoCliente.email(), clientePersistido.get().getEmail());
@@ -83,7 +83,7 @@ class ClienteE2ETest {
 
         // Verifica que o cliente não foi persistido
         if (requisicao.cpf() != null && !requisicao.cpf().isEmpty()) {
-            Optional<Cliente> clienteNaoPersistido = clienteRepositorio.buscarPorCpf(requisicao.cpf());
+            Optional<Cliente> clienteNaoPersistido = clienteGateway.buscarPorCpf(requisicao.cpf());
             assertTrue(clienteNaoPersistido.isEmpty(), "O cliente não deveria ser persistido com dados inválidos");
         }
     }
@@ -121,7 +121,7 @@ class ClienteE2ETest {
                 "joao@email.com",
                 "23456789012");
 
-        clientePreCadastrado = clienteRepositorio.salvar(clientePreCadastrado);
+        clientePreCadastrado = clienteGateway.salvar(clientePreCadastrado);
 
         MvcResult resultado = mockMvc.perform(get("/clientes/cpf/{cpf}", "23456789012"))
                 .andExpect(status().isOk())

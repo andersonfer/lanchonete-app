@@ -1,8 +1,8 @@
 package br.com.lanchonete.autoatendimento.e2e;
 
 
-import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ClienteRequestDTO;
-import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ClienteResponseDTO;
+import br.com.lanchonete.autoatendimento.controllers.dto.ClienteRequestDTO;
+import br.com.lanchonete.autoatendimento.controllers.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
 import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
 import com.fasterxml.jackson.databind.ObjectMapper;

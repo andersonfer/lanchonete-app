@@ -6,6 +6,7 @@
 - ✅ Separação API/Controller (contratos vs implementações)
 - ✅ Estrutura básica com /entidades/, /casosdeuso/, /interfaces/
 - ✅ Controllers implementando interfaces API
+- ✅ Renomeação Repositórios → Gateways (pacote /gateways/ criado)
 
 ### 🚧 TAREFAS RESTANTES:
 
@@ -22,7 +23,7 @@
 - `Cliente.java` - usar Cpf e Email
 - `Produto.java` - usar Preco  
 - `Pedido.java` - usar NumeroPedido
-- Todos os DTOs, repositories e use cases relacionados
+- Todos os DTOs, gateways e use cases relacionados
 
 ---
 
@@ -57,6 +58,7 @@
 **Arquivos a modificar:**
 - Todos os controllers (injetar App Service ao invés de Use Cases)
 - Configurações (adicionar beans de App Services)
+- App Services injetam Gateways ao invés de Use Cases injetarem diretamente
 
 ---
 
@@ -91,9 +93,10 @@ br.com.lanchonete.autoatendimento
 │       └── Email.java           # 📦 NOVO Value Object
 ├── casosdeuso/                   # ✅ Limpar anotações Spring
 ├── application/                  # 📦 NOVO - Application Services
-├── adaptadores/                  # Mantém atual
-├── frameworks/                   # Mantém /infra/ atual
-└── interfaces/                   # Mantém atual
+├── adaptadores/                  # Mantém atual (web)
+├── gateways/                     # ✅ JÁ CRIADO - Implementações JDBC
+├── frameworks/                   # Mantém atual (config/util)
+└── interfaces/                   # ✅ JÁ ATUALIZADO - Interfaces Gateway
 ```
 
 ## ⚡ ORDEM DE EXECUÇÃO RECOMENDADA

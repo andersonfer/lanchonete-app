@@ -1,8 +1,8 @@
-package br.com.lanchonete.autoatendimento.adaptadores.web.controllers;
+package br.com.lanchonete.autoatendimento.controllers;
 
-import br.com.lanchonete.autoatendimento.adaptadores.web.api.ProdutoApi;
-import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ProdutoRequestDTO;
-import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ProdutoResponseDTO;
+import br.com.lanchonete.autoatendimento.api.ProdutoApi;
+import br.com.lanchonete.autoatendimento.controllers.dto.ProdutoRequestDTO;
+import br.com.lanchonete.autoatendimento.controllers.dto.ProdutoResponseDTO;
 import br.com.lanchonete.autoatendimento.casosdeuso.produto.BuscarProdutosPorCategoria;
 import br.com.lanchonete.autoatendimento.casosdeuso.produto.CriarProduto;
 import br.com.lanchonete.autoatendimento.casosdeuso.produto.EditarProduto;

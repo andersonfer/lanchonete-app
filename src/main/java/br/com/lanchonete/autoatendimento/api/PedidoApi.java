@@ -1,7 +1,7 @@
-package br.com.lanchonete.autoatendimento.adaptadores.web.api;
+package br.com.lanchonete.autoatendimento.api;
 
-import br.com.lanchonete.autoatendimento.adaptadores.web.dto.PedidoRequestDTO;
-import br.com.lanchonete.autoatendimento.adaptadores.web.dto.PedidoResponseDTO;
+import br.com.lanchonete.autoatendimento.controllers.dto.PedidoRequestDTO;
+import br.com.lanchonete.autoatendimento.controllers.dto.PedidoResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;

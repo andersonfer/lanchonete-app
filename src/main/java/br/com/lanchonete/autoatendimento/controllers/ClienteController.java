@@ -1,8 +1,8 @@
-package br.com.lanchonete.autoatendimento.adaptadores.web.controllers;
+package br.com.lanchonete.autoatendimento.controllers;
 
-import br.com.lanchonete.autoatendimento.adaptadores.web.api.ClienteApi;
-import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ClienteRequestDTO;
-import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ClienteResponseDTO;
+import br.com.lanchonete.autoatendimento.api.ClienteApi;
+import br.com.lanchonete.autoatendimento.controllers.dto.ClienteRequestDTO;
+import br.com.lanchonete.autoatendimento.controllers.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.casosdeuso.cliente.CadastrarCliente;
 import br.com.lanchonete.autoatendimento.casosdeuso.cliente.IdentificarCliente;
 import lombok.RequiredArgsConstructor;

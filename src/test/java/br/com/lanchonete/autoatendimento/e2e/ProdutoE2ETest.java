@@ -1,7 +1,7 @@
 package br.com.lanchonete.autoatendimento.e2e;
 
-import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ProdutoRequestDTO;
-import br.com.lanchonete.autoatendimento.adaptadores.web.dto.ProdutoResponseDTO;
+import br.com.lanchonete.autoatendimento.controllers.dto.ProdutoRequestDTO;
+import br.com.lanchonete.autoatendimento.controllers.dto.ProdutoResponseDTO;
 import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
 import br.com.lanchonete.autoatendimento.entidades.produto.Categoria;
 import br.com.lanchonete.autoatendimento.entidades.produto.Produto;

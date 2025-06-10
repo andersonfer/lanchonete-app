@@ -1,4 +1,4 @@
-package br.com.lanchonete.autoatendimento.adaptadores.web.dto;
+package br.com.lanchonete.autoatendimento.controllers.dto;
 
 import br.com.lanchonete.autoatendimento.entidades.pedido.ItemPedido;
 

@@ -11,7 +11,7 @@ public record ClienteResponseDTO(Long id, String nome, String cpf, String email)
                 cliente.getId(),
                 cliente.getNome(),
                 cliente.getCpf().getValor(),
-                cliente.getEmail())
+                cliente.getEmail().getValor())
                 : null;
     }
 }

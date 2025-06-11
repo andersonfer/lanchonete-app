@@ -2,24 +2,21 @@ package br.com.lanchonete.autoatendimento.entidades.cliente;
 
 import br.com.lanchonete.autoatendimento.frameworks.util.Utils;
 import br.com.lanchonete.autoatendimento.entidades.shared.Cpf;
+import br.com.lanchonete.autoatendimento.entidades.shared.Email;
 import lombok.Data;
-
-import java.util.regex.Pattern;
 
 @Data
 public class Cliente {
-    private static final Pattern EMAIL_REGEX = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
-
     private Long id;
     private String nome;
     private Cpf cpf;
-    private String email;
+    private Email email;
 
     private Cliente() {}
 
     private Cliente(String nome, String email, Cpf cpf) {
         setNome(nome);
-        setEmail(email);
+        setEmail(new Email(email));
         setCpf(cpf);
     }
 
@@ -31,7 +28,7 @@ public class Cliente {
         Cliente cliente = new Cliente();
         cliente.setId(id);
         cliente.setNome(nome);
-        cliente.setEmail(email);
+        cliente.setEmail(new Email(email));
         cliente.setCpf(new Cpf(cpf));
         return cliente;
     }
@@ -48,16 +45,9 @@ public class Cliente {
         this.cpf = cpf;
     }
 
-    public void setEmail(String email) {
-        if (Utils.isNuloOuVazio(email))
+    public void setEmail(Email email) {
+        if (email == null)
             throw new IllegalArgumentException("Email é obrigatório");
-        if (!isEmailValido(email))
-            throw new IllegalArgumentException("Email inválido");
         this.email = email;
-    }
-
-
-    private boolean isEmailValido(String email) {
-        return EMAIL_REGEX.matcher(email).matches();
     }
 }

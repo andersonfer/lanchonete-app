@@ -68,7 +68,7 @@ class ClienteE2ETest {
         Optional<Cliente> clientePersistido = clienteGateway.buscarPorCpf(novoCliente.cpf());
         assertTrue(clientePersistido.isPresent());
         assertEquals(novoCliente.nome(), clientePersistido.get().getNome());
-        assertEquals(novoCliente.email(), clientePersistido.get().getEmail());
+        assertEquals(novoCliente.email(), clientePersistido.get().getEmail().getValor());
     }
 
     @ParameterizedTest
@@ -128,7 +128,7 @@ class ClienteE2ETest {
                 .andExpect(jsonPath("$.id").value(clientePreCadastrado.getId()))
                 .andExpect(jsonPath("$.nome").value(clientePreCadastrado.getNome()))
                 .andExpect(jsonPath("$.cpf").value(clientePreCadastrado.getCpf().getValor()))
-                .andExpect(jsonPath("$.email").value(clientePreCadastrado.getEmail()))
+                .andExpect(jsonPath("$.email").value(clientePreCadastrado.getEmail().getValor()))
                 .andReturn();
 
         String resposta = resultado.getResponse().getContentAsString();
@@ -137,7 +137,7 @@ class ClienteE2ETest {
         assertEquals(clientePreCadastrado.getId(), respostaDTO.id());
         assertEquals(clientePreCadastrado.getNome(), respostaDTO.nome());
         assertEquals(clientePreCadastrado.getCpf().getValor(), respostaDTO.cpf());
-        assertEquals(clientePreCadastrado.getEmail(), respostaDTO.email());
+        assertEquals(clientePreCadastrado.getEmail().getValor(), respostaDTO.email());
     }
 
 

@@ -48,7 +48,7 @@ class ClienteGatewayJDBCTest {
         Cliente cliente = resultado.get();
         assertEquals(CPF_JA_CASTRADADO, cliente.getCpf().getValor());
         assertEquals("João Silva", cliente.getNome());
-        assertEquals("joao@email.com", cliente.getEmail());
+        assertEquals("joao@email.com", cliente.getEmail().getValor());
     }
 
     @Test

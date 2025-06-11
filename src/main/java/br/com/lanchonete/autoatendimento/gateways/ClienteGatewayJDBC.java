@@ -34,7 +34,7 @@ public class ClienteGatewayJDBC implements ClienteGateway {
         if (cliente.getId() == null) {
             Map<String, Object> params = Map.of(
                     "nome", cliente.getNome(),
-                    "email", cliente.getEmail(),
+                    "email", cliente.getEmail().getValor(),
                     "cpf", cliente.getCpf().getValor()
             );
             Number novoId = inserter.executeAndReturnKey(params);

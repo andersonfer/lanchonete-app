@@ -14,14 +14,14 @@ public class Cliente {
 
     private Cliente() {}
 
-    private Cliente(String nome, String email, Cpf cpf) {
+    private Cliente(String nome, Email email, Cpf cpf) {
         setNome(nome);
-        setEmail(new Email(email));
+        setEmail(email);
         setCpf(cpf);
     }
 
     public static Cliente criar(String nome, String email, String cpf) {
-        return new Cliente(nome, email, new Cpf(cpf));
+        return new Cliente(nome, new Email(email), new Cpf(cpf));
     }
 
     public static Cliente criarSemValidacao(Long id, String nome, String email, String cpf) {

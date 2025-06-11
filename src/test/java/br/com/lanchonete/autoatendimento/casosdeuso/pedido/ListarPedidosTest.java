@@ -47,14 +47,14 @@ class ListarPedidosTest {
         cliente.setId(1L);
 
         // Produtos para o teste
-        Produto produto1 = Produto.criarSemValidacao(
+        Produto produto1 = Produto.reconstituir(
                 1L,
                 "X-Bacon",
                 "Hambúrguer com bacon",
                 new BigDecimal("25.90"),
                 Categoria.LANCHE);
 
-        Produto produto2 = Produto.criarSemValidacao(
+        Produto produto2 = Produto.reconstituir(
                 2L,
                 "Refrigerante",
                 "Refrigerante lata 350ml",
@@ -66,7 +66,7 @@ class ListarPedidosTest {
         pedidoComCliente.setId(1L);
 
         // Adicionar item ao pedido com cliente
-        ItemPedido itemDoPedidoComCliente = new ItemPedido(
+        ItemPedido itemDoPedidoComCliente = ItemPedido.reconstituir(
                 1L,
                 pedidoComCliente,
                 produto1,
@@ -82,7 +82,7 @@ class ListarPedidosTest {
         pedidoSemCliente.setId(2L);
 
         // Adicionar item ao pedido sem cliente
-        ItemPedido itemDoPedidoSemCliente = new ItemPedido(
+        ItemPedido itemDoPedidoSemCliente = ItemPedido.reconstituir(
                 2L,
                 pedidoSemCliente,
                 produto2,

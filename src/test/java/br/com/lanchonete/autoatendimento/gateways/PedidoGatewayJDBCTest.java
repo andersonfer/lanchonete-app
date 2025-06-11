@@ -67,19 +67,17 @@ class PedidoGatewayJDBCTest {
         Pedido pedido = Pedido.criar(cliente, StatusPedido.RECEBIDO, LocalDateTime.now());
 
         // Adicionar itens ao pedido
-        ItemPedido item1 = new ItemPedido(
-                Produto.criarSemValidacao(produtoLanche.getId(), produtoLanche.getNome(),
+        ItemPedido item1 = ItemPedido.criar(
+                Produto.reconstituir(produtoLanche.getId(), produtoLanche.getNome(),
                         produtoLanche.getDescricao(), produtoLanche.getPreco().getValor(), produtoLanche.getCategoria()),
-                2,
-                produtoLanche.getPreco().getValor()
+                2
         );
         pedido.adicionarItem(item1);
 
-        ItemPedido item2 = new ItemPedido(
-                Produto.criarSemValidacao(produtoBebida.getId(), produtoBebida.getNome(),
+        ItemPedido item2 = ItemPedido.criar(
+                Produto.reconstituir(produtoBebida.getId(), produtoBebida.getNome(),
                         produtoBebida.getDescricao(), produtoBebida.getPreco().getValor(), produtoBebida.getCategoria()),
-                1,
-                produtoBebida.getPreco().getValor()
+                1
         );
         pedido.adicionarItem(item2);
 
@@ -104,10 +102,9 @@ class PedidoGatewayJDBCTest {
         Pedido pedido = Pedido.criar(null, StatusPedido.RECEBIDO, LocalDateTime.now());
 
         // Adicionar um item ao pedido
-        ItemPedido item = new ItemPedido(
+        ItemPedido item = ItemPedido.criar(
                 produtoLanche,
-                1,
-                produtoLanche.getPreco().getValor()
+                1
         );
         pedido.adicionarItem(item);
 
@@ -128,11 +125,10 @@ class PedidoGatewayJDBCTest {
         // Criar e salvar um pedido para o teste
         Pedido pedido = Pedido.criar(cliente, StatusPedido.RECEBIDO, LocalDateTime.now());
 
-        ItemPedido item = new ItemPedido(
-                Produto.criarSemValidacao(produtoLanche.getId(), produtoLanche.getNome(),
+        ItemPedido item = ItemPedido.criar(
+                Produto.reconstituir(produtoLanche.getId(), produtoLanche.getNome(),
                         produtoLanche.getDescricao(), produtoLanche.getPreco().getValor(), produtoLanche.getCategoria()),
-                1,
-                produtoLanche.getPreco().getValor()
+                1
         );
         pedido.adicionarItem(item);
 

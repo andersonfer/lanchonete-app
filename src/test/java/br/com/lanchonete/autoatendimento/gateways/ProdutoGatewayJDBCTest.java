@@ -77,7 +77,7 @@ class ProdutoGatewayJDBCTest {
     @Test
     @DisplayName("Deve lançar exceção ao tentar atualizar produto inexistente")
     void t3() {
-        Produto produtoInexistente = Produto.criarSemValidacao(
+        Produto produtoInexistente = Produto.reconstituir(
                 999L,
                 "Produto que não existe",
                 "Descrição",

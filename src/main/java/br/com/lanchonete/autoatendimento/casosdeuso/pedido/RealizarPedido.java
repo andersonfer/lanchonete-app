@@ -67,10 +67,9 @@ public class RealizarPedido {
             final Produto produto = produtoGateway.buscarPorId(itemDTO.produtoId())
                     .orElseThrow(() -> new RecursoNaoEncontradoException("Produto não encontrado: " + itemDTO.produtoId()));
 
-            final ItemPedido item = new ItemPedido(
+            final ItemPedido item = ItemPedido.criar(
                     produto,
-                    itemDTO.quantidade(),
-                    produto.getPreco().getValor()
+                    itemDTO.quantidade()
             );
 
             pedido.adicionarItem(item);

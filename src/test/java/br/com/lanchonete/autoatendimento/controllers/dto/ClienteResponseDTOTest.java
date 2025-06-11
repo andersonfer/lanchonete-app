@@ -12,7 +12,7 @@ class ClienteResponseDTOTest {
     @DisplayName("Deve converter Cliente para ClienteResponseDTO corretamente")
     void t1() {
 
-        Cliente cliente = Cliente.criarSemValidacao(
+        Cliente cliente = Cliente.reconstituir(
                 1L,
                 "João Silva",
                 "joao@email.com",

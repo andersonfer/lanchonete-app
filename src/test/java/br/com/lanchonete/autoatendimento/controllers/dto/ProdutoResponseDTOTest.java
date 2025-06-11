@@ -15,7 +15,7 @@ class ProdutoResponseDTOTest {
     @DisplayName("Deve converter Produto para ProdutoResponseDTO corretamente")
     void t1() {
 
-        Produto produto = Produto.criarSemValidacao(
+        Produto produto = Produto.reconstituir(
                 1L,
                 "X-Bacon",
                 "Hambúrguer com bacon",

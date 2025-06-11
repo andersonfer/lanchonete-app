@@ -19,10 +19,9 @@ class ItemPedidoTest {
         Produto produto = Produto.criar("X-Bacon", null, new BigDecimal("25.90"), Categoria.LANCHE);
 
         // Criar o item de pedido
-        ItemPedido item = new ItemPedido(
+        ItemPedido item = ItemPedido.criar(
                 produto,
-                3,
-                produto.getPreco().getValor()
+                3
         );
 
         // Verificar se o cálculo está correto
@@ -31,39 +30,33 @@ class ItemPedidoTest {
     }
 
     @Test
-    @DisplayName("Deve retornar zero quando quantidade for zero")
+    @DisplayName("Deve lançar exceção ao criar item com quantidade zero")
     void t2() {
         // Criar um produto para o teste
-
         Produto produto = Produto.criar("X-Bacon", null, new BigDecimal("25.90"), Categoria.LANCHE);
 
-        // Criar o item de pedido com quantidade zero
-        ItemPedido item = new ItemPedido(
-                produto,
-                0,
-                produto.getPreco().getValor()
+        // Tentar criar item com quantidade zero deve lançar exceção
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> ItemPedido.criar(produto, 0),
+                "Deve lançar exceção para quantidade zero"
         );
 
-        // Verificar se o valor total é zero
-        assertEquals(BigDecimal.ZERO, item.getValorTotal(),
-                "O valor total deve ser zero quando a quantidade é zero");
+        assertEquals("Quantidade deve ser maior que zero", exception.getMessage(),
+                "Mensagem de erro incorreta");
     }
 
     @Test
-    @DisplayName("Deve retornar zero quando valor unitário for nulo")
+    @DisplayName("Deve lançar exceção ao criar item com produto nulo")
     void t3() {
-        // Criar um produto para o teste
-        Produto produto = Produto.criar("X-Bacon", null, new BigDecimal("25.90"), Categoria.LANCHE);
-
-        // Criar o item de pedido com valor unitário nulo
-        ItemPedido item = new ItemPedido(
-                produto,
-                2,
-                null
+        // Tentar criar item com produto nulo deve lançar exceção
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> ItemPedido.criar(null, 2),
+                "Deve lançar exceção para produto nulo"
         );
 
-        // Verificar se o valor total é zero
-        assertEquals(BigDecimal.ZERO, item.getValorTotal(),
-                "O valor total deve ser zero quando o valor unitário é nulo");
+        assertEquals("Produto é obrigatório", exception.getMessage(),
+                "Mensagem de erro incorreta");
     }
 }

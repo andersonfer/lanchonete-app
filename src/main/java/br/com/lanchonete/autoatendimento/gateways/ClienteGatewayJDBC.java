@@ -15,7 +15,7 @@ public class ClienteGatewayJDBC implements ClienteGateway {
     private final JdbcTemplate jdbcTemplate;
     private final SimpleJdbcInsert inserter;
     private final RowMapper<Cliente> clienteRowMapper = (rs, rowNum) ->
-            Cliente.criarSemValidacao(
+            Cliente.reconstituir(
                     rs.getLong("id"),
                     rs.getString("nome"),
                     rs.getString("email"),

@@ -161,7 +161,7 @@ public class PedidoGatewayJDBC implements PedidoGateway {
         final Produto produto = produtoGateway.buscarPorId(produtoId)
                 .orElseThrow(() -> new RegistroNaoEncontradoException("Produto", produtoId));
 
-        return new ItemPedido(
+        return ItemPedido.reconstituir(
                 rs.getLong("id"),
                 pedido,
                 produto,

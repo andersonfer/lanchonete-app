@@ -13,23 +13,39 @@ public class ItemPedido {
     private BigDecimal valorTotal;
 
 
-    // Construtor básico - para criação de novos itens
-    public ItemPedido(Produto produto, int quantidade, BigDecimal valorUnitario) {
+    // Construtor privado para criação - novos itens com validações
+    private ItemPedido(Produto produto, int quantidade, BigDecimal valorUnitario) {
         this.produto = produto;
         this.quantidade = quantidade;
         this.valorUnitario = valorUnitario;
         calcularValorTotal();
     }
 
-    // Construtor completo - para mapeamento de dados persistidos
-    public ItemPedido(Long id, Pedido pedido, Produto produto, int quantidade, 
-                      BigDecimal valorUnitario, BigDecimal valorTotal) {
+    // Construtor privado para reconstituição - dados já validados do banco
+    private ItemPedido(Long id, Pedido pedido, Produto produto, int quantidade, 
+                       BigDecimal valorUnitario, BigDecimal valorTotal) {
         this.id = id;
         this.pedido = pedido;
         this.produto = produto;
         this.quantidade = quantidade;
         this.valorUnitario = valorUnitario;
         this.valorTotal = valorTotal;
+    }
+
+    public static ItemPedido criar(Produto produto, int quantidade) {
+        if (produto == null) {
+            throw new IllegalArgumentException("Produto é obrigatório");
+        }
+        if (quantidade <= 0) {
+            throw new IllegalArgumentException("Quantidade deve ser maior que zero");
+        }
+        
+        return new ItemPedido(produto, quantidade, produto.getPreco().getValor());
+    }
+
+    public static ItemPedido reconstituir(Long id, Pedido pedido, Produto produto, int quantidade, 
+                                          BigDecimal valorUnitario, BigDecimal valorTotal) {
+        return new ItemPedido(id, pedido, produto, quantidade, valorUnitario, valorTotal);
     }
 
     public void calcularValorTotal() {

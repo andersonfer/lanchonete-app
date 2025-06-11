@@ -33,10 +33,9 @@ class PedidoTest {
         );
 
         // Cria e adicionar itens ao pedido
-        ItemPedido item1 = new ItemPedido(
+        ItemPedido item1 = ItemPedido.criar(
                 produto,
-                2,
-                produto.getPreco().getValor()
+                2
         );
 
         pedido.adicionarItem(item1);
@@ -50,7 +49,7 @@ class PedidoTest {
     @DisplayName("Deve criar um pedido válido com sucesso")
     void t2() {
         // Cria cliente e produto para o teste
-        Cliente cliente = Cliente.criarSemValidacao(1L, "João Silva", "joao@email.com", "12345678901");
+        Cliente cliente = Cliente.reconstituir(1L, "João Silva", "joao@email.com", "12345678901");
         Produto produto = Produto.criar("X-Bacon", null, new BigDecimal("25.90"), Categoria.LANCHE);
 
         // Cria pedido usando o método de fábrica
@@ -61,10 +60,9 @@ class PedidoTest {
         );
 
         // Adiciona um item ao pedido
-        ItemPedido item = new ItemPedido(
+        ItemPedido item = ItemPedido.criar(
                 produto,
-                1,
-                produto.getPreco().getValor()
+                1
         );
         pedido.adicionarItem(item);
 
@@ -109,11 +107,14 @@ class PedidoTest {
                 LocalDateTime.now()
         );
 
-        // Cria item com quantidade inválida
-        ItemPedido item = new ItemPedido(
+        // Cria item com quantidade inválida usando reconstituir (dados inconsistentes)
+        ItemPedido item = ItemPedido.reconstituir(
+                null, // Sem ID
+                null, // Sem pedido ainda
                 produto,
                 0, // Quantidade inválida
-                produto.getPreco().getValor()
+                produto.getPreco().getValor(),
+                BigDecimal.ZERO
         );
 
         // Adiciona o item manualmente para evitar validação automática
@@ -144,10 +145,9 @@ class PedidoTest {
         Pedido pedido = Pedido.criar(null, null, LocalDateTime.now());
 
         // Adiciona um item válido ao pedido
-        ItemPedido item = new ItemPedido(
+        ItemPedido item = ItemPedido.criar(
                 produto,
-                1,
-                produto.getPreco().getValor()
+                1
         );
         pedido.adicionarItem(item);
 
@@ -172,10 +172,9 @@ class PedidoTest {
         Pedido pedido = Pedido.criar(null, StatusPedido.RECEBIDO, null);
 
         // Adiciona um item válido ao pedido
-        ItemPedido item = new ItemPedido(
+        ItemPedido item = ItemPedido.criar(
                 produto,
-                1,
-                produto.getPreco().getValor()
+                1
         );
         pedido.adicionarItem(item);
 

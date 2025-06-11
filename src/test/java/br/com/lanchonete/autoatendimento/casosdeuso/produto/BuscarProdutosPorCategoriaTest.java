@@ -35,9 +35,9 @@ class BuscarProdutosPorCategoriaTest {
     @BeforeEach
     void configurar() {
         produtosLanche = Arrays.asList(
-                Produto.criarSemValidacao(1L, "X-Bacon", "Hambúrguer com bacon",
+                Produto.reconstituir(1L, "X-Bacon", "Hambúrguer com bacon",
                         new BigDecimal("28.90"), Categoria.LANCHE),
-                Produto.criarSemValidacao(2L, "X-Salada", "Hambúrguer com salada",
+                Produto.reconstituir(2L, "X-Salada", "Hambúrguer com salada",
                         new BigDecimal("26.90"), Categoria.LANCHE)
         );
     }

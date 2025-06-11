@@ -53,13 +53,13 @@ class RealizarPedidoTest {
     @BeforeEach
     void configurar() {
         // Cliente
-        cliente = Cliente.criarSemValidacao(1L, "João Silva", "joao@email.com", "12345678901");
+        cliente = Cliente.reconstituir(1L, "João Silva", "joao@email.com", "12345678901");
 
         // Produtos
-        Produto produto1 = Produto.criarSemValidacao(1L, "X-Bacon", "Hambúrguer com bacon",
+        Produto produto1 = Produto.reconstituir(1L, "X-Bacon", "Hambúrguer com bacon",
                 new BigDecimal("25.90"), Categoria.LANCHE);
 
-        Produto produto2 = Produto.criarSemValidacao(2L, "Refrigerante", "Refrigerante lata 350ml",
+        Produto produto2 = Produto.reconstituir(2L, "Refrigerante", "Refrigerante lata 350ml",
                 new BigDecimal("6.00"), Categoria.BEBIDA);
 
         // Mock para busca de cliente por CPF

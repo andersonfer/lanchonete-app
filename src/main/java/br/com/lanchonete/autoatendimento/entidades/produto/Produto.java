@@ -15,6 +15,7 @@ public class Produto {
 
     private Produto() {}
 
+    // Construtor para criação de negócio (novos produtos)
     private Produto(String nome, String descricao, BigDecimal preco, Categoria categoria) {
         setNome(nome);
         setDescricao(descricao);
@@ -22,18 +23,21 @@ public class Produto {
         setCategoria(categoria);
     }
 
+    // Construtor para reconstituição (dados já validados do banco)
+    private Produto(Long id, String nome, String descricao, Preco preco, Categoria categoria) {
+        this.id = id;
+        this.nome = nome;
+        this.descricao = descricao;
+        this.preco = preco;
+        this.categoria = categoria;
+    }
+
     public static Produto criar(String nome, String descricao, BigDecimal preco, Categoria categoria) {
         return new Produto(nome, descricao, preco, categoria);
     }
 
-    public static Produto criarSemValidacao(Long id, String nome, String descricao, BigDecimal preco, Categoria categoria) {
-        Produto produto = new Produto();
-        produto.setId(id);
-        produto.nome = nome;
-        produto.descricao = descricao;
-        produto.preco = new Preco(preco);
-        produto.categoria = categoria;
-        return produto;
+    public static Produto reconstituir(Long id, String nome, String descricao, BigDecimal preco, Categoria categoria) {
+        return new Produto(id, nome, descricao, new Preco(preco), categoria);
     }
 
     public void setNome(String nome) {

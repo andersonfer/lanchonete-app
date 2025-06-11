@@ -19,8 +19,7 @@ public class ProdutoGatewayJDBC implements ProdutoGateway {
     private final JdbcTemplate jdbcTemplate;
     private final SimpleJdbcInsert inserter;
     private final RowMapper<Produto> produtoRowMapper = (rs, rowNum) ->
-
-            Produto.criarSemValidacao(
+            Produto.reconstituir(
                     rs.getLong("id"),
                     rs.getString("nome"),
                     rs.getString("descricao"),

@@ -129,10 +129,10 @@ class ProdutoTest {
     }
 
     @Test
-    @DisplayName("Deve criar produto sem validação com ID")
+    @DisplayName("Deve reconstituir produto com ID a partir de dados do banco")
     void t10() {
-        // Criar produto sem validação
-        Produto produto = Produto.criarSemValidacao(1L, "Refrigerante", "Coca-Cola 350ml", new BigDecimal("6.00"), Categoria.BEBIDA);
+        // Reconstituir produto a partir de dados do banco
+        Produto produto = Produto.reconstituir(1L, "Refrigerante", "Coca-Cola 350ml", new BigDecimal("6.00"), Categoria.BEBIDA);
 
         // Verificações
         assertEquals(1L, produto.getId(), "ID deve estar correto");
@@ -190,8 +190,8 @@ class ProdutoTest {
     @Test
     @DisplayName("Deve ser igual quando produtos têm os mesmos dados")
     void t14() {
-        Produto produto1 = Produto.criarSemValidacao(1L, "X-Bacon", "Hambúrguer com bacon", new BigDecimal("25.90"), Categoria.LANCHE);
-        Produto produto2 = Produto.criarSemValidacao(1L, "X-Bacon", "Hambúrguer com bacon", new BigDecimal("25.90"), Categoria.LANCHE);
+        Produto produto1 = Produto.reconstituir(1L, "X-Bacon", "Hambúrguer com bacon", new BigDecimal("25.90"), Categoria.LANCHE);
+        Produto produto2 = Produto.reconstituir(1L, "X-Bacon", "Hambúrguer com bacon", new BigDecimal("25.90"), Categoria.LANCHE);
 
         assertEquals(produto1, produto2, "Produtos com mesmos dados devem ser iguais");
         assertEquals(produto1.hashCode(), produto2.hashCode(), "HashCode deve ser igual");
@@ -200,8 +200,8 @@ class ProdutoTest {
     @Test
     @DisplayName("Deve ser diferente quando produtos têm dados diferentes")
     void t15() {
-        Produto produto1 = Produto.criarSemValidacao(1L, "X-Bacon", "Hambúrguer com bacon", new BigDecimal("25.90"), Categoria.LANCHE);
-        Produto produto2 = Produto.criarSemValidacao(2L, "Refrigerante", "Coca-Cola 350ml", new BigDecimal("6.00"), Categoria.BEBIDA);
+        Produto produto1 = Produto.reconstituir(1L, "X-Bacon", "Hambúrguer com bacon", new BigDecimal("25.90"), Categoria.LANCHE);
+        Produto produto2 = Produto.reconstituir(2L, "Refrigerante", "Coca-Cola 350ml", new BigDecimal("6.00"), Categoria.BEBIDA);
 
         assertNotEquals(produto1, produto2, "Produtos com dados diferentes devem ser diferentes");
     }
@@ -209,7 +209,7 @@ class ProdutoTest {
     @Test
     @DisplayName("Deve ter toString bem formatado")
     void t16() {
-        Produto produto = Produto.criarSemValidacao(1L, "X-Bacon", "Hambúrguer com bacon", new BigDecimal("25.90"), Categoria.LANCHE);
+        Produto produto = Produto.reconstituir(1L, "X-Bacon", "Hambúrguer com bacon", new BigDecimal("25.90"), Categoria.LANCHE);
 
         String toString = produto.toString();
 

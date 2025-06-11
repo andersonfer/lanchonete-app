@@ -32,7 +32,7 @@ class RemoverProdutoTest {
 
     @BeforeEach
     void configurar() {
-        produtoExistente = Produto.criarSemValidacao(
+        produtoExistente = Produto.reconstituir(
                 1L,
                 "X-Bacon",
                 "Hambúrguer com bacon",

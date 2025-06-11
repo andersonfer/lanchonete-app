@@ -31,7 +31,7 @@ class IdentificarClienteTest {
     @DisplayName("Deve retornar ClienteResponseDTO ao encontrar cliente pelo CPF")
     void t1() {
         String cpf = "12345678910";
-        Cliente cliente = Cliente.criarSemValidacao(
+        Cliente cliente = Cliente.reconstituir(
                 1L,
                 "Maria Oliveira",
                 "maria.oliveira@email.com",

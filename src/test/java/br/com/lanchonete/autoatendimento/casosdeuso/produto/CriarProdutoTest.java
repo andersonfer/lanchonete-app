@@ -37,7 +37,7 @@ class CriarProdutoTest {
         produtoValido = new ProdutoRequestDTO("X-Bacon",
                 "Hambúrguer com bacon crocante", new BigDecimal("28.90"), Categoria.LANCHE);
 
-        produtoSalvo = Produto.criarSemValidacao(1L, "X-Bacon",
+        produtoSalvo = Produto.reconstituir(1L, "X-Bacon",
                 "Hambúrguer com bacon crocante", new BigDecimal("28.90"), Categoria.LANCHE);
     }
 

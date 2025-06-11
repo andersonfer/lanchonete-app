@@ -14,23 +14,27 @@ public class Cliente {
 
     private Cliente() {}
 
+    // Construtor para criação de negócio (novos clientes)
     private Cliente(String nome, Email email, Cpf cpf) {
         setNome(nome);
         setEmail(email);
         setCpf(cpf);
     }
 
+    // Construtor para reconstituição (dados já validados do banco)
+    private Cliente(Long id, String nome, Email email, Cpf cpf) {
+        this.id = id;
+        this.nome = nome;
+        this.email = email;
+        this.cpf = cpf;
+    }
+
     public static Cliente criar(String nome, String email, String cpf) {
         return new Cliente(nome, new Email(email), new Cpf(cpf));
     }
 
-    public static Cliente criarSemValidacao(Long id, String nome, String email, String cpf) {
-        Cliente cliente = new Cliente();
-        cliente.setId(id);
-        cliente.setNome(nome);
-        cliente.setEmail(new Email(email));
-        cliente.setCpf(new Cpf(cpf));
-        return cliente;
+    public static Cliente reconstituir(Long id, String nome, String email, String cpf) {
+        return new Cliente(id, nome, new Email(email), new Cpf(cpf));
     }
 
     public void setNome(String nome) {

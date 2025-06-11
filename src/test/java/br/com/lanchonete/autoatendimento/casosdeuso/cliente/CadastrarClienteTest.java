@@ -36,7 +36,7 @@ class CadastrarClienteTest {
 
         clienteValido = new ClienteRequestDTO("João Silva", "12345678901", "Joao.silva@example.com");
 
-        clienteSalvo = Cliente.criarSemValidacao(
+        clienteSalvo = Cliente.reconstituir(
                 1L,
                 "João Silva",
                 "joao.silva@example.com",

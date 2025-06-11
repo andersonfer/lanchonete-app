@@ -88,10 +88,10 @@ class ClienteTest {
     }
 
     @Test
-    @DisplayName("Deve criar cliente sem validação com ID")
+    @DisplayName("Deve reconstituir cliente com ID a partir de dados do banco")
     void t7() {
-        // Criar cliente sem validação
-        Cliente cliente = Cliente.criarSemValidacao(1L, "Maria Santos", "maria@email.com", "98765432100");
+        // Reconstituir cliente a partir de dados do banco
+        Cliente cliente = Cliente.reconstituir(1L, "Maria Santos", "maria@email.com", "98765432100");
 
         // Verificações
         assertEquals(1L, cliente.getId(), "ID deve estar correto");
@@ -148,8 +148,8 @@ class ClienteTest {
     @Test
     @DisplayName("Deve ser igual quando clientes têm os mesmos dados")
     void t11() {
-        Cliente cliente1 = Cliente.criarSemValidacao(1L, "João Silva", "joao@email.com", "12345678901");
-        Cliente cliente2 = Cliente.criarSemValidacao(1L, "João Silva", "joao@email.com", "12345678901");
+        Cliente cliente1 = Cliente.reconstituir(1L, "João Silva", "joao@email.com", "12345678901");
+        Cliente cliente2 = Cliente.reconstituir(1L, "João Silva", "joao@email.com", "12345678901");
 
         assertEquals(cliente1, cliente2, "Clientes com mesmos dados devem ser iguais");
         assertEquals(cliente1.hashCode(), cliente2.hashCode(), "HashCode deve ser igual");
@@ -158,8 +158,8 @@ class ClienteTest {
     @Test
     @DisplayName("Deve ser diferente quando clientes têm dados diferentes")
     void t12() {
-        Cliente cliente1 = Cliente.criarSemValidacao(1L, "João Silva", "joao@email.com", "12345678901");
-        Cliente cliente2 = Cliente.criarSemValidacao(2L, "Maria Santos", "maria@email.com", "98765432100");
+        Cliente cliente1 = Cliente.reconstituir(1L, "João Silva", "joao@email.com", "12345678901");
+        Cliente cliente2 = Cliente.reconstituir(2L, "Maria Santos", "maria@email.com", "98765432100");
 
         assertNotEquals(cliente1, cliente2, "Clientes com dados diferentes devem ser diferentes");
     }
@@ -167,7 +167,7 @@ class ClienteTest {
     @Test
     @DisplayName("Deve ter toString bem formatado")
     void t13() {
-        Cliente cliente = Cliente.criarSemValidacao(1L, "João Silva", "joao@email.com", "12345678901");
+        Cliente cliente = Cliente.reconstituir(1L, "João Silva", "joao@email.com", "12345678901");
 
         String toString = cliente.toString();
 

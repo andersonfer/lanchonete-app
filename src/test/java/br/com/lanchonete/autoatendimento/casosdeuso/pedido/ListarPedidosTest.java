@@ -71,7 +71,7 @@ class ListarPedidosTest {
                 .pedido(pedidoComCliente)
                 .produto(produto1)
                 .quantidade(2)
-                .valorUnitario(produto1.getPreco())
+                .valorUnitario(produto1.getPreco().getValor())
                 .valorTotal(new BigDecimal("51.80"))
                 .build();
         pedidoComCliente.getItens().add(itemDoPedidoComCliente);
@@ -87,7 +87,7 @@ class ListarPedidosTest {
                 .pedido(pedidoSemCliente)
                 .produto(produto2)
                 .quantidade(1)
-                .valorUnitario(produto2.getPreco())
+                .valorUnitario(produto2.getPreco().getValor())
                 .valorTotal(new BigDecimal("6.00"))
                 .build();
         pedidoSemCliente.getItens().add(itemDoPedidoSemCliente);

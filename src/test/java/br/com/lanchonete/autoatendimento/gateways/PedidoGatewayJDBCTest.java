@@ -9,6 +9,7 @@ import br.com.lanchonete.autoatendimento.entidades.pedido.Pedido;
 import br.com.lanchonete.autoatendimento.entidades.pedido.StatusPedido;
 import br.com.lanchonete.autoatendimento.entidades.produto.Categoria;
 import br.com.lanchonete.autoatendimento.entidades.produto.Produto;
+import br.com.lanchonete.autoatendimento.entidades.shared.Preco;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -68,18 +69,18 @@ class PedidoGatewayJDBCTest {
         // Adicionar itens ao pedido
         ItemPedido item1 = ItemPedido.builder()
                 .produto(Produto.criarSemValidacao(produtoLanche.getId(), produtoLanche.getNome(),
-                        produtoLanche.getDescricao(), produtoLanche.getPreco(), produtoLanche.getCategoria()))
+                        produtoLanche.getDescricao(), produtoLanche.getPreco().getValor(), produtoLanche.getCategoria()))
                 .quantidade(2)
-                .valorUnitario(produtoLanche.getPreco())
+                .valorUnitario(produtoLanche.getPreco().getValor())
                 .build();
         item1.calcularValorTotal();
         pedido.adicionarItem(item1);
 
         ItemPedido item2 = ItemPedido.builder()
                 .produto(Produto.criarSemValidacao(produtoBebida.getId(), produtoBebida.getNome(),
-                        produtoBebida.getDescricao(), produtoBebida.getPreco(), produtoBebida.getCategoria()))
+                        produtoBebida.getDescricao(), produtoBebida.getPreco().getValor(), produtoBebida.getCategoria()))
                 .quantidade(1)
-                .valorUnitario(produtoBebida.getPreco())
+                .valorUnitario(produtoBebida.getPreco().getValor())
                 .build();
         item2.calcularValorTotal();
         pedido.adicionarItem(item2);
@@ -108,7 +109,7 @@ class PedidoGatewayJDBCTest {
         ItemPedido item = ItemPedido.builder()
                 .produto(produtoLanche)
                 .quantidade(1)
-                .valorUnitario(produtoLanche.getPreco())
+                .valorUnitario(produtoLanche.getPreco().getValor())
                 .build();
         item.calcularValorTotal();
         pedido.adicionarItem(item);
@@ -132,9 +133,9 @@ class PedidoGatewayJDBCTest {
 
         ItemPedido item = ItemPedido.builder()
                 .produto(Produto.criarSemValidacao(produtoLanche.getId(), produtoLanche.getNome(),
-                        produtoLanche.getDescricao(), produtoLanche.getPreco(), produtoLanche.getCategoria()))
+                        produtoLanche.getDescricao(), produtoLanche.getPreco().getValor(), produtoLanche.getCategoria()))
                 .quantidade(1)
-                .valorUnitario(produtoLanche.getPreco())
+                .valorUnitario(produtoLanche.getPreco().getValor())
                 .build();
         item.calcularValorTotal();
         pedido.adicionarItem(item);

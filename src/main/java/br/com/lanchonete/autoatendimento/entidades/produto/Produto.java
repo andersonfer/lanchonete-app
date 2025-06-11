@@ -1,6 +1,7 @@
 package br.com.lanchonete.autoatendimento.entidades.produto;
 
 import br.com.lanchonete.autoatendimento.frameworks.util.Utils;
+import br.com.lanchonete.autoatendimento.entidades.shared.Preco;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -10,7 +11,7 @@ public class Produto {
     private Long id;
     private String nome;
     private String descricao;
-    private BigDecimal preco;
+    private Preco preco;
     private Categoria categoria;
 
     private Produto() {}
@@ -18,7 +19,7 @@ public class Produto {
     private Produto(String nome, String descricao, BigDecimal preco, Categoria categoria) {
         setNome(nome);
         setDescricao(descricao);
-        setPreco(preco);
+        setPreco(new Preco(preco));
         setCategoria(categoria);
     }
 
@@ -31,7 +32,7 @@ public class Produto {
         produto.setId(id);
         produto.nome = nome;
         produto.descricao = descricao;
-        produto.preco = preco;
+        produto.preco = new Preco(preco);
         produto.categoria = categoria;
         return produto;
     }
@@ -42,11 +43,9 @@ public class Produto {
         this.nome = nome;
     }
 
-    public void setPreco(BigDecimal preco) {
+    public void setPreco(Preco preco) {
         if (preco == null)
             throw new IllegalArgumentException("Preço do produto é obrigatório");
-        if (preco.compareTo(BigDecimal.ZERO) <= 0)
-            throw new IllegalArgumentException("Preço deve ser maior que zero");
         this.preco = preco;
     }
 

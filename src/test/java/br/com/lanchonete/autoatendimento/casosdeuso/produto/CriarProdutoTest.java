@@ -110,7 +110,7 @@ class CriarProdutoTest {
                 () -> criarProduto.executar(produtoSemPreco),
                 "Deveria lançar uma exceção para preço nulo");
 
-        assertEquals("Preço do produto é obrigatório", exception.getMessage(),
+        assertEquals("Preço é obrigatório", exception.getMessage(),
                 "Mensagem da exceção está incorreta");
 
         verify(produtoGateway, never()).salvar(any(Produto.class));

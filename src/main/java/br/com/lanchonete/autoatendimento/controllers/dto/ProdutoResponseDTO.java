@@ -13,7 +13,7 @@ public record ProdutoResponseDTO(Long id, String nome, String descricao, BigDeci
                 produto.getId(),
                 produto.getNome(),
                 produto.getDescricao(),
-                produto.getPreco(),
+                produto.getPreco().getValor(),
                 produto.getCategoria())
                 : null;
 

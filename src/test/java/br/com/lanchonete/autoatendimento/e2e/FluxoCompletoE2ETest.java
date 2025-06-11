@@ -181,10 +181,10 @@ class FluxoCompletoE2ETest {
         assertEquals(4, pedidoResponse.itens().size());
 
         // Calcular valor total esperado: 1 lanche + 2 bebidas + 1 acompanhamento + 1 sobremesa
-        BigDecimal valorTotalEsperado = lanche.getPreco()
-                .add(bebida.getPreco().multiply(new BigDecimal("2")))
-                .add(acompanhamento.getPreco())
-                .add(sobremesa.getPreco());
+        BigDecimal valorTotalEsperado = lanche.getPreco().getValor()
+                .add(bebida.getPreco().getValor().multiply(new BigDecimal("2")))
+                .add(acompanhamento.getPreco().getValor())
+                .add(sobremesa.getPreco().getValor());
 
         assertEquals(valorTotalEsperado, pedidoResponse.valorTotal());
 
@@ -250,7 +250,7 @@ class FluxoCompletoE2ETest {
         assertEquals(2, pedidoResponse.itens().size());
 
         // Calcular valor total esperado: 1 lanche + 1 bebida
-        BigDecimal valorTotalEsperado = lanche.getPreco().add(bebida.getPreco());
+        BigDecimal valorTotalEsperado = lanche.getPreco().getValor().add(bebida.getPreco().getValor());
         assertEquals(valorTotalEsperado, pedidoResponse.valorTotal());
 
         // ETAPA 3: Listar pedidos e verificar se o pedido está na lista

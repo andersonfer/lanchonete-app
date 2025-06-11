@@ -79,7 +79,7 @@ class ProdutoE2ETest {
         Optional<Produto> produtoPersistido = produtoGateway.buscarPorId(produtoCriado.id());
         assertTrue(produtoPersistido.isPresent(), "O produto deve existir no banco de dados");
         assertEquals("Batata Frita", produtoPersistido.get().getNome());
-        assertEquals(new BigDecimal("15.90"), produtoPersistido.get().getPreco());
+        assertEquals(new BigDecimal("15.90"), produtoPersistido.get().getPreco().getValor());
     }
 
     @Test
@@ -104,7 +104,7 @@ class ProdutoE2ETest {
         Optional<Produto> produtoAtualizado = produtoGateway.buscarPorId(produtoPreCadastrado.getId());
         assertTrue(produtoAtualizado.isPresent(), "O produto deve existir no banco de dados");
         assertEquals("X-Bacon Especial", produtoAtualizado.get().getNome());
-        assertEquals(new BigDecimal("32.90"), produtoAtualizado.get().getPreco());
+        assertEquals(new BigDecimal("32.90"), produtoAtualizado.get().getPreco().getValor());
         assertEquals(Categoria.LANCHE, produtoAtualizado.get().getCategoria());
         assertEquals("Hambúrguer com bacon crocante e molho especial", produtoAtualizado.get().getDescricao());
     }

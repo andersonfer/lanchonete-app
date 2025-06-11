@@ -3,6 +3,7 @@ package br.com.lanchonete.autoatendimento.gateways;
 import br.com.lanchonete.autoatendimento.aplicacao.excecao.RegistroNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.entidades.produto.Categoria;
 import br.com.lanchonete.autoatendimento.entidades.produto.Produto;
+import br.com.lanchonete.autoatendimento.entidades.shared.Preco;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -54,23 +55,23 @@ class ProdutoGatewayJDBCTest {
         assertNotNull(produtoSalvo.getId(), "O ID do produto deve ser gerado");
         assertEquals("Batata Frita", produtoSalvo.getNome());
         assertEquals("Porção de batata frita crocante", produtoSalvo.getDescricao());
-        assertEquals(new BigDecimal("15.90"), produtoSalvo.getPreco());
+        assertEquals(new BigDecimal("15.90"), produtoSalvo.getPreco().getValor());
         assertEquals(Categoria.ACOMPANHAMENTO, produtoSalvo.getCategoria());
     }
 
     @Test
     @DisplayName("Deve atualizar um produto com sucesso")
     void t2() {
-        produtoPreCadastrado.setPreco(new BigDecimal("29.90"));
+        produtoPreCadastrado.setPreco(new Preco(new BigDecimal("29.90")));
 
         Produto produtoAtualizado = produtoRepositorio.atualizar(produtoPreCadastrado);
 
-        assertEquals(new BigDecimal("29.90"), produtoAtualizado.getPreco());
+        assertEquals(new BigDecimal("29.90"), produtoAtualizado.getPreco().getValor());
 
         // Verifica se foi realmente atualizado no banco
         Optional<Produto> produtoRecuperado = produtoRepositorio.buscarPorId(produtoPreCadastrado.getId());
         assertTrue(produtoRecuperado.isPresent());
-        assertEquals(new BigDecimal("29.90"), produtoRecuperado.get().getPreco());
+        assertEquals(new BigDecimal("29.90"), produtoRecuperado.get().getPreco().getValor());
     }
 
     @Test

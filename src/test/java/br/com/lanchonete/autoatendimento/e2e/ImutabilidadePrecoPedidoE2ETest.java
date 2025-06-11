@@ -12,6 +12,7 @@ import br.com.lanchonete.autoatendimento.entidades.pedido.ItemPedido;
 import br.com.lanchonete.autoatendimento.entidades.pedido.Pedido;
 import br.com.lanchonete.autoatendimento.entidades.produto.Categoria;
 import br.com.lanchonete.autoatendimento.entidades.produto.Produto;
+import br.com.lanchonete.autoatendimento.entidades.shared.Preco;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -105,13 +106,18 @@ class ImutabilidadePrecoPedidoE2ETest {
 
         // ETAPA 2: Alterar o preço do produto (simulando uma atualização de preço na lanchonete)
         Produto produtoParaAtualizar = produtoGateway.buscarPorId(produto.getId()).orElseThrow();
-        produtoParaAtualizar.setPreco(precoAlterado);
+        produtoParaAtualizar.setPreco(new Preco(precoAlterado));
 
         // Atualizar o produto com o novo preço
+        ProdutoRequestDTO produtoRequest = new ProdutoRequestDTO(
+                produtoParaAtualizar.getNome(),
+                produtoParaAtualizar.getDescricao(),
+                produtoParaAtualizar.getPreco().getValor(),
+                produtoParaAtualizar.getCategoria());
+        
         mockMvc.perform(put("/produtos/{id}", produto.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(
-                                objectMapper.convertValue(produtoParaAtualizar, ProdutoRequestDTO.class))))
+                        .content(objectMapper.writeValueAsString(produtoRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(produto.getId()))
                 .andExpect(jsonPath("$.preco").value(precoAlterado.doubleValue()))
@@ -120,7 +126,7 @@ class ImutabilidadePrecoPedidoE2ETest {
         // ETAPA 3: Verificar se o produto foi atualizado corretamente no banco
         Optional<Produto> produtoAtualizado = produtoGateway.buscarPorId(produto.getId());
         assertTrue(produtoAtualizado.isPresent());
-        assertEquals(precoAlterado, produtoAtualizado.get().getPreco());
+        assertEquals(precoAlterado, produtoAtualizado.get().getPreco().getValor());
 
         // ETAPA 4: Recuperar o pedido e verificar se o valor total permanece inalterado
         Optional<Pedido> pedidoPersistido = pedidoGateway.buscarPorId(pedidoId);
@@ -183,12 +189,17 @@ class ImutabilidadePrecoPedidoE2ETest {
 
         // ETAPA 2: Alterar o preço do produto
         Produto produtoParaAtualizar = produtoGateway.buscarPorId(produto.getId()).orElseThrow();
-        produtoParaAtualizar.setPreco(precoAlterado);
+        produtoParaAtualizar.setPreco(new Preco(precoAlterado));
 
+        ProdutoRequestDTO produtoRequestSegundo = new ProdutoRequestDTO(
+                produtoParaAtualizar.getNome(),
+                produtoParaAtualizar.getDescricao(),
+                produtoParaAtualizar.getPreco().getValor(),
+                produtoParaAtualizar.getCategoria());
+        
         mockMvc.perform(put("/produtos/{id}", produto.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(
-                                objectMapper.convertValue(produtoParaAtualizar, ProdutoRequestDTO.class))))
+                        .content(objectMapper.writeValueAsString(produtoRequestSegundo)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.preco").value(precoAlterado.doubleValue()));
 

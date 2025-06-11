@@ -70,7 +70,7 @@ public class RealizarPedido {
             final ItemPedido item = ItemPedido.builder()
                     .produto(produto)
                     .quantidade(itemDTO.quantidade())
-                    .valorUnitario(produto.getPreco())
+                    .valorUnitario(produto.getPreco().getValor())
                     .build();
 
             item.calcularValorTotal();

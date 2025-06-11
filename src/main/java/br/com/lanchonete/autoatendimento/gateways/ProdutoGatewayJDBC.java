@@ -39,7 +39,7 @@ public class ProdutoGatewayJDBC implements ProdutoGateway {
         Map<String, Object> params = new HashMap<>();
         params.put("nome", produto.getNome());
         params.put("descricao", produto.getDescricao());
-        params.put("preco", produto.getPreco());
+        params.put("preco", produto.getPreco().getValor());
         params.put("categoria", produto.getCategoria().name());
 
         Number novoId = inserter.executeAndReturnKey(params);
@@ -54,7 +54,7 @@ public class ProdutoGatewayJDBC implements ProdutoGateway {
         int linhasAfetadas = jdbcTemplate.update(sql,
                 produto.getNome(),
                 produto.getDescricao(),
-                produto.getPreco(),
+                produto.getPreco().getValor(),
                 produto.getCategoria().name(),
                 produto.getId());
 

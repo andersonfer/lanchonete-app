@@ -2,6 +2,7 @@ package br.com.lanchonete.autoatendimento.entidades.pedido;
 
 import br.com.lanchonete.autoatendimento.entidades.produto.Categoria;
 import br.com.lanchonete.autoatendimento.entidades.produto.Produto;
+import br.com.lanchonete.autoatendimento.entidades.shared.Preco;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +22,7 @@ class ItemPedidoTest {
         ItemPedido item = ItemPedido.builder()
                 .produto(produto)
                 .quantidade(3)
-                .valorUnitario(produto.getPreco())
+                .valorUnitario(produto.getPreco().getValor())
                 .build();
 
         // Calcular o valor total
@@ -43,7 +44,7 @@ class ItemPedidoTest {
         ItemPedido item = ItemPedido.builder()
                 .produto(produto)
                 .quantidade(0)
-                .valorUnitario(produto.getPreco())
+                .valorUnitario(produto.getPreco().getValor())
                 .build();
 
         // Calcular o valor total

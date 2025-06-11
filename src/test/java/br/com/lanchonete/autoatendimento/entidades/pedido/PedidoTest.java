@@ -3,6 +3,7 @@ package br.com.lanchonete.autoatendimento.entidades.pedido;
 import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
 import br.com.lanchonete.autoatendimento.entidades.produto.Categoria;
 import br.com.lanchonete.autoatendimento.entidades.produto.Produto;
+import br.com.lanchonete.autoatendimento.entidades.shared.Preco;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -35,7 +36,7 @@ class PedidoTest {
         ItemPedido item1 = ItemPedido.builder()
                 .produto(produto)
                 .quantidade(2)
-                .valorUnitario(produto.getPreco())
+                .valorUnitario(produto.getPreco().getValor())
                 .build();
         item1.calcularValorTotal();
 
@@ -64,7 +65,7 @@ class PedidoTest {
         ItemPedido item = ItemPedido.builder()
                 .produto(produto)
                 .quantidade(1)
-                .valorUnitario(produto.getPreco())
+                .valorUnitario(produto.getPreco().getValor())
                 .build();
         item.calcularValorTotal();
         pedido.adicionarItem(item);
@@ -114,7 +115,7 @@ class PedidoTest {
         ItemPedido item = ItemPedido.builder()
                 .produto(produto)
                 .quantidade(0) // Quantidade inválida
-                .valorUnitario(produto.getPreco())
+                .valorUnitario(produto.getPreco().getValor())
                 .build();
 
         // Adiciona o item manualmente para evitar validação automática
@@ -148,7 +149,7 @@ class PedidoTest {
         ItemPedido item = ItemPedido.builder()
                 .produto(produto)
                 .quantidade(1)
-                .valorUnitario(produto.getPreco())
+                .valorUnitario(produto.getPreco().getValor())
                 .build();
         item.calcularValorTotal();
         pedido.adicionarItem(item);
@@ -177,7 +178,7 @@ class PedidoTest {
         ItemPedido item = ItemPedido.builder()
                 .produto(produto)
                 .quantidade(1)
-                .valorUnitario(produto.getPreco())
+                .valorUnitario(produto.getPreco().getValor())
                 .build();
         item.calcularValorTotal();
         pedido.adicionarItem(item);

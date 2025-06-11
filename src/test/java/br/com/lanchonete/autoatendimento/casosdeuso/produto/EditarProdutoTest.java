@@ -182,7 +182,7 @@ class EditarProdutoTest {
                 () -> editarProduto.executar(1L, produtoParaEditarPrecoNulo),
                 "Deveria lançar uma exceção para preço nulo");
 
-        assertEquals("Preço do produto é obrigatório", exceptionPreco.getMessage());
+        assertEquals("Preço é obrigatório", exceptionPreco.getMessage());
 
 
         ProdutoRequestDTO produtoParaEditarPrecoZero = new ProdutoRequestDTO("X-Bacon Especial",

@@ -1,6 +1,5 @@
 package br.com.lanchonete.autoatendimento.entidades.produto;
 
-import br.com.lanchonete.autoatendimento.frameworks.util.Utils;
 import br.com.lanchonete.autoatendimento.entidades.shared.Preco;
 
 import java.math.BigDecimal;
@@ -41,7 +40,7 @@ public class Produto {
     }
 
     public void setNome(String nome) {
-        if (Utils.isNuloOuVazio(nome))
+        if (nome == null || nome.isBlank())
             throw new IllegalArgumentException("Nome do produto é obrigatório");
         this.nome = nome;
     }

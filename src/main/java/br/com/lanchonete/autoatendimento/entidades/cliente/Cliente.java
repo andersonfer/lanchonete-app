@@ -1,6 +1,5 @@
 package br.com.lanchonete.autoatendimento.entidades.cliente;
 
-import br.com.lanchonete.autoatendimento.frameworks.util.Utils;
 import br.com.lanchonete.autoatendimento.entidades.shared.Cpf;
 import br.com.lanchonete.autoatendimento.entidades.shared.Email;
 
@@ -38,7 +37,7 @@ public class Cliente {
     }
 
     public void setNome(String nome) {
-        if (Utils.isNuloOuVazio(nome))
+        if (nome == null || nome.isBlank())
             throw new IllegalArgumentException("Nome é obrigatório");
         this.nome = nome;
     }

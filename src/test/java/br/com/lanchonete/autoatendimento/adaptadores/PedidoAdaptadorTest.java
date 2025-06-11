@@ -59,6 +59,7 @@ class PedidoAdaptadorTest {
 
         pedidoResponse = new PedidoResponseDTO(
                 1L,
+                "PED000001",
                 1L,
                 "João Silva",
                 itensResponse,

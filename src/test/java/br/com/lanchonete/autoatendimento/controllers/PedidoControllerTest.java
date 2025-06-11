@@ -66,6 +66,7 @@ class PedidoControllerTest {
 
         pedidoResponse = new PedidoResponseDTO(
                 1L,
+                "PED000001",
                 1L,
                 "João Silva",
                 itensResponse,
@@ -77,6 +78,7 @@ class PedidoControllerTest {
         // Criar objeto de resposta sem cliente
         pedidoResponseSemCliente = new PedidoResponseDTO(
                 2L,
+                "PED000002",
                 null,
                 null,
                 Collections.singletonList(itensResponse.get(1)),

@@ -1,6 +1,7 @@
 package br.com.lanchonete.autoatendimento.entidades.pedido;
 
 import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
+import br.com.lanchonete.autoatendimento.entidades.shared.NumeroPedido;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -12,6 +13,7 @@ import java.util.List;
 
 public class Pedido {
     private Long id;
+    private NumeroPedido numeroPedido;
     private Cliente cliente;  // Opcional - cliente pode não se identificar
     private List<ItemPedido> itens;
     private StatusPedido status;
@@ -49,6 +51,14 @@ public class Pedido {
         item.setPedido(this);
         calcularValorTotal();
     }
+
+    public void setId(Long id) {
+        this.id = id;
+        if (id != null) {
+            this.numeroPedido = NumeroPedido.gerarPorId(id);
+        }
+    }
+
 
     public void validar() {
         if (itens == null || itens.isEmpty()) {

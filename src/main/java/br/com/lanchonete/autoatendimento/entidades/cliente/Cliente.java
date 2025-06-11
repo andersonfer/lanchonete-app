@@ -3,9 +3,9 @@ package br.com.lanchonete.autoatendimento.entidades.cliente;
 import br.com.lanchonete.autoatendimento.frameworks.util.Utils;
 import br.com.lanchonete.autoatendimento.entidades.shared.Cpf;
 import br.com.lanchonete.autoatendimento.entidades.shared.Email;
-import lombok.Data;
 
-@Data
+import java.util.Objects;
+
 public class Cliente {
     private Long id;
     private String nome;
@@ -49,5 +49,51 @@ public class Cliente {
         if (email == null)
             throw new IllegalArgumentException("Email é obrigatório");
         this.email = email;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public Cpf getCpf() {
+        return cpf;
+    }
+
+    public Email getEmail() {
+        return email;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Cliente cliente = (Cliente) obj;
+        return Objects.equals(id, cliente.id) &&
+                Objects.equals(nome, cliente.nome) &&
+                Objects.equals(cpf, cliente.cpf) &&
+                Objects.equals(email, cliente.email);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, nome, cpf, email);
+    }
+
+    @Override
+    public String toString() {
+        return "Cliente{" +
+                "id=" + id +
+                ", nome='" + nome + '\'' +
+                ", cpf=" + cpf +
+                ", email=" + email +
+                '}';
     }
 }

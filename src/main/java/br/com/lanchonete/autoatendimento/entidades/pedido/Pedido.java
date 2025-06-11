@@ -2,14 +2,12 @@ package br.com.lanchonete.autoatendimento.entidades.pedido;
 
 import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
 import br.com.lanchonete.autoatendimento.entidades.shared.NumeroPedido;
-import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
-@Data
+import java.util.Objects;
 
 public class Pedido {
     private Long id;
@@ -106,5 +104,83 @@ public class Pedido {
         }
     }
 
+    public Long getId() {
+        return id;
+    }
 
+    public NumeroPedido getNumeroPedido() {
+        return numeroPedido;
+    }
+
+    public Cliente getCliente() {
+        return cliente;
+    }
+
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
+    }
+
+    public List<ItemPedido> getItens() {
+        return itens;
+    }
+
+    public void setItens(List<ItemPedido> itens) {
+        this.itens = itens;
+    }
+
+    public StatusPedido getStatus() {
+        return status;
+    }
+
+    public void setStatus(StatusPedido status) {
+        this.status = status;
+    }
+
+    public LocalDateTime getDataCriacao() {
+        return dataCriacao;
+    }
+
+    public void setDataCriacao(LocalDateTime dataCriacao) {
+        this.dataCriacao = dataCriacao;
+    }
+
+    public BigDecimal getValorTotal() {
+        return valorTotal;
+    }
+
+    public void setValorTotal(BigDecimal valorTotal) {
+        this.valorTotal = valorTotal;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Pedido pedido = (Pedido) obj;
+        return Objects.equals(id, pedido.id) &&
+                Objects.equals(numeroPedido, pedido.numeroPedido) &&
+                Objects.equals(cliente, pedido.cliente) &&
+                Objects.equals(itens, pedido.itens) &&
+                status == pedido.status &&
+                Objects.equals(dataCriacao, pedido.dataCriacao) &&
+                Objects.equals(valorTotal, pedido.valorTotal);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, numeroPedido, cliente, itens, status, dataCriacao, valorTotal);
+    }
+
+    @Override
+    public String toString() {
+        return "Pedido{" +
+                "id=" + id +
+                ", numeroPedido=" + numeroPedido +
+                ", cliente=" + cliente +
+                ", itens=" + itens +
+                ", status=" + status +
+                ", dataCriacao=" + dataCriacao +
+                ", valorTotal=" + valorTotal +
+                '}';
+    }
 }

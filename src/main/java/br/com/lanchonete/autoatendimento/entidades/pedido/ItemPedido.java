@@ -1,12 +1,9 @@
 package br.com.lanchonete.autoatendimento.entidades.pedido;
 
 import br.com.lanchonete.autoatendimento.entidades.produto.Produto;
-import lombok.Builder;
-
 import java.math.BigDecimal;
 import java.util.Objects;
 
-@Builder
 public class ItemPedido {
     private Long id;
     private Pedido pedido;
@@ -14,6 +11,26 @@ public class ItemPedido {
     private int quantidade;
     private BigDecimal valorUnitario;  // Armazena o valor no momento da compra
     private BigDecimal valorTotal;
+
+
+    // Construtor básico - para criação de novos itens
+    public ItemPedido(Produto produto, int quantidade, BigDecimal valorUnitario) {
+        this.produto = produto;
+        this.quantidade = quantidade;
+        this.valorUnitario = valorUnitario;
+        calcularValorTotal();
+    }
+
+    // Construtor completo - para mapeamento de dados persistidos
+    public ItemPedido(Long id, Pedido pedido, Produto produto, int quantidade, 
+                      BigDecimal valorUnitario, BigDecimal valorTotal) {
+        this.id = id;
+        this.pedido = pedido;
+        this.produto = produto;
+        this.quantidade = quantidade;
+        this.valorUnitario = valorUnitario;
+        this.valorTotal = valorTotal;
+    }
 
     public void calcularValorTotal() {
         if (this.valorUnitario != null && this.quantidade > 0) {

@@ -1,6 +1,6 @@
 package br.com.lanchonete.autoatendimento.controllers;
 
-import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
+import br.com.lanchonete.autoatendimento.dominio.shared.excecao.ValidacaoException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;

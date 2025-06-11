@@ -2,7 +2,7 @@ package br.com.lanchonete.autoatendimento.casosdeuso.cliente;
 
 import br.com.lanchonete.autoatendimento.controllers.dto.ClienteRequestDTO;
 import br.com.lanchonete.autoatendimento.controllers.dto.ClienteResponseDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
+import br.com.lanchonete.autoatendimento.dominio.shared.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
 import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
 import java.util.Optional;

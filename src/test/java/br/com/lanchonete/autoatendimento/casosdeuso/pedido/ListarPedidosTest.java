@@ -66,14 +66,14 @@ class ListarPedidosTest {
         pedidoComCliente.setId(1L);
 
         // Adicionar item ao pedido com cliente
-        ItemPedido itemDoPedidoComCliente = ItemPedido.builder()
-                .id(1L)
-                .pedido(pedidoComCliente)
-                .produto(produto1)
-                .quantidade(2)
-                .valorUnitario(produto1.getPreco().getValor())
-                .valorTotal(new BigDecimal("51.80"))
-                .build();
+        ItemPedido itemDoPedidoComCliente = new ItemPedido(
+                1L,
+                pedidoComCliente,
+                produto1,
+                2,
+                produto1.getPreco().getValor(),
+                new BigDecimal("51.80")
+        );
         pedidoComCliente.getItens().add(itemDoPedidoComCliente);
         pedidoComCliente.setValorTotal(new BigDecimal("51.80"));
 
@@ -82,14 +82,14 @@ class ListarPedidosTest {
         pedidoSemCliente.setId(2L);
 
         // Adicionar item ao pedido sem cliente
-        ItemPedido itemDoPedidoSemCliente = ItemPedido.builder()
-                .id(2L)
-                .pedido(pedidoSemCliente)
-                .produto(produto2)
-                .quantidade(1)
-                .valorUnitario(produto2.getPreco().getValor())
-                .valorTotal(new BigDecimal("6.00"))
-                .build();
+        ItemPedido itemDoPedidoSemCliente = new ItemPedido(
+                2L,
+                pedidoSemCliente,
+                produto2,
+                1,
+                produto2.getPreco().getValor(),
+                new BigDecimal("6.00")
+        );
         pedidoSemCliente.getItens().add(itemDoPedidoSemCliente);
         pedidoSemCliente.setValorTotal(new BigDecimal("6.00"));
     }

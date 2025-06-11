@@ -1,4 +1,4 @@
-package br.com.lanchonete.autoatendimento.aplicacao.excecao;
+package br.com.lanchonete.autoatendimento.adaptadores.shared.excecao;
 
 public class RegistroNaoEncontradoException extends RuntimeException {
 

@@ -2,7 +2,7 @@ package br.com.lanchonete.autoatendimento.controllers;
 
 import br.com.lanchonete.autoatendimento.controllers.dto.ClienteRequestDTO;
 import br.com.lanchonete.autoatendimento.controllers.dto.ClienteResponseDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
+import br.com.lanchonete.autoatendimento.dominio.shared.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.adaptadores.ClienteAdaptador;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;

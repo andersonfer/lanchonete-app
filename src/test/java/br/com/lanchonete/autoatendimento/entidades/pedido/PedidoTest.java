@@ -33,12 +33,11 @@ class PedidoTest {
         );
 
         // Cria e adicionar itens ao pedido
-        ItemPedido item1 = ItemPedido.builder()
-                .produto(produto)
-                .quantidade(2)
-                .valorUnitario(produto.getPreco().getValor())
-                .build();
-        item1.calcularValorTotal();
+        ItemPedido item1 = new ItemPedido(
+                produto,
+                2,
+                produto.getPreco().getValor()
+        );
 
         pedido.adicionarItem(item1);
 
@@ -62,12 +61,11 @@ class PedidoTest {
         );
 
         // Adiciona um item ao pedido
-        ItemPedido item = ItemPedido.builder()
-                .produto(produto)
-                .quantidade(1)
-                .valorUnitario(produto.getPreco().getValor())
-                .build();
-        item.calcularValorTotal();
+        ItemPedido item = new ItemPedido(
+                produto,
+                1,
+                produto.getPreco().getValor()
+        );
         pedido.adicionarItem(item);
 
         // Valida o pedido
@@ -112,11 +110,11 @@ class PedidoTest {
         );
 
         // Cria item com quantidade inválida
-        ItemPedido item = ItemPedido.builder()
-                .produto(produto)
-                .quantidade(0) // Quantidade inválida
-                .valorUnitario(produto.getPreco().getValor())
-                .build();
+        ItemPedido item = new ItemPedido(
+                produto,
+                0, // Quantidade inválida
+                produto.getPreco().getValor()
+        );
 
         // Adiciona o item manualmente para evitar validação automática
         if (pedido.getItens() == null) {
@@ -146,12 +144,11 @@ class PedidoTest {
         Pedido pedido = Pedido.criar(null, null, LocalDateTime.now());
 
         // Adiciona um item válido ao pedido
-        ItemPedido item = ItemPedido.builder()
-                .produto(produto)
-                .quantidade(1)
-                .valorUnitario(produto.getPreco().getValor())
-                .build();
-        item.calcularValorTotal();
+        ItemPedido item = new ItemPedido(
+                produto,
+                1,
+                produto.getPreco().getValor()
+        );
         pedido.adicionarItem(item);
 
         // Tenta validar o pedido com status nulo
@@ -175,12 +172,11 @@ class PedidoTest {
         Pedido pedido = Pedido.criar(null, StatusPedido.RECEBIDO, null);
 
         // Adiciona um item válido ao pedido
-        ItemPedido item = ItemPedido.builder()
-                .produto(produto)
-                .quantidade(1)
-                .valorUnitario(produto.getPreco().getValor())
-                .build();
-        item.calcularValorTotal();
+        ItemPedido item = new ItemPedido(
+                produto,
+                1,
+                produto.getPreco().getValor()
+        );
         pedido.adicionarItem(item);
 
         // Tenta validar o pedido com data de criação nula

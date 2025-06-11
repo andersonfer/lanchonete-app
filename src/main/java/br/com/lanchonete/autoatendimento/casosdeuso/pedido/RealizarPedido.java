@@ -3,8 +3,8 @@ package br.com.lanchonete.autoatendimento.casosdeuso.pedido;
 import br.com.lanchonete.autoatendimento.controllers.dto.ItemPedidoDTO;
 import br.com.lanchonete.autoatendimento.controllers.dto.PedidoRequestDTO;
 import br.com.lanchonete.autoatendimento.controllers.dto.PedidoResponseDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
-import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
+import br.com.lanchonete.autoatendimento.dominio.shared.excecao.RecursoNaoEncontradoException;
+import br.com.lanchonete.autoatendimento.dominio.shared.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
 import br.com.lanchonete.autoatendimento.interfaces.PedidoGateway;
 import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
@@ -67,13 +67,12 @@ public class RealizarPedido {
             final Produto produto = produtoGateway.buscarPorId(itemDTO.produtoId())
                     .orElseThrow(() -> new RecursoNaoEncontradoException("Produto não encontrado: " + itemDTO.produtoId()));
 
-            final ItemPedido item = ItemPedido.builder()
-                    .produto(produto)
-                    .quantidade(itemDTO.quantidade())
-                    .valorUnitario(produto.getPreco().getValor())
-                    .build();
+            final ItemPedido item = new ItemPedido(
+                    produto,
+                    itemDTO.quantidade(),
+                    produto.getPreco().getValor()
+            );
 
-            item.calcularValorTotal();
             pedido.adicionarItem(item);
         }
     }

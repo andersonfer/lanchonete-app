@@ -2,8 +2,8 @@ package br.com.lanchonete.autoatendimento.adaptadores;
 
 import br.com.lanchonete.autoatendimento.controllers.dto.ProdutoRequestDTO;
 import br.com.lanchonete.autoatendimento.controllers.dto.ProdutoResponseDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
-import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
+import br.com.lanchonete.autoatendimento.dominio.shared.excecao.ValidacaoException;
+import br.com.lanchonete.autoatendimento.dominio.shared.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.casosdeuso.produto.BuscarProdutosPorCategoria;
 import br.com.lanchonete.autoatendimento.casosdeuso.produto.CriarProduto;
 import br.com.lanchonete.autoatendimento.casosdeuso.produto.EditarProduto;

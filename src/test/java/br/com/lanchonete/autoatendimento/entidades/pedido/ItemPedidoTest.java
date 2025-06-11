@@ -19,14 +19,11 @@ class ItemPedidoTest {
         Produto produto = Produto.criar("X-Bacon", null, new BigDecimal("25.90"), Categoria.LANCHE);
 
         // Criar o item de pedido
-        ItemPedido item = ItemPedido.builder()
-                .produto(produto)
-                .quantidade(3)
-                .valorUnitario(produto.getPreco().getValor())
-                .build();
-
-        // Calcular o valor total
-        item.calcularValorTotal();
+        ItemPedido item = new ItemPedido(
+                produto,
+                3,
+                produto.getPreco().getValor()
+        );
 
         // Verificar se o cálculo está correto
         assertEquals(new BigDecimal("77.70"), item.getValorTotal(),
@@ -41,14 +38,11 @@ class ItemPedidoTest {
         Produto produto = Produto.criar("X-Bacon", null, new BigDecimal("25.90"), Categoria.LANCHE);
 
         // Criar o item de pedido com quantidade zero
-        ItemPedido item = ItemPedido.builder()
-                .produto(produto)
-                .quantidade(0)
-                .valorUnitario(produto.getPreco().getValor())
-                .build();
-
-        // Calcular o valor total
-        item.calcularValorTotal();
+        ItemPedido item = new ItemPedido(
+                produto,
+                0,
+                produto.getPreco().getValor()
+        );
 
         // Verificar se o valor total é zero
         assertEquals(BigDecimal.ZERO, item.getValorTotal(),
@@ -62,14 +56,11 @@ class ItemPedidoTest {
         Produto produto = Produto.criar("X-Bacon", null, new BigDecimal("25.90"), Categoria.LANCHE);
 
         // Criar o item de pedido com valor unitário nulo
-        ItemPedido item = ItemPedido.builder()
-                .produto(produto)
-                .quantidade(2)
-                .valorUnitario(null)
-                .build();
-
-        // Calcular o valor total
-        item.calcularValorTotal();
+        ItemPedido item = new ItemPedido(
+                produto,
+                2,
+                null
+        );
 
         // Verificar se o valor total é zero
         assertEquals(BigDecimal.ZERO, item.getValorTotal(),

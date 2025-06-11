@@ -1,7 +1,7 @@
 package br.com.lanchonete.autoatendimento.controllers;
 
-import br.com.lanchonete.autoatendimento.aplicacao.excecao.RecursoNaoEncontradoException;
-import br.com.lanchonete.autoatendimento.aplicacao.excecao.ValidacaoException;
+import br.com.lanchonete.autoatendimento.dominio.shared.excecao.RecursoNaoEncontradoException;
+import br.com.lanchonete.autoatendimento.dominio.shared.excecao.ValidacaoException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;

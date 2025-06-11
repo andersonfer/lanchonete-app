@@ -1,6 +1,6 @@
 package br.com.lanchonete.autoatendimento.gateways;
 
-import br.com.lanchonete.autoatendimento.aplicacao.excecao.RegistroNaoEncontradoException;
+import br.com.lanchonete.autoatendimento.adaptadores.shared.excecao.RegistroNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.entidades.produto.Categoria;
 import br.com.lanchonete.autoatendimento.entidades.produto.Produto;
 import br.com.lanchonete.autoatendimento.entidades.shared.Preco;

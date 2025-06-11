@@ -1,6 +1,6 @@
 package br.com.lanchonete.autoatendimento.gateways;
 
-import br.com.lanchonete.autoatendimento.aplicacao.excecao.RegistroNaoEncontradoException;
+import br.com.lanchonete.autoatendimento.adaptadores.shared.excecao.RegistroNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
 import br.com.lanchonete.autoatendimento.interfaces.PedidoGateway;
 import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
@@ -161,14 +161,14 @@ public class PedidoGatewayJDBC implements PedidoGateway {
         final Produto produto = produtoGateway.buscarPorId(produtoId)
                 .orElseThrow(() -> new RegistroNaoEncontradoException("Produto", produtoId));
 
-        return ItemPedido.builder()
-                .id(rs.getLong("id"))
-                .pedido(pedido)
-                .produto(produto)
-                .quantidade(rs.getInt("quantidade"))
-                .valorUnitario(rs.getBigDecimal("valor_unitario"))
-                .valorTotal(rs.getBigDecimal("valor_total"))
-                .build();
+        return new ItemPedido(
+                rs.getLong("id"),
+                pedido,
+                produto,
+                rs.getInt("quantidade"),
+                rs.getBigDecimal("valor_unitario"),
+                rs.getBigDecimal("valor_total")
+        );
 
     }
 }

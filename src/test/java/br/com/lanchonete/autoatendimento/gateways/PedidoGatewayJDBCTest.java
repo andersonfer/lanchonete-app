@@ -1,6 +1,6 @@
 package br.com.lanchonete.autoatendimento.gateways;
 
-import br.com.lanchonete.autoatendimento.aplicacao.excecao.RegistroNaoEncontradoException;
+import br.com.lanchonete.autoatendimento.adaptadores.shared.excecao.RegistroNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
 import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
 import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
@@ -67,22 +67,20 @@ class PedidoGatewayJDBCTest {
         Pedido pedido = Pedido.criar(cliente, StatusPedido.RECEBIDO, LocalDateTime.now());
 
         // Adicionar itens ao pedido
-        ItemPedido item1 = ItemPedido.builder()
-                .produto(Produto.criarSemValidacao(produtoLanche.getId(), produtoLanche.getNome(),
-                        produtoLanche.getDescricao(), produtoLanche.getPreco().getValor(), produtoLanche.getCategoria()))
-                .quantidade(2)
-                .valorUnitario(produtoLanche.getPreco().getValor())
-                .build();
-        item1.calcularValorTotal();
+        ItemPedido item1 = new ItemPedido(
+                Produto.criarSemValidacao(produtoLanche.getId(), produtoLanche.getNome(),
+                        produtoLanche.getDescricao(), produtoLanche.getPreco().getValor(), produtoLanche.getCategoria()),
+                2,
+                produtoLanche.getPreco().getValor()
+        );
         pedido.adicionarItem(item1);
 
-        ItemPedido item2 = ItemPedido.builder()
-                .produto(Produto.criarSemValidacao(produtoBebida.getId(), produtoBebida.getNome(),
-                        produtoBebida.getDescricao(), produtoBebida.getPreco().getValor(), produtoBebida.getCategoria()))
-                .quantidade(1)
-                .valorUnitario(produtoBebida.getPreco().getValor())
-                .build();
-        item2.calcularValorTotal();
+        ItemPedido item2 = new ItemPedido(
+                Produto.criarSemValidacao(produtoBebida.getId(), produtoBebida.getNome(),
+                        produtoBebida.getDescricao(), produtoBebida.getPreco().getValor(), produtoBebida.getCategoria()),
+                1,
+                produtoBebida.getPreco().getValor()
+        );
         pedido.adicionarItem(item2);
 
         // Salvar o pedido
@@ -106,12 +104,11 @@ class PedidoGatewayJDBCTest {
         Pedido pedido = Pedido.criar(null, StatusPedido.RECEBIDO, LocalDateTime.now());
 
         // Adicionar um item ao pedido
-        ItemPedido item = ItemPedido.builder()
-                .produto(produtoLanche)
-                .quantidade(1)
-                .valorUnitario(produtoLanche.getPreco().getValor())
-                .build();
-        item.calcularValorTotal();
+        ItemPedido item = new ItemPedido(
+                produtoLanche,
+                1,
+                produtoLanche.getPreco().getValor()
+        );
         pedido.adicionarItem(item);
 
         // Salvar o pedido
@@ -131,13 +128,12 @@ class PedidoGatewayJDBCTest {
         // Criar e salvar um pedido para o teste
         Pedido pedido = Pedido.criar(cliente, StatusPedido.RECEBIDO, LocalDateTime.now());
 
-        ItemPedido item = ItemPedido.builder()
-                .produto(Produto.criarSemValidacao(produtoLanche.getId(), produtoLanche.getNome(),
-                        produtoLanche.getDescricao(), produtoLanche.getPreco().getValor(), produtoLanche.getCategoria()))
-                .quantidade(1)
-                .valorUnitario(produtoLanche.getPreco().getValor())
-                .build();
-        item.calcularValorTotal();
+        ItemPedido item = new ItemPedido(
+                Produto.criarSemValidacao(produtoLanche.getId(), produtoLanche.getNome(),
+                        produtoLanche.getDescricao(), produtoLanche.getPreco().getValor(), produtoLanche.getCategoria()),
+                1,
+                produtoLanche.getPreco().getValor()
+        );
         pedido.adicionarItem(item);
 
         Pedido pedidoSalvo = pedidoRepositorio.salvar(pedido);

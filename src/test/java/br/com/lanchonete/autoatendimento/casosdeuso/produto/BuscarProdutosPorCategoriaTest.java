@@ -1,6 +1,5 @@
 package br.com.lanchonete.autoatendimento.casosdeuso.produto;
 
-import br.com.lanchonete.autoatendimento.controllers.dto.ProdutoResponseDTO;
 import br.com.lanchonete.autoatendimento.dominio.shared.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
 import br.com.lanchonete.autoatendimento.entidades.produto.Categoria;
@@ -49,25 +48,25 @@ class BuscarProdutosPorCategoriaTest {
         when(produtoGateway.buscarPorCategoria(Categoria.LANCHE)).thenReturn(produtosLanche);
 
 
-        List<ProdutoResponseDTO> resultado = buscarProdutosPorCategoria.executar(Categoria.LANCHE);
+        List<Produto> resultado = buscarProdutosPorCategoria.executar(Categoria.LANCHE);
 
 
         assertNotNull(resultado, "O resultado não deve ser nulo");
         assertEquals(2, resultado.size(), "Deve retornar 2 produtos");
 
         // Verifica o primeiro produto
-        ProdutoResponseDTO primeiro = resultado.get(0);
-        assertEquals(1L, primeiro.id());
-        assertEquals("X-Bacon", primeiro.nome());
-        assertEquals(new BigDecimal("28.90"), primeiro.preco());
-        assertEquals(Categoria.LANCHE, primeiro.categoria());
+        Produto primeiro = resultado.get(0);
+        assertEquals(1L, primeiro.getId());
+        assertEquals("X-Bacon", primeiro.getNome());
+        assertEquals(new BigDecimal("28.90"), primeiro.getPreco().getValor());
+        assertEquals(Categoria.LANCHE, primeiro.getCategoria());
 
         // Verifica o segundo produto
-        ProdutoResponseDTO segundo = resultado.get(1);
-        assertEquals(2L, segundo.id());
-        assertEquals("X-Salada", segundo.nome());
-        assertEquals(new BigDecimal("26.90"), segundo.preco());
-        assertEquals(Categoria.LANCHE, segundo.categoria());
+        Produto segundo = resultado.get(1);
+        assertEquals(2L, segundo.getId());
+        assertEquals("X-Salada", segundo.getNome());
+        assertEquals(new BigDecimal("26.90"), segundo.getPreco().getValor());
+        assertEquals(Categoria.LANCHE, segundo.getCategoria());
 
         verify(produtoGateway).buscarPorCategoria(Categoria.LANCHE);
     }
@@ -79,7 +78,7 @@ class BuscarProdutosPorCategoriaTest {
         when(produtoGateway.buscarPorCategoria(Categoria.SOBREMESA)).thenReturn(Collections.emptyList());
 
 
-        List<ProdutoResponseDTO> resultado = buscarProdutosPorCategoria.executar(Categoria.SOBREMESA);
+        List<Produto> resultado = buscarProdutosPorCategoria.executar(Categoria.SOBREMESA);
 
 
         assertNotNull(resultado, "O resultado não deve ser nulo");

@@ -7,6 +7,7 @@ import br.com.lanchonete.autoatendimento.casosdeuso.produto.CriarProduto;
 import br.com.lanchonete.autoatendimento.casosdeuso.produto.EditarProduto;
 import br.com.lanchonete.autoatendimento.casosdeuso.produto.RemoverProduto;
 import br.com.lanchonete.autoatendimento.entidades.produto.Categoria;
+import br.com.lanchonete.autoatendimento.entidades.produto.Produto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,17 +24,33 @@ public class ProdutoAdaptador {
     private final RemoverProduto removerProduto;
 
     public List<ProdutoResponseDTO> buscarPorCategoria(final Categoria categoria) {
-        return buscarProdutosPorCategoria.executar(categoria);
+        List<Produto> produtos = buscarProdutosPorCategoria.executar(categoria);
+        return produtos.stream()
+                .map(ProdutoResponseDTO::converterParaDTO)
+                .toList();
     }
 
     @Transactional
     public ProdutoResponseDTO criar(final ProdutoRequestDTO produtoRequest) {
-        return criarProduto.executar(produtoRequest);
+        Produto produtoSalvo = criarProduto.executar(
+                produtoRequest.nome(),
+                produtoRequest.descricao(),
+                produtoRequest.preco(),
+                produtoRequest.categoria()
+        );
+        return ProdutoResponseDTO.converterParaDTO(produtoSalvo);
     }
 
     @Transactional
     public ProdutoResponseDTO editar(final Long id, final ProdutoRequestDTO produtoRequest) {
-        return editarProduto.executar(id, produtoRequest);
+        Produto produtoAtualizado = editarProduto.executar(
+                id,
+                produtoRequest.nome(),
+                produtoRequest.descricao(),
+                produtoRequest.preco(),
+                produtoRequest.categoria()
+        );
+        return ProdutoResponseDTO.converterParaDTO(produtoAtualizado);
     }
 
     @Transactional

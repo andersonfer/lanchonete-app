@@ -1,6 +1,6 @@
 package br.com.lanchonete.autoatendimento.casosdeuso.cliente;
 
-import br.com.lanchonete.autoatendimento.controllers.dto.ClienteResponseDTO;
+import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
 import br.com.lanchonete.autoatendimento.dominio.shared.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.dominio.shared.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
@@ -14,15 +14,16 @@ public class IdentificarCliente {
         this.clienteGateway = clienteGateway;
     }
 
-    public Optional<ClienteResponseDTO> executar(final String cpf) {
+    public Optional<Cliente> executar(final String cpf) {
 
         if (cpf == null || cpf.isBlank()) {
             throw new ValidacaoException("CPF é obrigatório");
         }
 
-         return Optional.ofNullable(clienteGateway.buscarPorCpf(cpf)
-                 .map(ClienteResponseDTO::converterParaDTO)
-                 .orElseThrow(() -> new RecursoNaoEncontradoException("CPF não encontrado")));
+        return clienteGateway.buscarPorCpf(cpf)
+                .or(() -> {
+                    throw new RecursoNaoEncontradoException("CPF não encontrado");
+                });
 
     }
 

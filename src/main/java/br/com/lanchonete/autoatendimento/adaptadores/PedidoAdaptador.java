@@ -4,6 +4,7 @@ import br.com.lanchonete.autoatendimento.controllers.dto.PedidoRequestDTO;
 import br.com.lanchonete.autoatendimento.controllers.dto.PedidoResponseDTO;
 import br.com.lanchonete.autoatendimento.casosdeuso.pedido.RealizarPedido;
 import br.com.lanchonete.autoatendimento.casosdeuso.pedido.ListarPedidos;
+import br.com.lanchonete.autoatendimento.entidades.pedido.Pedido;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,10 +20,21 @@ public class PedidoAdaptador {
 
     @Transactional
     public PedidoResponseDTO realizarCheckout(final PedidoRequestDTO pedidoRequest) {
-        return realizarPedido.executar(pedidoRequest);
+        // Converter DTOs para a estrutura interna do UC
+        List<br.com.lanchonete.autoatendimento.casosdeuso.pedido.ItemPedidoInfo> itensInfo = pedidoRequest.itens().stream()
+                .map(item -> new br.com.lanchonete.autoatendimento.casosdeuso.pedido.ItemPedidoInfo(
+                        item.produtoId(), 
+                        item.quantidade()))
+                .toList();
+        
+        Pedido pedidoSalvo = realizarPedido.executar(pedidoRequest.cpfCliente(), itensInfo);
+        return PedidoResponseDTO.converterParaDTO(pedidoSalvo);
     }
 
     public List<PedidoResponseDTO> listarPedidos() {
-        return listarPedidos.executar();
+        List<Pedido> pedidos = listarPedidos.executar();
+        return pedidos.stream()
+                .map(PedidoResponseDTO::converterParaDTO)
+                .toList();
     }
 }

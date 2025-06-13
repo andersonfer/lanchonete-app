@@ -1,6 +1,5 @@
 package br.com.lanchonete.autoatendimento.casosdeuso.cliente;
 
-import br.com.lanchonete.autoatendimento.controllers.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.dominio.shared.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.dominio.shared.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
@@ -28,25 +27,25 @@ class IdentificarClienteTest {
 
 
     @Test
-    @DisplayName("Deve retornar ClienteResponseDTO ao encontrar cliente pelo CPF")
+    @DisplayName("Deve retornar Cliente ao encontrar cliente pelo CPF")
     void t1() {
         String cpf = "12345678910";
-        Cliente cliente = Cliente.reconstituir(
+        Cliente clienteEsperado = Cliente.reconstituir(
                 1L,
                 "Maria Oliveira",
                 "maria.oliveira@email.com",
                 cpf
         );
-        when(clienteGateway.buscarPorCpf(cpf)).thenReturn(Optional.of(cliente));
+        when(clienteGateway.buscarPorCpf(cpf)).thenReturn(Optional.of(clienteEsperado));
 
-        Optional<ClienteResponseDTO> resultado = identificarCliente.executar(cpf);
+        Optional<Cliente> resultado = identificarCliente.executar(cpf);
 
         assertTrue(resultado.isPresent(), "O cliente deveria estar presente");
-        ClienteResponseDTO dto = resultado.get();
-        assertEquals(cliente.getId(), dto.id(), "O ID do cliente não está correto");
-        assertEquals(cliente.getNome(), dto.nome(), "O nome do cliente não está correto");
-        assertEquals(cliente.getEmail().getValor(), dto.email(), "O email do cliente não está correto");
-        assertEquals(cliente.getCpf().getValor(), dto.cpf(), "O CPF do cliente não está correto");
+        Cliente clienteRetornado = resultado.get();
+        assertEquals(clienteEsperado.getId(), clienteRetornado.getId(), "O ID do cliente não está correto");
+        assertEquals(clienteEsperado.getNome(), clienteRetornado.getNome(), "O nome do cliente não está correto");
+        assertEquals(clienteEsperado.getEmail().getValor(), clienteRetornado.getEmail().getValor(), "O email do cliente não está correto");
+        assertEquals(clienteEsperado.getCpf().getValor(), clienteRetornado.getCpf().getValor(), "O CPF do cliente não está correto");
     }
 
     @Test

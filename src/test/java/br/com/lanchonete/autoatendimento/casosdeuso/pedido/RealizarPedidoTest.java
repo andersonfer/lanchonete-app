@@ -1,8 +1,5 @@
 package br.com.lanchonete.autoatendimento.casosdeuso.pedido;
 
-import br.com.lanchonete.autoatendimento.controllers.dto.ItemPedidoDTO;
-import br.com.lanchonete.autoatendimento.controllers.dto.PedidoRequestDTO;
-import br.com.lanchonete.autoatendimento.controllers.dto.PedidoResponseDTO;
 import br.com.lanchonete.autoatendimento.dominio.shared.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.dominio.shared.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
@@ -47,8 +44,8 @@ class RealizarPedidoTest {
     private RealizarPedido realizarPedido;
 
     private Cliente cliente;
-    private PedidoRequestDTO pedidoComCliente;
-    private PedidoRequestDTO pedidoSemCliente;
+    private String cpfCliente;
+    private List<ItemPedidoInfo> itens;
 
     @BeforeEach
     void configurar() {
@@ -76,34 +73,28 @@ class RealizarPedidoTest {
             return p;
         });
 
-        // Criar pedido request com cliente
-        List<ItemPedidoDTO> itensComCliente = Arrays.asList(
-                new ItemPedidoDTO(1L, 2),
-                new ItemPedidoDTO(2L, 1)
+        // Configurar dados para teste
+        cpfCliente = "12345678901";
+        itens = Arrays.asList(
+                new ItemPedidoInfo(1L, 2),
+                new ItemPedidoInfo(2L, 1)
         );
-        pedidoComCliente = new PedidoRequestDTO("12345678901", itensComCliente);
-
-        // Criar pedido request sem cliente
-        List<ItemPedidoDTO> itensSemCliente = List.of(
-                new ItemPedidoDTO(1L, 1)
-        );
-        pedidoSemCliente = new PedidoRequestDTO(null, itensSemCliente);
     }
 
     @Test
     @DisplayName("Deve realizar checkout de pedido com cliente com sucesso")
     void t1() {
         // Executar o checkout
-        PedidoResponseDTO resposta = realizarPedido.executar(pedidoComCliente);
+        Pedido pedidoRetornado = realizarPedido.executar(cpfCliente, itens);
 
         // Verificações
-        assertNotNull(resposta, "A resposta não deveria ser nula");
-        assertEquals(1L, resposta.id(), "O ID do pedido deve ser 1");
-        assertEquals(1L, resposta.clienteId(), "O ID do cliente deve ser 1");
-        assertEquals("João Silva", resposta.nomeCliente(), "O nome do cliente deve estar correto");
-        assertEquals(2, resposta.itens().size(), "O pedido deve ter 2 itens");
-        assertEquals(StatusPedido.RECEBIDO, resposta.status(), "O status deve ser RECEBIDO");
-        assertEquals(new BigDecimal("57.80"), resposta.valorTotal(),
+        assertNotNull(pedidoRetornado, "O pedido retornado não deveria ser nulo");
+        assertEquals(1L, pedidoRetornado.getId(), "O ID do pedido deve ser 1");
+        assertEquals(cliente, pedidoRetornado.getCliente(), "O cliente deve ser o mesmo");
+        assertEquals("João Silva", pedidoRetornado.getCliente().getNome(), "O nome do cliente deve estar correto");
+        assertEquals(2, pedidoRetornado.getItens().size(), "O pedido deve ter 2 itens");
+        assertEquals(StatusPedido.RECEBIDO, pedidoRetornado.getStatus(), "O status deve ser RECEBIDO");
+        assertEquals(new BigDecimal("57.80"), pedidoRetornado.getValorTotal(),
                 "O valor total deve ser 2 * 25.90 + 1 * 6.00 = 57.80");
 
         // Verificar chamada para salvar pedido
@@ -119,17 +110,20 @@ class RealizarPedidoTest {
     @Test
     @DisplayName("Deve realizar checkout de pedido sem cliente com sucesso")
     void t2() {
+        List<ItemPedidoInfo> itensSemCliente = Arrays.asList(
+                new ItemPedidoInfo(1L, 1)
+        );
+
         // Executar o checkout
-        PedidoResponseDTO resposta = realizarPedido.executar(pedidoSemCliente);
+        Pedido pedidoRetornado = realizarPedido.executar(null, itensSemCliente);
 
         // Verificações
-        assertNotNull(resposta, "A resposta não deveria ser nula");
-        assertEquals(1L, resposta.id(), "O ID do pedido deve ser 1");
-        assertNull(resposta.clienteId(), "O ID do cliente deve ser nulo");
-        assertNull(resposta.nomeCliente(), "O nome do cliente deve ser nulo");
-        assertEquals(1, resposta.itens().size(), "O pedido deve ter 1 item");
-        assertEquals(StatusPedido.RECEBIDO, resposta.status(), "O status deve ser RECEBIDO");
-        assertEquals(new BigDecimal("25.90"), resposta.valorTotal(),
+        assertNotNull(pedidoRetornado, "O pedido retornado não deveria ser nulo");
+        assertEquals(1L, pedidoRetornado.getId(), "O ID do pedido deve ser 1");
+        assertNull(pedidoRetornado.getCliente(), "O cliente deve ser nulo");
+        assertEquals(1, pedidoRetornado.getItens().size(), "O pedido deve ter 1 item");
+        assertEquals(StatusPedido.RECEBIDO, pedidoRetornado.getStatus(), "O status deve ser RECEBIDO");
+        assertEquals(new BigDecimal("25.90"), pedidoRetornado.getValorTotal(),
                 "O valor total deve ser igual ao preço do produto");
 
         // Verificar que não buscou cliente
@@ -139,10 +133,8 @@ class RealizarPedidoTest {
     @Test
     @DisplayName("Deve lançar exceção ao tentar checkout com cliente inexistente")
     void t3() {
-        // Criar pedido com CPF inexistente
-        PedidoRequestDTO pedidoRequestClienteInexistente = new PedidoRequestDTO(
-                "99999999999",
-                List.of(new ItemPedidoDTO(1L, 1))
+        List<ItemPedidoInfo> itensTestCliente = Arrays.asList(
+                new ItemPedidoInfo(1L, 1)
         );
 
         // Mock para retornar cliente não encontrado
@@ -151,7 +143,7 @@ class RealizarPedidoTest {
         // Verificar exceção
         RecursoNaoEncontradoException exception = assertThrows(
                 RecursoNaoEncontradoException.class,
-                () -> realizarPedido.executar(pedidoRequestClienteInexistente),
+                () -> realizarPedido.executar("99999999999", itensTestCliente),
                 "Deveria lançar exceção para cliente não encontrado"
         );
 
@@ -165,10 +157,8 @@ class RealizarPedidoTest {
     @Test
     @DisplayName("Deve lançar exceção ao tentar checkout com produto inexistente")
     void t4() {
-        // Criar pedido com produto inexistente
-        PedidoRequestDTO pedidoRequestProdutoInexistente = new PedidoRequestDTO(
-                null,
-                List.of(new ItemPedidoDTO(999L, 1))
+        List<ItemPedidoInfo> itensTestProduto = Arrays.asList(
+                new ItemPedidoInfo(999L, 1)
         );
 
         // Mock para retornar produto não encontrado
@@ -177,7 +167,7 @@ class RealizarPedidoTest {
         // Verificar exceção
         RecursoNaoEncontradoException exception = assertThrows(
                 RecursoNaoEncontradoException.class,
-                () -> realizarPedido.executar(pedidoRequestProdutoInexistente),
+                () -> realizarPedido.executar(null, itensTestProduto),
                 "Deveria lançar exceção para produto não encontrado"
         );
 
@@ -191,16 +181,12 @@ class RealizarPedidoTest {
     @Test
     @DisplayName("Deve lançar exceção ao tentar checkout sem itens")
     void t5() {
-        // Criar pedido sem itens
-        PedidoRequestDTO pedidoRequestSemItens = new PedidoRequestDTO(
-                null,
-                List.of()
-        );
+        List<ItemPedidoInfo> itensSemItens = List.of();
 
         // Verificar exceção
         ValidacaoException exception = assertThrows(
                 ValidacaoException.class,
-                () -> realizarPedido.executar(pedidoRequestSemItens),
+                () -> realizarPedido.executar(null, itensSemItens),
                 "Deveria lançar exceção para pedido sem itens"
         );
 
@@ -214,16 +200,14 @@ class RealizarPedidoTest {
     @Test
     @DisplayName("Deve lançar exceção ao tentar checkout com quantidade inválida")
     void t6() {
-        // Criar pedido com quantidade zero
-        PedidoRequestDTO pedidoRequestQuantidadeZero = new PedidoRequestDTO(
-                null,
-                List.of(new ItemPedidoDTO(1L, 0))
+        List<ItemPedidoInfo> itensQuantidadeZero = Arrays.asList(
+                new ItemPedidoInfo(1L, 0)
         );
 
         // Verificar exceção
         ValidacaoException exception = assertThrows(
                 ValidacaoException.class,
-                () -> realizarPedido.executar(pedidoRequestQuantidadeZero),
+                () -> realizarPedido.executar(null, itensQuantidadeZero),
                 "Deveria lançar exceção para quantidade zero"
         );
 

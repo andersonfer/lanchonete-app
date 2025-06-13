@@ -9,6 +9,7 @@ import br.com.lanchonete.autoatendimento.casosdeuso.produto.CriarProduto;
 import br.com.lanchonete.autoatendimento.casosdeuso.produto.EditarProduto;
 import br.com.lanchonete.autoatendimento.casosdeuso.produto.RemoverProduto;
 import br.com.lanchonete.autoatendimento.entidades.produto.Categoria;
+import br.com.lanchonete.autoatendimento.entidades.produto.Produto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -49,6 +51,7 @@ class ProdutoAdaptadorTest {
 
     private ProdutoRequestDTO produtoRequest;
     private ProdutoResponseDTO produtoResponse;
+    private Produto produto;
 
     @BeforeEach
     void configurar() {
@@ -66,19 +69,32 @@ class ProdutoAdaptadorTest {
                 new BigDecimal("25.90"),
                 Categoria.LANCHE
         );
+
+        produto = Produto.reconstituir(
+                1L,
+                "X-Bacon",
+                "Hambúrguer com bacon",
+                new BigDecimal("25.90"),
+                Categoria.LANCHE
+        );
     }
 
     @Test
     @DisplayName("Deve buscar produtos por categoria com sucesso quando use case executa corretamente")
     void t1() {
-        List<ProdutoResponseDTO> produtos = Arrays.asList(produtoResponse);
+        List<Produto> produtos = Arrays.asList(produto);
         when(buscarProdutosPorCategoria.executar(Categoria.LANCHE)).thenReturn(produtos);
 
         List<ProdutoResponseDTO> resultado = produtoAdaptador.buscarPorCategoria(Categoria.LANCHE);
 
         assertNotNull(resultado);
         assertEquals(1, resultado.size());
-        assertEquals(produtoResponse, resultado.get(0));
+        ProdutoResponseDTO dto = resultado.get(0);
+        assertEquals(produto.getId(), dto.id());
+        assertEquals(produto.getNome(), dto.nome());
+        assertEquals(produto.getDescricao(), dto.descricao());
+        assertEquals(produto.getPreco().getValor(), dto.preco());
+        assertEquals(produto.getCategoria(), dto.categoria());
         verify(buscarProdutosPorCategoria).executar(Categoria.LANCHE);
     }
 
@@ -108,23 +124,23 @@ class ProdutoAdaptadorTest {
     @Test
     @DisplayName("Deve criar produto com sucesso quando use case executa corretamente")
     void t4() {
-        when(criarProduto.executar(any(ProdutoRequestDTO.class))).thenReturn(produtoResponse);
+        when(criarProduto.executar(anyString(), anyString(), any(BigDecimal.class), any(Categoria.class))).thenReturn(produto);
 
         ProdutoResponseDTO resultado = produtoAdaptador.criar(produtoRequest);
 
         assertNotNull(resultado);
-        assertEquals(1L, resultado.id());
-        assertEquals("X-Bacon", resultado.nome());
-        assertEquals("Hambúrguer com bacon", resultado.descricao());
-        assertEquals(new BigDecimal("25.90"), resultado.preco());
-        assertEquals(Categoria.LANCHE, resultado.categoria());
-        verify(criarProduto).executar(any(ProdutoRequestDTO.class));
+        assertEquals(produto.getId(), resultado.id());
+        assertEquals(produto.getNome(), resultado.nome());
+        assertEquals(produto.getDescricao(), resultado.descricao());
+        assertEquals(produto.getPreco().getValor(), resultado.preco());
+        assertEquals(produto.getCategoria(), resultado.categoria());
+        verify(criarProduto).executar(anyString(), anyString(), any(BigDecimal.class), any(Categoria.class));
     }
 
     @Test
     @DisplayName("Deve propagar exceção quando criar produto lança ValidacaoException")
     void t5() {
-        when(criarProduto.executar(any(ProdutoRequestDTO.class)))
+        when(criarProduto.executar(anyString(), anyString(), any(BigDecimal.class), any(Categoria.class)))
                 .thenThrow(new ValidacaoException("Já existe um produto com este nome"));
 
         assertThrows(ValidacaoException.class, () -> {
@@ -135,23 +151,23 @@ class ProdutoAdaptadorTest {
     @Test
     @DisplayName("Deve editar produto com sucesso quando use case executa corretamente")
     void t6() {
-        when(editarProduto.executar(eq(1L), any(ProdutoRequestDTO.class))).thenReturn(produtoResponse);
+        when(editarProduto.executar(eq(1L), anyString(), anyString(), any(BigDecimal.class), any(Categoria.class))).thenReturn(produto);
 
         ProdutoResponseDTO resultado = produtoAdaptador.editar(1L, produtoRequest);
 
         assertNotNull(resultado);
-        assertEquals(1L, resultado.id());
-        assertEquals("X-Bacon", resultado.nome());
-        assertEquals("Hambúrguer com bacon", resultado.descricao());
-        assertEquals(new BigDecimal("25.90"), resultado.preco());
-        assertEquals(Categoria.LANCHE, resultado.categoria());
-        verify(editarProduto).executar(eq(1L), any(ProdutoRequestDTO.class));
+        assertEquals(produto.getId(), resultado.id());
+        assertEquals(produto.getNome(), resultado.nome());
+        assertEquals(produto.getDescricao(), resultado.descricao());
+        assertEquals(produto.getPreco().getValor(), resultado.preco());
+        assertEquals(produto.getCategoria(), resultado.categoria());
+        verify(editarProduto).executar(eq(1L), anyString(), anyString(), any(BigDecimal.class), any(Categoria.class));
     }
 
     @Test
     @DisplayName("Deve propagar exceção quando editar produto lança RecursoNaoEncontradoException")
     void t7() {
-        when(editarProduto.executar(eq(999L), any(ProdutoRequestDTO.class)))
+        when(editarProduto.executar(eq(999L), anyString(), anyString(), any(BigDecimal.class), any(Categoria.class)))
                 .thenThrow(new RecursoNaoEncontradoException("Produto não encontrado"));
 
         assertThrows(RecursoNaoEncontradoException.class, () -> {
@@ -162,7 +178,7 @@ class ProdutoAdaptadorTest {
     @Test
     @DisplayName("Deve propagar exceção quando editar produto lança ValidacaoException")
     void t8() {
-        when(editarProduto.executar(eq(1L), any(ProdutoRequestDTO.class)))
+        when(editarProduto.executar(eq(1L), anyString(), anyString(), any(BigDecimal.class), any(Categoria.class)))
                 .thenThrow(new ValidacaoException("ID do produto é obrigatório"));
 
         assertThrows(ValidacaoException.class, () -> {

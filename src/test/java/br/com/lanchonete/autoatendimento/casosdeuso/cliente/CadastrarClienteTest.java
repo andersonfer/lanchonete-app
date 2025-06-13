@@ -1,7 +1,5 @@
 package br.com.lanchonete.autoatendimento.casosdeuso.cliente;
 
-import br.com.lanchonete.autoatendimento.controllers.dto.ClienteRequestDTO;
-import br.com.lanchonete.autoatendimento.controllers.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.dominio.shared.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
 import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
@@ -28,13 +26,16 @@ class CadastrarClienteTest {
     @InjectMocks
     private CadastrarCliente cadastrarCliente;
 
-    private ClienteRequestDTO clienteValido;
+    private String nomeValido;
+    private String cpfValido;
+    private String emailValido;
     private Cliente clienteSalvo;
 
     @BeforeEach
     void configurar() {
-
-        clienteValido = new ClienteRequestDTO("João Silva", "12345678901", "Joao.silva@example.com");
+        nomeValido = "João Silva";
+        cpfValido = "12345678901";
+        emailValido = "joao.silva@example.com";
 
         clienteSalvo = Cliente.reconstituir(
                 1L,
@@ -50,22 +51,22 @@ class CadastrarClienteTest {
 
         when(clienteGateway.salvar(any(Cliente.class))).thenReturn(clienteSalvo);
 
-        ClienteResponseDTO response = cadastrarCliente.executar(clienteValido);
+        Cliente clienteRetornado = cadastrarCliente.executar(nomeValido, emailValido, cpfValido);
 
-        assertNotNull(response, "A resposta não deveria ser nula.");
-        assertEquals(1L, response.id(), "O ID do cliente salvo deveria ser 1.");
-        assertEquals("João Silva", response.nome(), "O nome do cliente salvo está incorreto.");
-        assertEquals("joao.silva@example.com", response.email(), "O email do cliente salvo está incorreto.");
-        assertEquals("12345678901", response.cpf(), "O CPF do cliente salvo está incorreto.");
+        assertNotNull(clienteRetornado, "O cliente retornado não deveria ser nulo.");
+        assertEquals(1L, clienteRetornado.getId(), "O ID do cliente salvo deveria ser 1.");
+        assertEquals("João Silva", clienteRetornado.getNome(), "O nome do cliente salvo está incorreto.");
+        assertEquals("joao.silva@example.com", clienteRetornado.getEmail().getValor(), "O email do cliente salvo está incorreto.");
+        assertEquals("12345678901", clienteRetornado.getCpf().getValor(), "O CPF do cliente salvo está incorreto.");
     }
 
     @Test
     @DisplayName("Deve lançar exceção ao tentar cadastrar cliente com nome vazio")
     void t2() {
-        ClienteRequestDTO novoCliente = new ClienteRequestDTO("", "12345678901", "Joao.silva@example.com");
+        String nomeVazio = "";
 
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> cadastrarCliente.executar(novoCliente),
+                () -> cadastrarCliente.executar(nomeVazio, emailValido, cpfValido),
                 "Deveria lançar uma exceção para nome vazio.");
 
         assertEquals("Nome é obrigatório", exception.getMessage(), "Mensagem da exceção está incorreta.");
@@ -74,10 +75,10 @@ class CadastrarClienteTest {
     @Test
     @DisplayName("Deve lançar exceção ao tentar cadastrar cliente com email vazio")
     void t3() {
-        ClienteRequestDTO novoCliente = new ClienteRequestDTO("João Silva", "12345678901", "");
+        String emailVazio = "";
 
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> cadastrarCliente.executar(novoCliente),
+                () -> cadastrarCliente.executar(nomeValido, emailVazio, cpfValido),
                 "Deveria lançar uma exceção para email vazio.");
 
         assertEquals("Email é obrigatório", exception.getMessage(), "Mensagem da exceção está incorreta.");
@@ -86,10 +87,10 @@ class CadastrarClienteTest {
     @Test
     @DisplayName("Deve lançar exceção ao tentar cadastrar cliente com email inválido")
     void t4() {
-        ClienteRequestDTO novoCliente = new ClienteRequestDTO("João Silva", "12345678901", "email_invalido");
+        String emailInvalido = "email_invalido";
 
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> cadastrarCliente.executar(novoCliente),
+                () -> cadastrarCliente.executar(nomeValido, emailInvalido, cpfValido),
                 "Deveria lançar uma exceção para email inválido.");
 
         assertEquals("Email inválido", exception.getMessage(), "Mensagem da exceção está incorreta.");
@@ -98,10 +99,10 @@ class CadastrarClienteTest {
     @Test
     @DisplayName("Deve lançar exceção ao tentar cadastrar cliente com CPF vazio")
     void t5() {
-        ClienteRequestDTO novoCliente = new ClienteRequestDTO("João Silva", "", "Joao.silva@example.com");
+        String cpfVazio = "";
 
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> cadastrarCliente.executar(novoCliente),
+                () -> cadastrarCliente.executar(nomeValido, emailValido, cpfVazio),
                 "Deveria lançar uma exceção para CPF vazio.");
 
         assertEquals("CPF é obrigatório", exception.getMessage(), "Mensagem da exceção está incorreta.");
@@ -110,10 +111,10 @@ class CadastrarClienteTest {
     @Test
     @DisplayName("Deve lançar exceção ao tentar cadastrar cliente com CPF inválido")
     void t6() {
-        ClienteRequestDTO novoCliente = new ClienteRequestDTO("João Silva", "12345", "Joao.silva@example.com");
+        String cpfInvalido = "12345";
 
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> cadastrarCliente.executar(novoCliente),
+                () -> cadastrarCliente.executar(nomeValido, emailValido, cpfInvalido),
                 "Deveria lançar uma exceção para CPF inválido.");
 
         assertEquals("CPF deve conter 11 dígitos numéricos", exception.getMessage(), "Mensagem da exceção está incorreta.");
@@ -123,10 +124,10 @@ class CadastrarClienteTest {
     @DisplayName("Deve lançar exceção quando CPF já existe")
     void t7() {
 
-        when(clienteGateway.buscarPorCpf(clienteValido.cpf())).thenReturn(Optional.of(clienteSalvo));
+        when(clienteGateway.buscarPorCpf(cpfValido)).thenReturn(Optional.of(clienteSalvo));
 
         ValidacaoException ex = assertThrows(ValidacaoException.class,
-                () -> cadastrarCliente.executar(clienteValido));
+                () -> cadastrarCliente.executar(nomeValido, emailValido, cpfValido));
 
         assertEquals("CPF duplicado",ex.getMessage());
 

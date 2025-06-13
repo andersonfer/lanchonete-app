@@ -1,7 +1,5 @@
 package br.com.lanchonete.autoatendimento.casosdeuso.cliente;
 
-import br.com.lanchonete.autoatendimento.controllers.dto.ClienteRequestDTO;
-import br.com.lanchonete.autoatendimento.controllers.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.dominio.shared.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
 import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
@@ -16,28 +14,23 @@ public class CadastrarCliente {
     }
 
 
-    public ClienteResponseDTO executar(final ClienteRequestDTO novoCliente) {
+    public Cliente executar(final String nome, final String email, final String cpf) {
 
         try {
 
-            validarDuplicidade(novoCliente);
+            validarDuplicidade(cpf);
 
-            final Cliente cliente = Cliente.criar(
-                    novoCliente.nome(),
-                    novoCliente.email(),
-                    novoCliente.cpf()
-            );
+            final Cliente cliente = Cliente.criar(nome, email, cpf);
 
-            final Cliente clienteSalvo = clienteGateway.salvar(cliente);
-            return ClienteResponseDTO.converterParaDTO(clienteSalvo);
+            return clienteGateway.salvar(cliente);
         } catch (IllegalArgumentException e) {
             throw new ValidacaoException(e.getMessage());
         }
 
     }
 
-    private void validarDuplicidade(final ClienteRequestDTO novoCliente){
-        final Optional<Cliente> clienteExistente = clienteGateway.buscarPorCpf(novoCliente.cpf());
+    private void validarDuplicidade(final String cpf){
+        final Optional<Cliente> clienteExistente = clienteGateway.buscarPorCpf(cpf);
         if (clienteExistente.isPresent()) {
             throw new ValidacaoException("CPF duplicado");
         }

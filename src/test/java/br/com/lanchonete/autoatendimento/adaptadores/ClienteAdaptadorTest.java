@@ -5,6 +5,7 @@ import br.com.lanchonete.autoatendimento.controllers.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.dominio.shared.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.casosdeuso.cliente.CadastrarCliente;
 import br.com.lanchonete.autoatendimento.casosdeuso.cliente.IdentificarCliente;
+import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,17 +35,19 @@ class ClienteAdaptadorTest {
 
     private ClienteRequestDTO novoCliente;
     private ClienteResponseDTO clienteResponse;
+    private Cliente cliente;
 
     @BeforeEach
     void configurar() {
         novoCliente = new ClienteRequestDTO("Teste da Silva", "12345678901", "teste@email.com");
         clienteResponse = new ClienteResponseDTO(1L, "Teste da Silva", "12345678901", "teste@email.com");
+        cliente = Cliente.reconstituir(1L, "Teste da Silva", "teste@email.com", "12345678901");
     }
 
     @Test
     @DisplayName("Deve cadastrar cliente com sucesso quando use case executa corretamente")
     void t1() {
-        when(cadastrarCliente.executar(any(ClienteRequestDTO.class))).thenReturn(clienteResponse);
+        when(cadastrarCliente.executar(anyString(), anyString(), anyString())).thenReturn(cliente);
 
         ClienteResponseDTO resultado = clienteAdaptador.cadastrarCliente(novoCliente);
 
@@ -58,7 +61,7 @@ class ClienteAdaptadorTest {
     @Test
     @DisplayName("Deve propagar exceção quando use case lança ValidacaoException")
     void t2() {
-        when(cadastrarCliente.executar(any(ClienteRequestDTO.class)))
+        when(cadastrarCliente.executar(anyString(), anyString(), anyString()))
                 .thenThrow(new ValidacaoException("Erro de validação"));
 
         assertThrows(ValidacaoException.class, () -> {
@@ -70,12 +73,16 @@ class ClienteAdaptadorTest {
     @DisplayName("Deve identificar cliente por CPF quando use case retorna cliente")
     void t3() {
         String cpf = "12345678901";
-        when(identificarCliente.executar(cpf)).thenReturn(Optional.of(clienteResponse));
+        when(identificarCliente.executar(cpf)).thenReturn(Optional.of(cliente));
 
         Optional<ClienteResponseDTO> resultado = clienteAdaptador.identificarPorCpf(cpf);
 
         assertTrue(resultado.isPresent());
-        assertEquals(clienteResponse, resultado.get());
+        ClienteResponseDTO dto = resultado.get();
+        assertEquals(cliente.getId(), dto.id());
+        assertEquals(cliente.getNome(), dto.nome());
+        assertEquals(cliente.getCpf().getValor(), dto.cpf());
+        assertEquals(cliente.getEmail().getValor(), dto.email());
     }
 
     @Test

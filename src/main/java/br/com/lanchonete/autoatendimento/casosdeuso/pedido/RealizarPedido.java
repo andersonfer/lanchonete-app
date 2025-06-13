@@ -1,8 +1,5 @@
 package br.com.lanchonete.autoatendimento.casosdeuso.pedido;
 
-import br.com.lanchonete.autoatendimento.controllers.dto.ItemPedidoDTO;
-import br.com.lanchonete.autoatendimento.controllers.dto.PedidoRequestDTO;
-import br.com.lanchonete.autoatendimento.controllers.dto.PedidoResponseDTO;
 import br.com.lanchonete.autoatendimento.dominio.shared.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.dominio.shared.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
@@ -33,14 +30,14 @@ public class RealizarPedido {
     }
 
 
-    public PedidoResponseDTO executar(final PedidoRequestDTO novoPedido) {
+    public Pedido executar(final String cpfCliente, final List<ItemPedidoInfo> itens) {
 
-        if (novoPedido == null) {
-            throw new ValidacaoException("Pedido não pode ser nulo");
+        if (itens == null || itens.isEmpty()) {
+            throw new ValidacaoException("Pedido deve conter pelo menos um item");
         }
 
         try {
-            final Cliente cliente = buscarCliente(novoPedido.cpfCliente());
+            final Cliente cliente = buscarCliente(cpfCliente);
 
             final Pedido pedido = Pedido.criar(
                     cliente,
@@ -48,28 +45,26 @@ public class RealizarPedido {
                     LocalDateTime.now()
             );
 
-            adicionarItensAoPedido(pedido,novoPedido.itens());
+            adicionarItensAoPedido(pedido, itens);
 
             pedido.validar();
 
-            final Pedido pedidoSalvo = pedidoGateway.salvar(pedido);
-
-            return PedidoResponseDTO.converterParaDTO(pedidoSalvo);
+            return pedidoGateway.salvar(pedido);
         } catch (IllegalArgumentException e) {
             throw new ValidacaoException(e.getMessage());
         }
 
     }
 
-    private void adicionarItensAoPedido(final Pedido pedido, final List<ItemPedidoDTO> itens) {
+    private void adicionarItensAoPedido(final Pedido pedido, final List<ItemPedidoInfo> itens) {
 
-        for (final ItemPedidoDTO itemDTO : itens) {
-            final Produto produto = produtoGateway.buscarPorId(itemDTO.produtoId())
-                    .orElseThrow(() -> new RecursoNaoEncontradoException("Produto não encontrado: " + itemDTO.produtoId()));
+        for (final ItemPedidoInfo itemInfo : itens) {
+            final Produto produto = produtoGateway.buscarPorId(itemInfo.produtoId())
+                    .orElseThrow(() -> new RecursoNaoEncontradoException("Produto não encontrado: " + itemInfo.produtoId()));
 
             final ItemPedido item = ItemPedido.criar(
                     produto,
-                    itemDTO.quantidade()
+                    itemInfo.quantidade()
             );
 
             pedido.adicionarItem(item);

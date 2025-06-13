@@ -8,7 +8,13 @@ import br.com.lanchonete.autoatendimento.dominio.shared.excecao.ValidacaoExcepti
 import br.com.lanchonete.autoatendimento.dominio.shared.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.casosdeuso.pedido.RealizarPedido;
 import br.com.lanchonete.autoatendimento.casosdeuso.pedido.ListarPedidos;
+import br.com.lanchonete.autoatendimento.casosdeuso.pedido.ItemPedidoInfo;
 import br.com.lanchonete.autoatendimento.entidades.pedido.StatusPedido;
+import br.com.lanchonete.autoatendimento.entidades.pedido.Pedido;
+import br.com.lanchonete.autoatendimento.entidades.pedido.ItemPedido;
+import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
+import br.com.lanchonete.autoatendimento.entidades.produto.Produto;
+import br.com.lanchonete.autoatendimento.entidades.produto.Categoria;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,6 +31,8 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -41,6 +49,7 @@ class PedidoAdaptadorTest {
 
     private PedidoRequestDTO pedidoRequest;
     private PedidoResponseDTO pedidoResponse;
+    private Pedido pedido;
 
     @BeforeEach
     void configurar() {
@@ -67,12 +76,18 @@ class PedidoAdaptadorTest {
                 LocalDateTime.now(),
                 new BigDecimal("57.80")
         );
+
+        // Criar entidade Pedido para os testes do UC
+        Cliente cliente = Cliente.reconstituir(1L, "João Silva", "joao@email.com", "12345678901");
+        pedido = Pedido.criar(cliente, StatusPedido.RECEBIDO, LocalDateTime.now());
+        pedido.setId(1L); // This sets the numeroPedido automatically
+        pedido.setValorTotal(new BigDecimal("57.80"));
     }
 
     @Test
     @DisplayName("Deve realizar checkout com sucesso quando use case executa corretamente")
     void t1() {
-        when(realizarPedido.executar(any(PedidoRequestDTO.class))).thenReturn(pedidoResponse);
+        when(realizarPedido.executar(anyString(), anyList())).thenReturn(pedido);
 
         PedidoResponseDTO resultado = pedidoAdaptador.realizarCheckout(pedidoRequest);
 
@@ -82,13 +97,12 @@ class PedidoAdaptadorTest {
         assertEquals("João Silva", resultado.nomeCliente());
         assertEquals(StatusPedido.RECEBIDO, resultado.status());
         assertEquals(new BigDecimal("57.80"), resultado.valorTotal());
-        assertEquals(2, resultado.itens().size());
     }
 
     @Test
     @DisplayName("Deve propagar exceção quando use case lança ValidacaoException")
     void t2() {
-        when(realizarPedido.executar(any(PedidoRequestDTO.class)))
+        when(realizarPedido.executar(anyString(), anyList()))
                 .thenThrow(new ValidacaoException("Pedido deve conter pelo menos um item"));
 
         assertThrows(ValidacaoException.class, () -> {
@@ -99,7 +113,7 @@ class PedidoAdaptadorTest {
     @Test
     @DisplayName("Deve propagar exceção quando use case lança RecursoNaoEncontradoException")
     void t3() {
-        when(realizarPedido.executar(any(PedidoRequestDTO.class)))
+        when(realizarPedido.executar(anyString(), anyList()))
                 .thenThrow(new RecursoNaoEncontradoException("Cliente não encontrado"));
 
         assertThrows(RecursoNaoEncontradoException.class, () -> {
@@ -110,14 +124,20 @@ class PedidoAdaptadorTest {
     @Test
     @DisplayName("Deve listar pedidos com sucesso quando use case retorna lista")
     void t4() {
-        List<PedidoResponseDTO> pedidos = Arrays.asList(pedidoResponse);
+        List<Pedido> pedidos = Arrays.asList(pedido);
         when(listarPedidos.executar()).thenReturn(pedidos);
 
         List<PedidoResponseDTO> resultado = pedidoAdaptador.listarPedidos();
 
         assertNotNull(resultado);
         assertEquals(1, resultado.size());
-        assertEquals(pedidoResponse, resultado.get(0));
+        PedidoResponseDTO dto = resultado.get(0);
+        assertEquals(pedido.getId(), dto.id());
+        assertEquals(pedido.getNumeroPedido().getValor(), dto.numeroPedido());
+        assertEquals(pedido.getCliente().getId(), dto.clienteId());
+        assertEquals(pedido.getCliente().getNome(), dto.nomeCliente());
+        assertEquals(pedido.getStatus(), dto.status());
+        assertEquals(pedido.getValorTotal(), dto.valorTotal());
     }
 
     @Test

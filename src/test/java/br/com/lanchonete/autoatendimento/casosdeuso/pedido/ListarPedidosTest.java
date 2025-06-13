@@ -1,6 +1,5 @@
 package br.com.lanchonete.autoatendimento.casosdeuso.pedido;
 
-import br.com.lanchonete.autoatendimento.controllers.dto.PedidoResponseDTO;
 import br.com.lanchonete.autoatendimento.interfaces.PedidoGateway;
 import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
 import br.com.lanchonete.autoatendimento.entidades.pedido.ItemPedido;
@@ -101,29 +100,28 @@ class ListarPedidosTest {
         when(pedidoGateway.listarTodos()).thenReturn(Arrays.asList(pedidoComCliente, pedidoSemCliente));
 
         // Executar o serviço
-        List<PedidoResponseDTO> pedidos = listarPedidos.executar();
+        List<Pedido> pedidos = listarPedidos.executar();
 
         // Verificações
         assertNotNull(pedidos, "A lista de pedidos não deve ser nula");
         assertEquals(2, pedidos.size(), "Deve retornar 2 pedidos");
 
         // Verificar o primeiro pedido (com cliente)
-        PedidoResponseDTO primeiroPedidoDTO = pedidos.get(0);
-        assertEquals(1L, primeiroPedidoDTO.id(), "ID do primeiro pedido deve ser 1");
-        assertEquals(1L, primeiroPedidoDTO.clienteId(), "ID do cliente deve ser 1");
-        assertEquals("João Silva", primeiroPedidoDTO.nomeCliente(), "Nome do cliente deve estar correto");
-        assertEquals(StatusPedido.RECEBIDO, primeiroPedidoDTO.status(), "Status deve ser RECEBIDO");
-        assertEquals(1, primeiroPedidoDTO.itens().size(), "Deve ter 1 item");
-        assertEquals(new BigDecimal("51.80"), primeiroPedidoDTO.valorTotal(), "Valor total deve ser 51.80");
+        Pedido primeiroPedido = pedidos.get(0);
+        assertEquals(1L, primeiroPedido.getId(), "ID do primeiro pedido deve ser 1");
+        assertEquals(1L, primeiroPedido.getCliente().getId(), "ID do cliente deve ser 1");
+        assertEquals("João Silva", primeiroPedido.getCliente().getNome(), "Nome do cliente deve estar correto");
+        assertEquals(StatusPedido.RECEBIDO, primeiroPedido.getStatus(), "Status deve ser RECEBIDO");
+        assertEquals(1, primeiroPedido.getItens().size(), "Deve ter 1 item");
+        assertEquals(new BigDecimal("51.80"), primeiroPedido.getValorTotal(), "Valor total deve ser 51.80");
 
         // Verificar o segundo pedido (sem cliente)
-        PedidoResponseDTO segundoPedidoDTO = pedidos.get(1);
-        assertEquals(2L, segundoPedidoDTO.id(), "ID do segundo pedido deve ser 2");
-        assertNull(segundoPedidoDTO.clienteId(), "ID do cliente deve ser nulo");
-        assertNull(segundoPedidoDTO.nomeCliente(), "Nome do cliente deve ser nulo");
-        assertEquals(StatusPedido.FINALIZADO, segundoPedidoDTO.status(), "Status deve ser FINALIZADO");
-        assertEquals(1, segundoPedidoDTO.itens().size(), "Deve ter 1 item");
-        assertEquals(new BigDecimal("6.00"), segundoPedidoDTO.valorTotal(), "Valor total deve ser 6.00");
+        Pedido segundoPedido = pedidos.get(1);
+        assertEquals(2L, segundoPedido.getId(), "ID do segundo pedido deve ser 2");
+        assertNull(segundoPedido.getCliente(), "Cliente deve ser nulo");
+        assertEquals(StatusPedido.FINALIZADO, segundoPedido.getStatus(), "Status deve ser FINALIZADO");
+        assertEquals(1, segundoPedido.getItens().size(), "Deve ter 1 item");
+        assertEquals(new BigDecimal("6.00"), segundoPedido.getValorTotal(), "Valor total deve ser 6.00");
 
         // Verificar que o repositório foi chamado
         verify(pedidoGateway).listarTodos();
@@ -136,7 +134,7 @@ class ListarPedidosTest {
         when(pedidoGateway.listarTodos()).thenReturn(Collections.emptyList());
 
         // Executar o serviço
-        List<PedidoResponseDTO> pedidos = listarPedidos.executar();
+        List<Pedido> pedidos = listarPedidos.executar();
 
         // Verificações
         assertNotNull(pedidos, "A lista de pedidos não deve ser nula");

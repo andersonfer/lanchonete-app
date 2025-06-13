@@ -1,6 +1,5 @@
 package br.com.lanchonete.autoatendimento.casosdeuso.pedido;
 
-import br.com.lanchonete.autoatendimento.controllers.dto.PedidoResponseDTO;
 import br.com.lanchonete.autoatendimento.entidades.pedido.Pedido;
 import br.com.lanchonete.autoatendimento.interfaces.PedidoGateway;
 import java.util.List;
@@ -13,11 +12,7 @@ public class ListarPedidos {
         this.pedidoGateway = pedidoGateway;
     }
 
-    public List<PedidoResponseDTO> executar() {
-        final List<Pedido> pedidos = pedidoGateway.listarTodos();
-
-        return pedidos.stream()
-                .map(PedidoResponseDTO::converterParaDTO)
-                .toList();
+    public List<Pedido> executar() {
+        return pedidoGateway.listarTodos();
     }
 }

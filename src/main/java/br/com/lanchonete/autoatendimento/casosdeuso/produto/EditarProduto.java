@@ -1,12 +1,12 @@
 package br.com.lanchonete.autoatendimento.casosdeuso.produto;
 
-import br.com.lanchonete.autoatendimento.controllers.dto.ProdutoRequestDTO;
-import br.com.lanchonete.autoatendimento.controllers.dto.ProdutoResponseDTO;
 import br.com.lanchonete.autoatendimento.dominio.shared.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.entidades.shared.Preco;
 import br.com.lanchonete.autoatendimento.dominio.shared.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
 import br.com.lanchonete.autoatendimento.entidades.produto.Produto;
+import br.com.lanchonete.autoatendimento.entidades.produto.Categoria;
+import java.math.BigDecimal;
 public class EditarProduto {
 
     private final ProdutoGateway produtoGateway;
@@ -15,7 +15,7 @@ public class EditarProduto {
         this.produtoGateway = produtoGateway;
     }
 
-    public ProdutoResponseDTO executar(final Long id, final ProdutoRequestDTO produtoParaEditar) {
+    public Produto executar(final Long id, final String nome, final String descricao, final BigDecimal preco, final Categoria categoria) {
         try {
             if (id == null) {
                 throw new ValidacaoException("ID do produto é obrigatório");
@@ -24,26 +24,24 @@ public class EditarProduto {
             final Produto produto = produtoGateway.buscarPorId(id)
                     .orElseThrow(() -> new RecursoNaoEncontradoException("Produto não encontrado"));
 
-            validarDuplicidade(produto, produtoParaEditar);
+            validarDuplicidade(produto, nome);
 
-            produto.setNome(produtoParaEditar.nome());
-            produto.setDescricao(produtoParaEditar.descricao());
-            produto.setPreco(new Preco(produtoParaEditar.preco()));
-            produto.setCategoria(produtoParaEditar.categoria());
+            produto.setNome(nome);
+            produto.setDescricao(descricao);
+            produto.setPreco(new Preco(preco));
+            produto.setCategoria(categoria);
 
-            final Produto produtoAtualizado = produtoGateway.atualizar(produto);
-
-            return ProdutoResponseDTO.converterParaDTO(produtoAtualizado);
+            return produtoGateway.atualizar(produto);
         } catch (IllegalArgumentException e) {
             throw new ValidacaoException(e.getMessage());
         }
     }
 
 
-    private void validarDuplicidade(Produto produto, ProdutoRequestDTO produtoRequest) {
-        final boolean houveAlteracaoNoNome = !produto.getNome().equals(produtoRequest.nome());
+    private void validarDuplicidade(Produto produto, String novoNome) {
+        final boolean houveAlteracaoNoNome = !produto.getNome().equals(novoNome);
         if (houveAlteracaoNoNome) {
-            final boolean existeOutroProdutoComMesmoNome = produtoGateway.existePorNome(produtoRequest.nome());
+            final boolean existeOutroProdutoComMesmoNome = produtoGateway.existePorNome(novoNome);
             if (existeOutroProdutoComMesmoNome) {
                 throw new ValidacaoException("Já existe um produto com este nome");
             }

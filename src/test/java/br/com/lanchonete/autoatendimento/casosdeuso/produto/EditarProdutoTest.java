@@ -1,7 +1,5 @@
 package br.com.lanchonete.autoatendimento.casosdeuso.produto;
 
-import br.com.lanchonete.autoatendimento.controllers.dto.ProdutoRequestDTO;
-import br.com.lanchonete.autoatendimento.controllers.dto.ProdutoResponseDTO;
 import br.com.lanchonete.autoatendimento.dominio.shared.excecao.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.dominio.shared.excecao.ValidacaoException;
 import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
@@ -31,7 +29,10 @@ class EditarProdutoTest {
     @InjectMocks
     private EditarProduto editarProduto;
 
-    private ProdutoRequestDTO produtoValido;
+    private String nomeNovo;
+    private String descricaoNova;
+    private BigDecimal precoNovo;
+    private Categoria categoriaNova;
     private Produto produtoExistente;
     private Produto produtoAtualizado;
 
@@ -41,9 +42,11 @@ class EditarProdutoTest {
         produtoExistente = Produto.reconstituir(1L, "X-Bacon",
                 "Hambúrguer com bacon", new BigDecimal("28.90"), Categoria.LANCHE);
 
-        // Produto com dados atualizados
-        produtoValido = new ProdutoRequestDTO("X-Bacon Especial",
-                "Hambúrguer com bacon crocante e molho especial",new BigDecimal("32.90"), Categoria.LANCHE);
+        // Dados atualizados
+        nomeNovo = "X-Bacon Especial";
+        descricaoNova = "Hambúrguer com bacon crocante e molho especial";
+        precoNovo = new BigDecimal("32.90");
+        categoriaNova = Categoria.LANCHE;
 
         // Produto após atualização
         produtoAtualizado = Produto.reconstituir(1L, "X-Bacon Especial",
@@ -57,14 +60,13 @@ class EditarProdutoTest {
         when(produtoGateway.buscarPorId(1L)).thenReturn(Optional.of(produtoExistente));
         when(produtoGateway.atualizar(any(Produto.class))).thenReturn(produtoAtualizado);
 
+        Produto produtoRetornado = editarProduto.executar(1L, nomeNovo, descricaoNova, precoNovo, categoriaNova);
 
-        ProdutoResponseDTO response = editarProduto.executar(1L, produtoValido);
-
-        assertNotNull(response, "A resposta não deveria ser nula");
-        assertEquals(1L, response.id(), "O ID do produto atualizado deveria ser 1");
-        assertEquals("X-Bacon Especial", response.nome(), "O nome do produto atualizado está incorreto");
-        assertEquals(new BigDecimal("32.90"), response.preco(), "O preço do produto atualizado está incorreto");
-        assertEquals(Categoria.LANCHE, response.categoria(), "A categoria do produto atualizado está incorreta");
+        assertNotNull(produtoRetornado, "O produto retornado não deveria ser nulo");
+        assertEquals(1L, produtoRetornado.getId(), "O ID do produto atualizado deveria ser 1");
+        assertEquals("X-Bacon Especial", produtoRetornado.getNome(), "O nome do produto atualizado está incorreto");
+        assertEquals(new BigDecimal("32.90"), produtoRetornado.getPreco().getValor(), "O preço do produto atualizado está incorreto");
+        assertEquals(Categoria.LANCHE, produtoRetornado.getCategoria(), "A categoria do produto atualizado está incorreta");
 
         verify(produtoGateway).buscarPorId(1L);
         verify(produtoGateway).atualizar(any(Produto.class));
@@ -75,7 +77,7 @@ class EditarProdutoTest {
     void t2() {
 
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> editarProduto.executar(null, produtoValido),
+                () -> editarProduto.executar(null, nomeNovo, descricaoNova, precoNovo, categoriaNova),
                 "Deveria lançar uma exceção para ID nulo");
 
         assertEquals("ID do produto é obrigatório", exception.getMessage(),
@@ -93,7 +95,7 @@ class EditarProdutoTest {
 
 
         assertThrows(RecursoNaoEncontradoException.class,
-                () -> editarProduto.executar(999L, produtoValido),
+                () -> editarProduto.executar(999L, nomeNovo, descricaoNova, precoNovo, categoriaNova),
                 "Deveria lançar uma exceção quando o produto não existe");
 
         verify(produtoGateway).buscarPorId(999L);
@@ -110,15 +112,12 @@ class EditarProdutoTest {
         when(produtoGateway.buscarPorId(2L)).thenReturn(Optional.of(outroProduto));
 
         // Nome que já existe para o produto com ID 1
-        ProdutoRequestDTO novoProdutoComNomeDuplicado = new ProdutoRequestDTO("X-Bacon",
-                "Hambúrguer com salada especial", new BigDecimal("27.90"), Categoria.LANCHE);
-
+        String nomeJaExistente = "X-Bacon";
 
         when(produtoGateway.existePorNome("X-Bacon")).thenReturn(true);
 
-
         ValidacaoException exception = assertThrows(ValidacaoException.class,
-                () -> editarProduto.executar(2L, novoProdutoComNomeDuplicado),
+                () -> editarProduto.executar(2L, nomeJaExistente, "Hambúrguer com salada especial", new BigDecimal("27.90"), Categoria.LANCHE),
                 "Deveria lançar uma exceção quando o nome já existe para outro produto");
 
         assertEquals("Já existe um produto com este nome", exception.getMessage(),
@@ -133,9 +132,10 @@ class EditarProdutoTest {
     @DisplayName("Deve permitir editar mantendo o mesmo nome para o produto")
     void t5() {
 
-        // Mesmo nome
-        ProdutoRequestDTO produtoParaEditarMatendoNome = new ProdutoRequestDTO("X-Bacon",
-                "Hambúrguer com bacon e queijo", new BigDecimal("29.90"), Categoria.LANCHE);
+        // Mesmo nome, só mudando descrição e preço
+        String mesmoNome = "X-Bacon";
+        String novaDescricao = "Hambúrguer com bacon e queijo";
+        BigDecimal novoPreco = new BigDecimal("29.90");
 
         Produto produtoAtualizadoMesmoNome = Produto.reconstituir(1L, "X-Bacon",
                 "Hambúrguer com bacon e queijo", new BigDecimal("29.90"), Categoria.LANCHE);
@@ -143,13 +143,11 @@ class EditarProdutoTest {
         when(produtoGateway.buscarPorId(1L)).thenReturn(Optional.of(produtoExistente));
         when(produtoGateway.atualizar(any(Produto.class))).thenReturn(produtoAtualizadoMesmoNome);
 
+        Produto produtoRetornado = editarProduto.executar(1L, mesmoNome, novaDescricao, novoPreco, Categoria.LANCHE);
 
-        ProdutoResponseDTO response = editarProduto.executar(1L, produtoParaEditarMatendoNome);
-
-
-        assertNotNull(response);
-        assertEquals("X-Bacon", response.nome());
-        assertEquals(new BigDecimal("29.90"), response.preco());
+        assertNotNull(produtoRetornado);
+        assertEquals("X-Bacon", produtoRetornado.getNome());
+        assertEquals(new BigDecimal("29.90"), produtoRetornado.getPreco().getValor());
 
         verify(produtoGateway).buscarPorId(1L);
         verify(produtoGateway).atualizar(any(Produto.class));
@@ -162,45 +160,30 @@ class EditarProdutoTest {
 
         when(produtoGateway.buscarPorId(1L)).thenReturn(Optional.of(produtoExistente));
 
-
-        ProdutoRequestDTO produtoParaEditarNomeVazio = new ProdutoRequestDTO("",
-                "Descrição teste",new BigDecimal("29.90"), Categoria.LANCHE);
-
-
+        // Teste nome vazio
         ValidacaoException exceptionNome = assertThrows(ValidacaoException.class,
-                () -> editarProduto.executar(1L, produtoParaEditarNomeVazio),
+                () -> editarProduto.executar(1L, "", "Descrição teste", new BigDecimal("29.90"), Categoria.LANCHE),
                 "Deveria lançar uma exceção para nome vazio");
 
         assertEquals("Nome do produto é obrigatório", exceptionNome.getMessage());
 
-
-        ProdutoRequestDTO produtoParaEditarPrecoNulo = new ProdutoRequestDTO("X-Bacon Especial",
-                "Descrição teste", null, Categoria.LANCHE);
-
-
+        // Teste preço nulo
         ValidacaoException exceptionPreco = assertThrows(ValidacaoException.class,
-                () -> editarProduto.executar(1L, produtoParaEditarPrecoNulo),
+                () -> editarProduto.executar(1L, "X-Bacon Especial", "Descrição teste", null, Categoria.LANCHE),
                 "Deveria lançar uma exceção para preço nulo");
 
         assertEquals("Preço é obrigatório", exceptionPreco.getMessage());
 
-
-        ProdutoRequestDTO produtoParaEditarPrecoZero = new ProdutoRequestDTO("X-Bacon Especial",
-                "Descrição teste", BigDecimal.ZERO, Categoria.LANCHE);
-
-
+        // Teste preço zero
         ValidacaoException exceptionPrecoZero = assertThrows(ValidacaoException.class,
-                () -> editarProduto.executar(1L, produtoParaEditarPrecoZero),
+                () -> editarProduto.executar(1L, "X-Bacon Especial", "Descrição teste", BigDecimal.ZERO, Categoria.LANCHE),
                 "Deveria lançar uma exceção para preço zero");
 
         assertEquals("Preço deve ser maior que zero", exceptionPrecoZero.getMessage());
 
-
-        ProdutoRequestDTO produtoParaEditarCategoriaNula = new ProdutoRequestDTO("X-Bacon Especial","Descrição teste",new BigDecimal("29.90"),null);
-
-
+        // Teste categoria nula
         ValidacaoException exceptionCategoria = assertThrows(ValidacaoException.class,
-                () -> editarProduto.executar(1L, produtoParaEditarCategoriaNula),
+                () -> editarProduto.executar(1L, "X-Bacon Especial", "Descrição teste", new BigDecimal("29.90"), null),
                 "Deveria lançar uma exceção para categoria nula");
 
         assertEquals("Categoria do produto é obrigatória", exceptionCategoria.getMessage());

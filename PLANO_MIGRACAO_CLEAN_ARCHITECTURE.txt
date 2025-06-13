@@ -1,109 +1,152 @@
-# Plano de Migração: Tarefas Restantes
+# Plano de Migração: Reestruturação Completa para Clean Architecture
 
-## Status Atual vs Desejado
+## 🎯 OBJETIVO
+Reorganizar completamente a estrutura de pacotes para seguir rigorosamente os princípios de Clean Architecture.
 
-### ✅ JÁ IMPLEMENTADO:
-- ✅ Separação API/Controller (contratos vs implementações)
-- ✅ Estrutura básica com /entidades/, /casosdeuso/, /interfaces/
-- ✅ Controllers implementando interfaces API
-- ✅ Renomeação Repositórios → Gateways (pacote /gateways/ criado)
-- ✅ Reorganização: /api/ e /controllers/ independentes, DTOs em /controllers/dto/
-
-### 🚧 TAREFAS RESTANTES:
-
-### **1. CRIAR VALUE OBJECTS**
-**Status:** Pendente
-**Descrição:** Criar classes para encapsular validações
-**Arquivos a criar:**
-- `/entidades/shared/Cpf.java`
-- `/entidades/shared/Email.java`
-- `/entidades/produto/Preco.java`
-- `/entidades/pedido/NumeroPedido.java`
-
-**Arquivos a modificar:**
-- `Cliente.java` - usar Cpf e Email
-- `Produto.java` - usar Preco  
-- `Pedido.java` - usar NumeroPedido
-- Todos os DTOs, gateways e use cases relacionados
-
----
-
-### **2. LIMPAR USE CASES**
-**Status:** Pendente
-**Descrição:** Remover anotações Spring dos use cases
-**Localização:** Manter em `/casosdeuso/` (sem mover)
-**Nomes:** Manter atuais (sem renomear)
-
-**Classes a modificar:**
-- `CadastrarCliente.java` - remover @Service, @Transactional
-- `IdentificarCliente.java` - remover @Service
-- `CriarProduto.java` - remover @Service, @Transactional
-- `EditarProduto.java` - remover @Service, @Transactional
-- `RemoverProduto.java` - remover @Service, @Transactional
-- `BuscarProdutosPorCategoria.java` - remover @Service
-- `RealizarPedido.java` - remover @Service, @Transactional
-- `ListarPedidos.java` - remover @Service
-
----
-
-### **3. CRIAR APPLICATION SERVICES**
-**Status:** Pendente
-**Descrição:** Camada de orquestração na Interface Adapters
-**Localização:** Expandir `/aplicacao/` existente
-
-**Arquivos a criar:**
-- `/aplicacao/ClienteApplicationService.java`
-- `/aplicacao/ProdutoApplicationService.java`
-- `/aplicacao/PedidoApplicationService.java`
-
-**Arquivos a modificar:**
-- Todos os controllers (injetar App Service ao invés de Use Cases)
-- Configurações (adicionar beans de App Services)
-- App Services injetam Gateways ao invés de Use Cases injetarem diretamente
-
----
-
-### **4. LIMPAR DEPENDÊNCIAS DAS ENTITIES**
-**Status:** Pendente
-**Descrição:** Remover dependências externas das entities
-
-**Classes a modificar:**
-- `Cliente.java` - remover import Utils.validarCpf
-- `Produto.java` - revisar dependências Lombok
-- `Pedido.java` - revisar dependências Lombok  
-- `ItemPedido.java` - revisar dependências Lombok
-
----
-
-## 🎯 ESTRUTURA FINAL ESPERADA
+## 📋 ESTRUTURA ALVO
 
 ```
-br.com.lanchonete.autoatendimento
-├── entidades/                    # Mantém atual + Value Objects
-│   ├── cliente/
-│   │   └── Cliente.java         # ✅ Limpar dependencies
-│   ├── produto/
-│   │   ├── Produto.java         # ✅ Limpar dependencies  
-│   │   └── Preco.java           # 📦 NOVO Value Object
-│   ├── pedido/
-│   │   ├── Pedido.java          # ✅ Limpar dependencies
-│   │   ├── ItemPedido.java      # ✅ Limpar dependencies
-│   │   └── NumeroPedido.java    # 📦 NOVO Value Object
-│   └── shared/
-│       ├── Cpf.java             # 📦 NOVO Value Object
-│       └── Email.java           # 📦 NOVO Value Object
-├── casosdeuso/                   # ✅ Limpar anotações Spring
-├── aplicacao/                    # ✅ EXPANDIR - Application Services + exceções
-├── api/                          # ✅ JÁ CRIADO - Contratos REST
-├── controllers/                  # ✅ JÁ REORGANIZADO - Implementações + DTOs
-├── gateways/                     # ✅ JÁ CRIADO - Implementações JDBC
-├── frameworks/                   # Mantém atual (config/util)
-└── interfaces/                   # ✅ JÁ ATUALIZADO - Interfaces Gateway
+br.com.autoatendimento/
+│
+├── aplicacao/                    # Application Business Rules
+│   ├── casosdeuso/              # Use Cases
+│   │   ├── cliente/
+│   │   │   ├── CadastrarCliente.java
+│   │   │   └── IdentificarCliente.java
+│   │   ├── produto/
+│   │   │   ├── CriarProduto.java
+│   │   │   ├── EditarProduto.java
+│   │   │   ├── RemoverProduto.java
+│   │   │   └── BuscarProdutosPorCategoria.java
+│   │   └── pedido/
+│   │       ├── RealizarPedido.java
+│   │       └── ListarPedidos.java
+│   ├── servicos/                # Application Services  
+│   │   ├── ClienteApplicationService.java
+│   │   ├── ProdutoApplicationService.java
+│   │   └── PedidoApplicationService.java
+│   └── portas/                  # Interfaces (Ports)
+│       ├── entrada/             # Input Ports (se necessário)
+│       └── saida/               # Output Ports (Gateways)
+│           ├── ClienteGateway.java
+│           ├── ProdutoGateway.java
+│           └── PedidoGateway.java
+│
+├── dominio/                     # Enterprise Business Rules
+│   ├── modelo/                  # Entities + Value Objects
+│   │   ├── cliente/
+│   │   │   └── Cliente.java
+│   │   ├── produto/
+│   │   │   ├── Produto.java
+│   │   │   └── Categoria.java
+│   │   ├── pedido/
+│   │   │   ├── Pedido.java
+│   │   │   ├── ItemPedido.java
+│   │   │   └── StatusPedido.java
+│   │   └── shared/
+│   │       ├── Cpf.java
+│   │       ├── Email.java
+│   │       ├── Preco.java
+│   │       └── NumeroPedido.java
+│   └── excecoes/               # Domain Exceptions
+│       ├── ValidacaoException.java
+│       └── RecursoNaoEncontradoException.java
+│
+├── adaptadores/                 # Interface Adapters
+│   ├── rest/                   # REST Layer
+│   │   ├── controllers/
+│   │   │   ├── ClienteController.java
+│   │   │   ├── ProdutoController.java
+│   │   │   ├── PedidoController.java
+│   │   │   └── TratarExcecaoController.java
+│   │   ├── api/
+│   │   │   ├── ClienteApi.java
+│   │   │   ├── ProdutoApi.java
+│   │   │   └── PedidoApi.java
+│   │   └── dto/
+│   │       ├── ClienteRequestDTO.java
+│   │       ├── ClienteResponseDTO.java
+│   │       ├── ProdutoRequestDTO.java
+│   │       ├── ProdutoResponseDTO.java
+│   │       ├── PedidoRequestDTO.java
+│   │       ├── PedidoResponseDTO.java
+│   │       ├── ItemPedidoDTO.java
+│   │       └── ItemPedidoResponseDTO.java
+│   └── persistencia/           # Data Access Layer
+│       ├── ClienteGatewayJDBC.java
+│       ├── ProdutoGatewayJDBC.java
+│       └── PedidoGatewayJDBC.java
+│
+└── infra/                      # Frameworks & Drivers
+    ├── config/
+    │   ├── ClienteServiceConfig.java
+    │   ├── ProdutoServiceConfig.java
+    │   ├── PedidoServiceConfig.java
+    │   ├── RepositorioConfig.java
+    │   ├── JdbcConfig.java
+    │   └── SwaggerConfig.java
+    └── util/
+        └── Utils.java
 ```
 
-## ⚡ ORDEM DE EXECUÇÃO RECOMENDADA
+## 🔄 PLANO DE MIGRAÇÃO
 
-1. **Value Objects** - Base para todas as outras mudanças
-2. **Limpar Dependencies** - Remove dependências externas  
-3. **Limpar Use Cases** - Remove anotações Spring
-4. **Application Services** - Camada de orquestração
+### **FASE 1: CRIAR NOVA ESTRUTURA**
+1. Criar pacotes da nova estrutura
+2. Mover arquivos para posições corretas
+3. Atualizar todos os imports
+
+### **FASE 2: REORGANIZAR DOMÍNIO**
+1. Mover entidades para `dominio/modelo/`
+2. Mover exceções para `dominio/excecoes/`
+3. Atualizar imports das entidades
+
+### **FASE 3: REORGANIZAR APLICAÇÃO**
+1. Mover Use Cases para `aplicacao/casosdeuso/`
+2. Mover interfaces para `aplicacao/portas/saida/`
+3. Criar Application Services em `aplicacao/servicos/`
+
+### **FASE 4: REORGANIZAR ADAPTADORES**
+1. Mover Controllers para `adaptadores/rest/controllers/`
+2. Mover APIs para `adaptadores/rest/api/`
+3. Mover DTOs para `adaptadores/rest/dto/`
+4. Mover Gateways para `adaptadores/persistencia/`
+
+### **FASE 5: REORGANIZAR INFRAESTRUTURA**
+1. Mover configurações para `infra/config/`
+2. Mover utilitários para `infra/util/`
+
+### **FASE 6: ATUALIZAR DEPENDÊNCIAS**
+1. Controllers injetam Application Services
+2. Application Services injetam Use Cases
+3. Use Cases dependem de interfaces (portas)
+4. Gateways implementam interfaces
+
+### **FASE 7: LIMPEZA E VALIDAÇÃO**
+1. Remover anotações Spring dos Use Cases
+2. Verificar Dependency Rule
+3. Executar todos os testes
+4. Validar endpoints
+
+## ⚠️ CUIDADOS ESPECIAIS
+
+1. **Manter funcionalidade:** Todos os testes devem continuar passando
+2. **Atualizar imports:** Será necessário atualizar muitos imports
+3. **Configurações Spring:** Ajustar scan de componentes para nova estrutura
+4. **Testes:** Atualizar packages nos testes
+
+## 📊 RESULTADO ESPERADO
+
+- ✅ 100% conforme Clean Architecture
+- ✅ Dependency Rule respeitada
+- ✅ Separação clara de responsabilidades
+- ✅ Código mais maintível e testável
+- ✅ Estrutura escalável para crescimento
+
+## 🎯 BENEFÍCIOS
+
+1. **Clareza arquitetural:** Cada camada tem responsabilidade bem definida
+2. **Testabilidade:** Use Cases puros, sem dependências de framework
+3. **Manutenibilidade:** Mudanças isoladas em suas respectivas camadas
+4. **Escalabilidade:** Estrutura preparada para crescimento do sistema
+5. **Conformidade:** 100% alinhado com princípios Clean Architecture

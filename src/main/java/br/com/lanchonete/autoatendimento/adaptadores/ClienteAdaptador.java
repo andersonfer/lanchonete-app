@@ -5,18 +5,22 @@ import br.com.lanchonete.autoatendimento.controllers.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.casosdeuso.cliente.CadastrarCliente;
 import br.com.lanchonete.autoatendimento.casosdeuso.cliente.IdentificarCliente;
 import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 public class ClienteAdaptador {
 
     private final CadastrarCliente cadastrarCliente;
     private final IdentificarCliente identificarCliente;
+
+    public ClienteAdaptador(final CadastrarCliente cadastrarCliente,
+                           final IdentificarCliente identificarCliente) {
+        this.cadastrarCliente = cadastrarCliente;
+        this.identificarCliente = identificarCliente;
+    }
 
     @Transactional
     public ClienteResponseDTO cadastrarCliente(final ClienteRequestDTO novoCliente) {

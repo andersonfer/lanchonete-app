@@ -5,7 +5,6 @@ import br.com.lanchonete.autoatendimento.controllers.dto.ProdutoRequestDTO;
 import br.com.lanchonete.autoatendimento.controllers.dto.ProdutoResponseDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.ProdutoAdaptador;
 import br.com.lanchonete.autoatendimento.entidades.produto.Categoria;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -13,10 +12,13 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-@RequiredArgsConstructor
 public class ProdutoController implements ProdutoApi {
 
     private final ProdutoAdaptador produtoAdaptador;
+
+    public ProdutoController(final ProdutoAdaptador produtoAdaptador) {
+        this.produtoAdaptador = produtoAdaptador;
+    }
 
     @Override
     public ResponseEntity<ProdutoResponseDTO> criar(final ProdutoRequestDTO produtoRequest) {

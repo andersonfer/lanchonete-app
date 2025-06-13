@@ -5,18 +5,22 @@ import br.com.lanchonete.autoatendimento.controllers.dto.PedidoResponseDTO;
 import br.com.lanchonete.autoatendimento.casosdeuso.pedido.RealizarPedido;
 import br.com.lanchonete.autoatendimento.casosdeuso.pedido.ListarPedidos;
 import br.com.lanchonete.autoatendimento.entidades.pedido.Pedido;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class PedidoAdaptador {
 
     private final RealizarPedido realizarPedido;
     private final ListarPedidos listarPedidos;
+
+    public PedidoAdaptador(final RealizarPedido realizarPedido,
+                          final ListarPedidos listarPedidos) {
+        this.realizarPedido = realizarPedido;
+        this.listarPedidos = listarPedidos;
+    }
 
     @Transactional
     public PedidoResponseDTO realizarCheckout(final PedidoRequestDTO pedidoRequest) {

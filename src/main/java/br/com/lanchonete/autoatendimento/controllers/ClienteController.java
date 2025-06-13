@@ -4,7 +4,6 @@ import br.com.lanchonete.autoatendimento.api.ClienteApi;
 import br.com.lanchonete.autoatendimento.controllers.dto.ClienteRequestDTO;
 import br.com.lanchonete.autoatendimento.controllers.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.ClienteAdaptador;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -12,10 +11,13 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 @Component
-@RequiredArgsConstructor
 public class ClienteController implements ClienteApi {
 
     private final ClienteAdaptador clienteAdaptador;
+
+    public ClienteController(final ClienteAdaptador clienteAdaptador) {
+        this.clienteAdaptador = clienteAdaptador;
+    }
 
     @Override
     public ResponseEntity<ClienteResponseDTO> cadastrarCliente(final ClienteRequestDTO novoCliente) {

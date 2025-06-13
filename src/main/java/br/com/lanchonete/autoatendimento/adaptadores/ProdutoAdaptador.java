@@ -8,20 +8,28 @@ import br.com.lanchonete.autoatendimento.casosdeuso.produto.EditarProduto;
 import br.com.lanchonete.autoatendimento.casosdeuso.produto.RemoverProduto;
 import br.com.lanchonete.autoatendimento.entidades.produto.Categoria;
 import br.com.lanchonete.autoatendimento.entidades.produto.Produto;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class ProdutoAdaptador {
 
     private final BuscarProdutosPorCategoria buscarProdutosPorCategoria;
     private final CriarProduto criarProduto;
     private final EditarProduto editarProduto;
     private final RemoverProduto removerProduto;
+
+    public ProdutoAdaptador(final BuscarProdutosPorCategoria buscarProdutosPorCategoria,
+                           final CriarProduto criarProduto,
+                           final EditarProduto editarProduto,
+                           final RemoverProduto removerProduto) {
+        this.buscarProdutosPorCategoria = buscarProdutosPorCategoria;
+        this.criarProduto = criarProduto;
+        this.editarProduto = editarProduto;
+        this.removerProduto = removerProduto;
+    }
 
     public List<ProdutoResponseDTO> buscarPorCategoria(final Categoria categoria) {
         List<Produto> produtos = buscarProdutosPorCategoria.executar(categoria);

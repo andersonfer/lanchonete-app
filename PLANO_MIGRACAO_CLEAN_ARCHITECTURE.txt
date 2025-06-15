@@ -6,7 +6,7 @@ Reorganizar completamente a estrutura de pacotes para seguir rigorosamente os pr
 ## 📋 ESTRUTURA ALVO
 
 ```
-br.com.autoatendimento/
+br.com.lanchonete.autoatendimento/
 │
 ├── aplicacao/                    # Application Business Rules
 │   ├── casosdeuso/              # Use Cases

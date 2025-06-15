@@ -1,16 +1,16 @@
 package br.com.lanchonete.autoatendimento.e2e;
 
-import br.com.lanchonete.autoatendimento.controllers.dto.ItemPedidoDTO;
-import br.com.lanchonete.autoatendimento.controllers.dto.PedidoRequestDTO;
-import br.com.lanchonete.autoatendimento.controllers.dto.PedidoResponseDTO;
-import br.com.lanchonete.autoatendimento.interfaces.ClienteGateway;
-import br.com.lanchonete.autoatendimento.interfaces.PedidoGateway;
-import br.com.lanchonete.autoatendimento.interfaces.ProdutoGateway;
-import br.com.lanchonete.autoatendimento.entidades.cliente.Cliente;
-import br.com.lanchonete.autoatendimento.entidades.pedido.Pedido;
-import br.com.lanchonete.autoatendimento.entidades.pedido.StatusPedido;
-import br.com.lanchonete.autoatendimento.entidades.produto.Categoria;
-import br.com.lanchonete.autoatendimento.entidades.produto.Produto;
+import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.ItemPedidoDTO;
+import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.PedidoRequestDTO;
+import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.PedidoResponseDTO;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteGateway;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.PedidoGateway;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoGateway;
+import br.com.lanchonete.autoatendimento.dominio.modelo.cliente.Cliente;
+import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.Pedido;
+import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.StatusPedido;
+import br.com.lanchonete.autoatendimento.dominio.modelo.produto.Categoria;
+import br.com.lanchonete.autoatendimento.dominio.modelo.produto.Produto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

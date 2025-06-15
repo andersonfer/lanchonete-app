@@ -1,0 +1,25 @@
+package br.com.lanchonete.autoatendimento.infra;
+
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.ListarPedidos;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.RealizarPedido;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteGateway;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.PedidoGateway;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoGateway;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class PedidoServiceConfig {
+
+    @Bean
+    ListarPedidos listarPedidos(final PedidoGateway pedidoGateway) {
+        return new ListarPedidos(pedidoGateway);
+    }
+
+    @Bean
+    RealizarPedido realizarPedido(final PedidoGateway pedidoGateway,
+                                  final ClienteGateway clienteGateway,
+                                  final ProdutoGateway produtoGateway) {
+        return new RealizarPedido(pedidoGateway, clienteGateway, produtoGateway);
+    }
+}

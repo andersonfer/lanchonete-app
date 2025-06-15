@@ -32,7 +32,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ProdutoAdaptadorTest {
+class ProdutoServiceTest {
 
     @Mock
     private BuscarProdutosPorCategoria buscarProdutosPorCategoria;
@@ -47,7 +47,7 @@ class ProdutoAdaptadorTest {
     private RemoverProduto removerProduto;
 
     @InjectMocks
-    private ProdutoAdaptador produtoAdaptador;
+    private ProdutoService produtoService;
 
     private ProdutoRequestDTO produtoRequest;
     private ProdutoResponseDTO produtoResponse;
@@ -85,7 +85,7 @@ class ProdutoAdaptadorTest {
         List<Produto> produtos = Arrays.asList(produto);
         when(buscarProdutosPorCategoria.executar(Categoria.LANCHE)).thenReturn(produtos);
 
-        List<ProdutoResponseDTO> resultado = produtoAdaptador.buscarPorCategoria(Categoria.LANCHE);
+        List<ProdutoResponseDTO> resultado = produtoService.buscarPorCategoria(Categoria.LANCHE);
 
         assertNotNull(resultado);
         assertEquals(1, resultado.size());
@@ -103,7 +103,7 @@ class ProdutoAdaptadorTest {
     void t2() {
         when(buscarProdutosPorCategoria.executar(Categoria.LANCHE)).thenReturn(Collections.emptyList());
 
-        List<ProdutoResponseDTO> resultado = produtoAdaptador.buscarPorCategoria(Categoria.LANCHE);
+        List<ProdutoResponseDTO> resultado = produtoService.buscarPorCategoria(Categoria.LANCHE);
 
         assertNotNull(resultado);
         assertTrue(resultado.isEmpty());
@@ -117,7 +117,7 @@ class ProdutoAdaptadorTest {
                 .thenThrow(new ValidacaoException("Categoria é obrigatória"));
 
         assertThrows(ValidacaoException.class, () -> {
-            produtoAdaptador.buscarPorCategoria(null);
+            produtoService.buscarPorCategoria(null);
         });
     }
 
@@ -126,7 +126,7 @@ class ProdutoAdaptadorTest {
     void t4() {
         when(criarProduto.executar(anyString(), anyString(), any(BigDecimal.class), any(Categoria.class))).thenReturn(produto);
 
-        ProdutoResponseDTO resultado = produtoAdaptador.criar(produtoRequest);
+        ProdutoResponseDTO resultado = produtoService.criar(produtoRequest);
 
         assertNotNull(resultado);
         assertEquals(produto.getId(), resultado.id());
@@ -144,7 +144,7 @@ class ProdutoAdaptadorTest {
                 .thenThrow(new ValidacaoException("Já existe um produto com este nome"));
 
         assertThrows(ValidacaoException.class, () -> {
-            produtoAdaptador.criar(produtoRequest);
+            produtoService.criar(produtoRequest);
         });
     }
 
@@ -153,7 +153,7 @@ class ProdutoAdaptadorTest {
     void t6() {
         when(editarProduto.executar(eq(1L), anyString(), anyString(), any(BigDecimal.class), any(Categoria.class))).thenReturn(produto);
 
-        ProdutoResponseDTO resultado = produtoAdaptador.editar(1L, produtoRequest);
+        ProdutoResponseDTO resultado = produtoService.editar(1L, produtoRequest);
 
         assertNotNull(resultado);
         assertEquals(produto.getId(), resultado.id());
@@ -171,7 +171,7 @@ class ProdutoAdaptadorTest {
                 .thenThrow(new RecursoNaoEncontradoException("Produto não encontrado"));
 
         assertThrows(RecursoNaoEncontradoException.class, () -> {
-            produtoAdaptador.editar(999L, produtoRequest);
+            produtoService.editar(999L, produtoRequest);
         });
     }
 
@@ -182,7 +182,7 @@ class ProdutoAdaptadorTest {
                 .thenThrow(new ValidacaoException("ID do produto é obrigatório"));
 
         assertThrows(ValidacaoException.class, () -> {
-            produtoAdaptador.editar(1L, produtoRequest);
+            produtoService.editar(1L, produtoRequest);
         });
     }
 
@@ -190,7 +190,7 @@ class ProdutoAdaptadorTest {
     @DisplayName("Deve remover produto com sucesso quando use case executa corretamente")
     void t9() {
         assertDoesNotThrow(() -> {
-            produtoAdaptador.remover(1L);
+            produtoService.remover(1L);
         });
 
         verify(removerProduto).executar(1L);
@@ -203,7 +203,7 @@ class ProdutoAdaptadorTest {
                 .when(removerProduto).executar(999L);
 
         assertThrows(RecursoNaoEncontradoException.class, () -> {
-            produtoAdaptador.remover(999L);
+            produtoService.remover(999L);
         });
     }
 
@@ -214,7 +214,7 @@ class ProdutoAdaptadorTest {
                 .when(removerProduto).executar(null);
 
         assertThrows(ValidacaoException.class, () -> {
-            produtoAdaptador.remover(null);
+            produtoService.remover(null);
         });
     }
 }

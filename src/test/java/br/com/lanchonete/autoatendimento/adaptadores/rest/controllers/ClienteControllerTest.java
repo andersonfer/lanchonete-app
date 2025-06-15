@@ -3,7 +3,7 @@ package br.com.lanchonete.autoatendimento.adaptadores.rest.controllers;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.ClienteRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.ClienteResponseDTO;
 import br.com.lanchonete.autoatendimento.dominio.excecoes.ValidacaoException;
-import br.com.lanchonete.autoatendimento.aplicacao.servicos.ClienteAdaptador;
+import br.com.lanchonete.autoatendimento.aplicacao.servicos.ClienteService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -34,7 +34,7 @@ class ClienteControllerTest {
     private ObjectMapper objectMapper;
 
     @MockitoBean
-    private ClienteAdaptador clienteAdaptador;
+    private ClienteService clienteService;
 
     private ClienteRequestDTO novoCliente;
 
@@ -51,7 +51,7 @@ class ClienteControllerTest {
                 "Teste da Silva","12345678901", "teste@email.com");
 
 
-        when(clienteAdaptador.cadastrarCliente(any(ClienteRequestDTO.class))).thenReturn(resposta);
+        when(clienteService.cadastrarCliente(any(ClienteRequestDTO.class))).thenReturn(resposta);
 
         mockMvc.perform(post("/clientes")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -70,7 +70,7 @@ class ClienteControllerTest {
     @DisplayName("Deve retornar status 400 quando o UC lançar ValidacaoException")
     void t2() throws Exception {
 
-        when(clienteAdaptador.cadastrarCliente(any(ClienteRequestDTO.class))).thenThrow(new ValidacaoException("Erro de validação ou duplicidade"));
+        when(clienteService.cadastrarCliente(any(ClienteRequestDTO.class))).thenThrow(new ValidacaoException("Erro de validação ou duplicidade"));
 
         mockMvc.perform(post("/clientes")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -88,7 +88,7 @@ class ClienteControllerTest {
         ClienteResponseDTO resposta = new ClienteResponseDTO(1L,
                 "Teste da Silva",cpf, "teste@email.com");
 
-        when(clienteAdaptador.identificarPorCpf(cpf)).thenReturn(Optional.of(resposta));
+        when(clienteService.identificarPorCpf(cpf)).thenReturn(Optional.of(resposta));
 
         mockMvc.perform(get("/clientes/cpf/{cpf}", cpf))
                 .andExpect(status().isOk())
@@ -105,7 +105,7 @@ class ClienteControllerTest {
 
         String cpfInexistente = "99999999999";
 
-        when(clienteAdaptador.identificarPorCpf(cpfInexistente)).thenReturn(Optional.empty());
+        when(clienteService.identificarPorCpf(cpfInexistente)).thenReturn(Optional.empty());
 
 
         mockMvc.perform(get("/clientes/cpf/{cpf}", cpfInexistente))
@@ -118,7 +118,7 @@ class ClienteControllerTest {
 
         String cpfInvalido = "123";
 
-        when(clienteAdaptador.identificarPorCpf(anyString()))
+        when(clienteService.identificarPorCpf(anyString()))
                 .thenThrow(new ValidacaoException("CPF deve conter 11 dígitos numéricos"));
 
 

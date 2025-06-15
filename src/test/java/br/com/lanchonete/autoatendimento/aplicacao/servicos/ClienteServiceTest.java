@@ -22,7 +22,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ClienteAdaptadorTest {
+class ClienteServiceTest {
 
     @Mock
     private CadastrarCliente cadastrarCliente;
@@ -31,7 +31,7 @@ class ClienteAdaptadorTest {
     private IdentificarCliente identificarCliente;
 
     @InjectMocks
-    private ClienteAdaptador clienteAdaptador;
+    private ClienteService clienteService;
 
     private ClienteRequestDTO novoCliente;
     private ClienteResponseDTO clienteResponse;
@@ -49,7 +49,7 @@ class ClienteAdaptadorTest {
     void t1() {
         when(cadastrarCliente.executar(anyString(), anyString(), anyString())).thenReturn(cliente);
 
-        ClienteResponseDTO resultado = clienteAdaptador.cadastrarCliente(novoCliente);
+        ClienteResponseDTO resultado = clienteService.cadastrarCliente(novoCliente);
 
         assertNotNull(resultado);
         assertEquals(1L, resultado.id());
@@ -65,7 +65,7 @@ class ClienteAdaptadorTest {
                 .thenThrow(new ValidacaoException("Erro de validação"));
 
         assertThrows(ValidacaoException.class, () -> {
-            clienteAdaptador.cadastrarCliente(novoCliente);
+            clienteService.cadastrarCliente(novoCliente);
         });
     }
 
@@ -75,7 +75,7 @@ class ClienteAdaptadorTest {
         String cpf = "12345678901";
         when(identificarCliente.executar(cpf)).thenReturn(Optional.of(cliente));
 
-        Optional<ClienteResponseDTO> resultado = clienteAdaptador.identificarPorCpf(cpf);
+        Optional<ClienteResponseDTO> resultado = clienteService.identificarPorCpf(cpf);
 
         assertTrue(resultado.isPresent());
         ClienteResponseDTO dto = resultado.get();
@@ -91,7 +91,7 @@ class ClienteAdaptadorTest {
         String cpfInexistente = "99999999999";
         when(identificarCliente.executar(cpfInexistente)).thenReturn(Optional.empty());
 
-        Optional<ClienteResponseDTO> resultado = clienteAdaptador.identificarPorCpf(cpfInexistente);
+        Optional<ClienteResponseDTO> resultado = clienteService.identificarPorCpf(cpfInexistente);
 
         assertTrue(resultado.isEmpty());
     }
@@ -104,7 +104,7 @@ class ClienteAdaptadorTest {
                 .thenThrow(new ValidacaoException("CPF deve conter 11 dígitos numéricos"));
 
         assertThrows(ValidacaoException.class, () -> {
-            clienteAdaptador.identificarPorCpf(cpfInvalido);
+            clienteService.identificarPorCpf(cpfInvalido);
         });
     }
 }

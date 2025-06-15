@@ -14,17 +14,17 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-public class ProdutoAdaptador {
+public class ProdutoService {
 
     private final BuscarProdutosPorCategoria buscarProdutosPorCategoria;
     private final CriarProduto criarProduto;
     private final EditarProduto editarProduto;
     private final RemoverProduto removerProduto;
 
-    public ProdutoAdaptador(final BuscarProdutosPorCategoria buscarProdutosPorCategoria,
-                           final CriarProduto criarProduto,
-                           final EditarProduto editarProduto,
-                           final RemoverProduto removerProduto) {
+    public ProdutoService(final BuscarProdutosPorCategoria buscarProdutosPorCategoria,
+                          final CriarProduto criarProduto,
+                          final EditarProduto editarProduto,
+                          final RemoverProduto removerProduto) {
         this.buscarProdutosPorCategoria = buscarProdutosPorCategoria;
         this.criarProduto = criarProduto;
         this.editarProduto = editarProduto;

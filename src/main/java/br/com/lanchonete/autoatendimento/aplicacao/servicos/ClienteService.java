@@ -11,13 +11,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 @Service
-public class ClienteAdaptador {
+public class ClienteService {
 
     private final CadastrarCliente cadastrarCliente;
     private final IdentificarCliente identificarCliente;
 
-    public ClienteAdaptador(final CadastrarCliente cadastrarCliente,
-                           final IdentificarCliente identificarCliente) {
+    public ClienteService(final CadastrarCliente cadastrarCliente,
+                          final IdentificarCliente identificarCliente) {
         this.cadastrarCliente = cadastrarCliente;
         this.identificarCliente = identificarCliente;
     }

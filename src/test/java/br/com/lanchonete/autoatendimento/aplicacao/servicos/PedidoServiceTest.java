@@ -32,7 +32,7 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class PedidoAdaptadorTest {
+class PedidoServiceTest {
 
     @Mock
     private RealizarPedido realizarPedido;
@@ -41,7 +41,7 @@ class PedidoAdaptadorTest {
     private ListarPedidos listarPedidos;
 
     @InjectMocks
-    private PedidoAdaptador pedidoAdaptador;
+    private PedidoService pedidoService;
 
     private PedidoRequestDTO pedidoRequest;
     private PedidoResponseDTO pedidoResponse;
@@ -85,7 +85,7 @@ class PedidoAdaptadorTest {
     void t1() {
         when(realizarPedido.executar(anyString(), anyList())).thenReturn(pedido);
 
-        PedidoResponseDTO resultado = pedidoAdaptador.realizarCheckout(pedidoRequest);
+        PedidoResponseDTO resultado = pedidoService.realizarCheckout(pedidoRequest);
 
         assertNotNull(resultado);
         assertEquals(1L, resultado.id());
@@ -102,7 +102,7 @@ class PedidoAdaptadorTest {
                 .thenThrow(new ValidacaoException("Pedido deve conter pelo menos um item"));
 
         assertThrows(ValidacaoException.class, () -> {
-            pedidoAdaptador.realizarCheckout(pedidoRequest);
+            pedidoService.realizarCheckout(pedidoRequest);
         });
     }
 
@@ -113,7 +113,7 @@ class PedidoAdaptadorTest {
                 .thenThrow(new RecursoNaoEncontradoException("Cliente não encontrado"));
 
         assertThrows(RecursoNaoEncontradoException.class, () -> {
-            pedidoAdaptador.realizarCheckout(pedidoRequest);
+            pedidoService.realizarCheckout(pedidoRequest);
         });
     }
 
@@ -123,7 +123,7 @@ class PedidoAdaptadorTest {
         List<Pedido> pedidos = Arrays.asList(pedido);
         when(listarPedidos.executar()).thenReturn(pedidos);
 
-        List<PedidoResponseDTO> resultado = pedidoAdaptador.listarPedidos();
+        List<PedidoResponseDTO> resultado = pedidoService.listarPedidos();
 
         assertNotNull(resultado);
         assertEquals(1, resultado.size());
@@ -141,7 +141,7 @@ class PedidoAdaptadorTest {
     void t5() {
         when(listarPedidos.executar()).thenReturn(Collections.emptyList());
 
-        List<PedidoResponseDTO> resultado = pedidoAdaptador.listarPedidos();
+        List<PedidoResponseDTO> resultado = pedidoService.listarPedidos();
 
         assertNotNull(resultado);
         assertTrue(resultado.isEmpty());

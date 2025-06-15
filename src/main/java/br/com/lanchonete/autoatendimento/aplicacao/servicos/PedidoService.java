@@ -12,13 +12,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-public class PedidoAdaptador {
+public class PedidoService {
 
     private final RealizarPedido realizarPedido;
     private final ListarPedidos listarPedidos;
 
-    public PedidoAdaptador(final RealizarPedido realizarPedido,
-                          final ListarPedidos listarPedidos) {
+    public PedidoService(final RealizarPedido realizarPedido,
+                         final ListarPedidos listarPedidos) {
         this.realizarPedido = realizarPedido;
         this.listarPedidos = listarPedidos;
     }

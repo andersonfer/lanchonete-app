@@ -10,7 +10,6 @@ import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.ItemPedido;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.Pedido;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.StatusPedido;
 import br.com.lanchonete.autoatendimento.dominio.modelo.produto.Produto;
-import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -72,7 +71,7 @@ public class RealizarPedido {
     }
 
     private Cliente buscarCliente(final String cpf) {
-       if (StringUtils.isNotBlank(cpf)) {
+       if (cpf != null && !cpf.trim().isEmpty()) {
            return clienteGateway.buscarPorCpf(cpf)
                    .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado com o CPF informado"));
        } else {

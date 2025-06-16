@@ -1,0 +1,133 @@
+# BACKLOG - TECH CHALLENGE FASE 2 - ITEM 1
+
+## ENTREGÁVEIS DO ITEM 1 (Checklist de Progresso)
+
+### a. Alterar/criar as APIs:
+
+#### i. Checkout Pedido
+- [ ] API que recebe produtos solicitados
+- [ ] Retorna identificação do pedido (ID)
+- [ ] Integra com fluxo de pagamento
+
+#### ii. Consultar status de pagamento pedido
+- [ ] API que informa se pagamento foi aprovado ou não
+- [ ] Busca por ID do pedido
+
+#### iii. Webhook para receber confirmação de pagamento
+- [ ] Endpoint para receber notificações externas
+- [ ] Processa pagamento aprovado ou recusado
+- [ ] Implementação clara quanto ao Webhook
+
+#### iv. Lista de pedidos com ordenação específica
+- [ ] Retorna pedidos com suas descrições
+- [ ] Ordenação: Pronto > Em Preparação > Recebido
+- [ ] Pedidos mais antigos primeiro, mais novos depois
+- [ ] Pedidos com status Finalizado NÃO aparecem na lista
+
+#### v. Atualizar status do pedido
+- [ ] API para atualização de status
+- [ ] Fluxo completo do pedido implementado
+- [ ] Informação utilizada pela cozinha
+- [ ] Garantia que nenhum pedido seja perdido
+- [ ] Cozinha pode iniciar preparação após pagamento
+
+#### vi. Integração com Mercado Pago (OPCIONAL - MOCK)
+- [ ] Mock da parte de pagamentos implementado
+- [ ] Simulação de QRCode para pagamento
+- [ ] Integração com WebHook para capturar pagamentos
+
+---
+
+## BACKLOG DE TAREFAS
+
+### 🔴 PRIORIDADE ALTA - FUNDAÇÃO
+
+**1. Criar entidade Pagamento como Value Object no domínio**
+   - Status: [ ] Pendente
+   - Descrição: Implementar classe Pagamento no pacote dominio/modelo
+   - Inclui: StatusPagamento enum, métodos de negócio
+
+**2. Atualizar entidade Pedido para incluir Pagamento**
+   - Status: [ ] Pendente  
+   - Descrição: Adicionar campo Pagamento na entidade Pedido
+   - Inclui: Métodos para manipular pagamento
+
+**3. Ajustar PedidoGatewayJDBC para persistir dados de pagamento**
+   - Status: [ ] Pendente
+   - Descrição: Atualizar queries para incluir campos de pagamento
+   - Inclui: Mapeamento de Value Object Pagamento
+
+**4. Criar estrutura do projeto mock-mercado-pago**
+   - Status: [ ] Pendente
+   - Descrição: Novo projeto Spring Boot separado
+   - Inclui: Estrutura básica, application.yml, Dockerfile
+
+### 🟡 PRIORIDADE MÉDIA - APIs CORE
+
+**5. Implementar APIs de checkout com retorno de pedidoId**
+   - Status: [ ] Pendente
+   - Descrição: Atualizar endpoint de checkout
+   - Inclui: Integração com criação de pagamento
+
+**6. Implementar API de consulta de status de pagamento**
+   - Status: [ ] Pendente
+   - Descrição: Nova API GET /pedidos/{id}/pagamento/status
+   - Inclui: DTO de resposta, validações
+
+**7. Implementar webhook para receber confirmação de pagamento**
+   - Status: [ ] Pendente
+   - Descrição: Nova API POST /webhook/pagamento
+   - Inclui: Processamento assíncrono, atualização de status
+
+**8. Implementar mock do Mercado Pago com comportamento aleatório**
+   - Status: [ ] Pendente
+   - Descrição: APIs no projeto mock-mercado-pago
+   - Inclui: Simulação de processamento, chamada de webhook
+
+**9. Atualizar API de listagem de pedidos com regras de ordenação**
+   - Status: [ ] Pendente
+   - Descrição: Modificar ordenação conforme requisitos
+   - Inclui: Query SQL atualizada, exclusão de Finalizados
+
+**10. Implementar APIs para atualização de status do pedido (cozinha)**
+    - Status: [ ] Pendente
+    - Descrição: APIs para cozinha gerenciar status
+    - Inclui: GET /pedidos/cozinha, PUT /pedidos/{id}/status
+
+### 🟢 PRIORIDADE BAIXA - INFRAESTRUTURA E FINALIZAÇÃO
+
+**11. Configurar Docker Compose para ambos os projetos**
+    - Status: [ ] Pendente
+    - Descrição: docker-compose.yml na raiz
+    - Inclui: Networks, variáveis de ambiente
+
+**12. Criar testes integrados para fluxo completo de pagamento**
+    - Status: [ ] Pendente
+    - Descrição: Testes E2E do fluxo checkout → webhook → status
+    - Inclui: Testes de aprovação e rejeição
+
+**13. Atualizar documentação e collection de APIs**
+    - Status: [ ] Pendente
+    - Descrição: README.md, Swagger, collection Postman
+    - Inclui: Instruções Docker, exemplos de uso
+
+---
+
+## ESTIMATIVA DE EXECUÇÃO
+- Fundação (1-4): ~2-3 dias
+- APIs Core (5-10): ~3-4 dias  
+- Finalização (11-13): ~1-2 dias
+- **Total estimado**: 6-9 dias de desenvolvimento
+
+---
+
+## ANOTAÇÕES
+- Usar StatusPedido e StatusPagamento separados
+- Pagamento como Value Object na mesma tabela do Pedido
+- Mock com 80% aprovação, 20% rejeição aleatória
+- Docker Compose gerencia ambos os projetos
+
+---
+
+Data de criação: 16/06/2025
+Última atualização: 16/06/2025

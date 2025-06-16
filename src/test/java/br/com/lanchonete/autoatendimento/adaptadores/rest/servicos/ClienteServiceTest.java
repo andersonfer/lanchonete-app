@@ -1,4 +1,4 @@
-package br.com.lanchonete.autoatendimento.aplicacao.servicos;
+package br.com.lanchonete.autoatendimento.adaptadores.rest.servicos;
 
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.ClienteRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.ClienteResponseDTO;

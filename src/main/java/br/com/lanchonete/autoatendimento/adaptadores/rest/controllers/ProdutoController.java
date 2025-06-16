@@ -3,7 +3,7 @@ package br.com.lanchonete.autoatendimento.adaptadores.rest.controllers;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.api.ProdutoApi;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.ProdutoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.ProdutoResponseDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.servicos.ProdutoService;
+import br.com.lanchonete.autoatendimento.adaptadores.rest.servicos.ProdutoService;
 import br.com.lanchonete.autoatendimento.dominio.modelo.produto.Categoria;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

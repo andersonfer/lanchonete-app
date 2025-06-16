@@ -3,6 +3,7 @@ package br.com.lanchonete.autoatendimento.adaptadores.persistencia;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteGateway;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.PedidoGateway;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoGateway;
+import br.com.lanchonete.autoatendimento.dominio.excecoes.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.dominio.modelo.cliente.Cliente;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.ItemPedido;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.Pedido;
@@ -129,7 +130,7 @@ public class PedidoGatewayJDBC implements PedidoGateway {
         );
 
         if (linhasAfetadas == 0) {
-            throw new RegistroNaoEncontradoException("Pedido", pedidoId);
+            throw new RecursoNaoEncontradoException("Pedido não encontrado com ID: " + pedidoId);
         }
     }
 
@@ -158,7 +159,7 @@ public class PedidoGatewayJDBC implements PedidoGateway {
     private ItemPedido mapearItemPedido(final ResultSet rs, final Pedido pedido) throws SQLException {
         final Long produtoId = rs.getLong("produto_id");
         final Produto produto = produtoGateway.buscarPorId(produtoId)
-                .orElseThrow(() -> new RegistroNaoEncontradoException("Produto", produtoId));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Produto não encontrado com ID: " + produtoId));
 
         return ItemPedido.reconstituir(
                 rs.getLong("id"),

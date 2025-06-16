@@ -1,6 +1,7 @@
 package br.com.lanchonete.autoatendimento.adaptadores.persistencia;
 
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoGateway;
+import br.com.lanchonete.autoatendimento.dominio.excecoes.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.dominio.modelo.produto.Categoria;
 import br.com.lanchonete.autoatendimento.dominio.modelo.produto.Produto;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -57,7 +58,7 @@ public class ProdutoGatewayJDBC implements ProdutoGateway {
                 produto.getId());
 
         if (linhasAfetadas == 0) {
-            throw new RegistroNaoEncontradoException("Produto", produto.getId());
+            throw new RecursoNaoEncontradoException("Produto não encontrado com ID: " + produto.getId());
         }
 
         return produto;
@@ -69,7 +70,7 @@ public class ProdutoGatewayJDBC implements ProdutoGateway {
         int linhasAfetadas = jdbcTemplate.update(sql, id);
 
         if (linhasAfetadas == 0) {
-            throw new RegistroNaoEncontradoException("Produto", id);
+            throw new RecursoNaoEncontradoException("Produto não encontrado com ID: " + id);
         }
     }
 

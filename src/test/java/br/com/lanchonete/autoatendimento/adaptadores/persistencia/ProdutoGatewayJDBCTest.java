@@ -1,5 +1,6 @@
 package br.com.lanchonete.autoatendimento.adaptadores.persistencia;
 
+import br.com.lanchonete.autoatendimento.dominio.excecoes.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.dominio.modelo.produto.Categoria;
 import br.com.lanchonete.autoatendimento.dominio.modelo.produto.Produto;
 import br.com.lanchonete.autoatendimento.dominio.modelo.shared.Preco;
@@ -83,7 +84,7 @@ class ProdutoGatewayJDBCTest {
                 new BigDecimal("10.00"),
                 Categoria.LANCHE);
 
-        assertThrows(RegistroNaoEncontradoException.class,
+        assertThrows(RecursoNaoEncontradoException.class,
                 () -> produtoRepositorio.atualizar(produtoInexistente),
                 "Deve lançar exceção ao tentar atualizar produto inexistente");
     }
@@ -100,7 +101,7 @@ class ProdutoGatewayJDBCTest {
     @Test
     @DisplayName("Deve lançar exceção ao tentar remover produto inexistente")
     void t5() {
-        assertThrows(RegistroNaoEncontradoException.class,
+        assertThrows(RecursoNaoEncontradoException.class,
                 () -> produtoRepositorio.remover(999L),
                 "Deve lançar exceção ao tentar remover produto inexistente");
     }

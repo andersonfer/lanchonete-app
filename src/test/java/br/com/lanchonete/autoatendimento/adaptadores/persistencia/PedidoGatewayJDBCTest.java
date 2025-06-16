@@ -1,6 +1,7 @@
 package br.com.lanchonete.autoatendimento.adaptadores.persistencia;
 
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteGateway;
+import br.com.lanchonete.autoatendimento.dominio.excecoes.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoGateway;
 import br.com.lanchonete.autoatendimento.dominio.modelo.cliente.Cliente;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.ItemPedido;
@@ -200,7 +201,7 @@ class PedidoGatewayJDBCTest {
     @Test
     @DisplayName("Deve lançar exceção ao tentar atualizar status de pedido inexistente")
     void t7() {
-        assertThrows(RegistroNaoEncontradoException.class,
+        assertThrows(RecursoNaoEncontradoException.class,
                 () -> pedidoRepositorio.atualizarStatus(999L, StatusPedido.FINALIZADO),
                 "Deve lançar exceção para pedido inexistente");
     }

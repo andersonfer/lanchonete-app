@@ -42,20 +42,20 @@
 
 ### 🔴 PRIORIDADE ALTA - FUNDAÇÃO
 
-**1. Criar entidade Pagamento como Value Object no domínio**
+**1. Criar enum StatusPagamento no domínio**
    - Status: [ ] Pendente
-   - Descrição: Implementar classe Pagamento no pacote dominio/modelo
-   - Inclui: StatusPagamento enum, métodos de negócio
+   - Descrição: Implementar enum StatusPagamento no pacote dominio/modelo
+   - Inclui: Estados PENDENTE, APROVADO, REJEITADO
 
-**2. Atualizar entidade Pedido para incluir Pagamento**
+**2. Atualizar entidade Pedido para incluir StatusPagamento**
    - Status: [ ] Pendente  
-   - Descrição: Adicionar campo Pagamento na entidade Pedido
-   - Inclui: Métodos para manipular pagamento
+   - Descrição: Adicionar campo StatusPagamento na entidade Pedido
+   - Inclui: Métodos para manipular status de pagamento
 
-**3. Ajustar PedidoGatewayJDBC para persistir dados de pagamento**
+**3. Ajustar PedidoGatewayJDBC para persistir StatusPagamento**
    - Status: [ ] Pendente
-   - Descrição: Atualizar queries para incluir campos de pagamento
-   - Inclui: Mapeamento de Value Object Pagamento
+   - Descrição: Atualizar queries para incluir campo status_pagamento
+   - Inclui: Mapeamento de enum StatusPagamento
 
 **4. Criar estrutura do projeto mock-mercado-pago**
    - Status: [ ] Pendente
@@ -67,7 +67,7 @@
 **5. Implementar APIs de checkout com retorno de pedidoId**
    - Status: [ ] Pendente
    - Descrição: Atualizar endpoint de checkout
-   - Inclui: Integração com criação de pagamento
+   - Inclui: Inicialização com StatusPagamento.PENDENTE
 
 **6. Implementar API de consulta de status de pagamento**
    - Status: [ ] Pendente
@@ -77,7 +77,7 @@
 **7. Implementar webhook para receber confirmação de pagamento**
    - Status: [ ] Pendente
    - Descrição: Nova API POST /webhook/pagamento
-   - Inclui: Processamento assíncrono, atualização de status
+   - Inclui: Atualização de StatusPagamento (APROVADO/REJEITADO)
 
 **8. Implementar mock do Mercado Pago com comportamento aleatório**
    - Status: [ ] Pendente
@@ -123,11 +123,11 @@
 
 ## ANOTAÇÕES
 - Usar StatusPedido e StatusPagamento separados
-- Pagamento como Value Object na mesma tabela do Pedido
+- StatusPagamento como enum dentro da entidade Pedido
 - Mock com 80% aprovação, 20% rejeição aleatória
 - Docker Compose gerencia ambos os projetos
 
 ---
 
 Data de criação: 16/06/2025
-Última atualização: 16/06/2025
+Última atualização: 17/06/2025

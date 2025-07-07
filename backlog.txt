@@ -5,13 +5,13 @@
 ### a. Alterar/criar as APIs:
 
 #### i. Checkout Pedido
-- [ ] API que recebe produtos solicitados
-- [ ] Retorna identificação do pedido (ID)
-- [ ] Integra com fluxo de pagamento
+- [x] API que recebe produtos solicitados
+- [x] Retorna identificação do pedido (ID)
+- [x] Integra com fluxo de pagamento (statusPagamento: PENDENTE)
 
 #### ii. Consultar status de pagamento pedido
-- [ ] API que informa se pagamento foi aprovado ou não
-- [ ] Busca por ID do pedido
+- [x] API que informa se pagamento foi aprovado ou não
+- [x] Busca por ID do pedido
 
 #### iii. Webhook para receber confirmação de pagamento
 - [ ] Endpoint para receber notificações externas
@@ -40,20 +40,20 @@
 
 ## BACKLOG DE TAREFAS
 
-### 🔴 PRIORIDADE ALTA - FUNDAÇÃO
+### 🔴 PRIORIDADE ALTA - FUNDAÇÃO ✅ CONCLUÍDA
 
 **1. Criar enum StatusPagamento no domínio**
-   - Status: [ ] Pendente
+   - Status: [x] Concluído
    - Descrição: Implementar enum StatusPagamento no pacote dominio/modelo
    - Inclui: Estados PENDENTE, APROVADO, REJEITADO
 
 **2. Atualizar entidade Pedido para incluir StatusPagamento**
-   - Status: [ ] Pendente  
+   - Status: [x] Concluído
    - Descrição: Adicionar campo StatusPagamento na entidade Pedido
    - Inclui: Métodos para manipular status de pagamento
 
 **3. Ajustar PedidoGatewayJDBC para persistir StatusPagamento**
-   - Status: [ ] Pendente
+   - Status: [x] Concluído
    - Descrição: Atualizar queries para incluir campo status_pagamento
    - Inclui: Mapeamento de enum StatusPagamento
 
@@ -62,20 +62,20 @@
    - Descrição: Novo projeto Spring Boot separado
    - Inclui: Estrutura básica, application.yml, Dockerfile
 
-### 🟡 PRIORIDADE MÉDIA - APIs CORE
+### 🟡 PRIORIDADE MÉDIA - APIs CORE (PARCIALMENTE CONCLUÍDA)
 
 **5. Implementar APIs de checkout com retorno de pedidoId**
-   - Status: [ ] Pendente
+   - Status: [x] Concluído
    - Descrição: Atualizar endpoint de checkout
    - Inclui: Inicialização com StatusPagamento.PENDENTE
 
 **6. Implementar API de consulta de status de pagamento**
-   - Status: [ ] Pendente
+   - Status: [x] Concluído
    - Descrição: Nova API GET /pedidos/{id}/pagamento/status
    - Inclui: DTO de resposta, validações
 
 **7. Implementar webhook para receber confirmação de pagamento**
-   - Status: [ ] Pendente
+   - Status: [ ] Pendente - PRÓXIMA PRIORIDADE
    - Descrição: Nova API POST /webhook/pagamento
    - Inclui: Atualização de StatusPagamento (APROVADO/REJEITADO)
 
@@ -113,21 +113,41 @@
 
 ---
 
-## ESTIMATIVA DE EXECUÇÃO
-- Fundação (1-4): ~2-3 dias
-- APIs Core (5-10): ~3-4 dias  
-- Finalização (11-13): ~1-2 dias
-- **Total estimado**: 6-9 dias de desenvolvimento
+## PROGRESSO ATUAL (07/07/2025)
+
+### ✅ CONCLUÍDO:
+- **Fundação StatusPagamento**: enum, entidade, persistência
+- **API Checkout**: integração com statusPagamento
+- **API Consulta Status**: endpoint GET /pedidos/{id}/pagamento/status
+- **Testes**: 288 testes passando (incluindo 21 novos para pagamento)
+
+### 🔄 EM ANDAMENTO:
+- Nenhuma tarefa em andamento
+
+### 🎯 PRÓXIMOS PASSOS RECOMENDADOS:
+
+1. **IMEDIATO** - Implementar webhook de pagamento (tarefa 7)
+2. **SEQUENCIAL** - Atualizar listagem de pedidos (tarefa 9)
+3. **PARALELO** - Criar mock Mercado Pago (tarefa 8)
+
+---
+
+## ESTIMATIVA DE EXECUÇÃO (REVISADA)
+- ✅ Fundação (1-3): ~2-3 dias - **CONCLUÍDO**
+- 🔄 APIs Core (5-7): ~2-3 dias - **66% CONCLUÍDO**
+- ⏳ Complementares (8-10): ~2-3 dias
+- ⏳ Finalização (11-13): ~1-2 dias
+- **Total estimado**: 6-9 dias de desenvolvimento (**~40% concluído**)
 
 ---
 
 ## ANOTAÇÕES
-- Usar StatusPedido e StatusPagamento separados
-- StatusPagamento como enum dentro da entidade Pedido
+- Usar StatusPedido e StatusPagamento separados ✅
+- StatusPagamento como enum dentro da entidade Pedido ✅
 - Mock com 80% aprovação, 20% rejeição aleatória
 - Docker Compose gerencia ambos os projetos
 
 ---
 
 Data de criação: 16/06/2025
-Última atualização: 17/06/2025
+Última atualização: 07/07/2025

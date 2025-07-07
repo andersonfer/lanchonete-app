@@ -73,6 +73,7 @@ class PedidoControllerTest {
                 "João Silva",
                 itensResponse,
                 StatusPedido.RECEBIDO,
+                StatusPagamento.PENDENTE,
                 LocalDateTime.now(),
                 new BigDecimal("57.80")
         );
@@ -85,6 +86,7 @@ class PedidoControllerTest {
                 null,
                 Collections.singletonList(itensResponse.get(1)),
                 StatusPedido.RECEBIDO,
+                StatusPagamento.PENDENTE,
                 LocalDateTime.now(),
                 new BigDecimal("6.00")
         );
@@ -106,6 +108,7 @@ class PedidoControllerTest {
                 .andExpect(jsonPath("$.clienteId").value(1))
                 .andExpect(jsonPath("$.nomeCliente").value("João Silva"))
                 .andExpect(jsonPath("$.status").value("RECEBIDO"))
+                .andExpect(jsonPath("$.statusPagamento").value("PENDENTE"))
                 .andExpect(jsonPath("$.valorTotal").value(57.80))
                 .andExpect(jsonPath("$.itens.length()").value(2));
 

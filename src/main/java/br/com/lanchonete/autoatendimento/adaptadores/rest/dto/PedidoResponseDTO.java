@@ -2,6 +2,7 @@ package br.com.lanchonete.autoatendimento.adaptadores.rest.dto;
 
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.Pedido;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.StatusPedido;
+import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.StatusPagamento;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -14,6 +15,7 @@ public record PedidoResponseDTO(
         String nomeCliente,
         List<ItemPedidoResponseDTO> itens,
         StatusPedido status,
+        StatusPagamento statusPagamento,
         LocalDateTime dataCriacao,
         BigDecimal valorTotal
 ) {
@@ -41,6 +43,7 @@ public record PedidoResponseDTO(
                 nomeCliente,
                 itensDTO,
                 pedido.getStatus(),
+                pedido.getStatusPagamento(),
                 pedido.getDataCriacao(),
                 pedido.getValorTotal()
         );

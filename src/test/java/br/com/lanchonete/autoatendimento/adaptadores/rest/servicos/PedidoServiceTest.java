@@ -9,6 +9,7 @@ import br.com.lanchonete.autoatendimento.dominio.excecoes.RecursoNaoEncontradoEx
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.RealizarPedido;
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.ListarPedidos;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.StatusPedido;
+import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.StatusPagamento;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.Pedido;
 import br.com.lanchonete.autoatendimento.dominio.modelo.cliente.Cliente;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,6 +70,7 @@ class PedidoServiceTest {
                 "João Silva",
                 itensResponse,
                 StatusPedido.RECEBIDO,
+                StatusPagamento.PENDENTE,
                 LocalDateTime.now(),
                 new BigDecimal("57.80")
         );
@@ -133,6 +135,7 @@ class PedidoServiceTest {
         assertEquals(pedido.getCliente().getId(), dto.clienteId());
         assertEquals(pedido.getCliente().getNome(), dto.nomeCliente());
         assertEquals(pedido.getStatus(), dto.status());
+        assertEquals(pedido.getStatusPagamento(), dto.statusPagamento());
         assertEquals(pedido.getValorTotal(), dto.valorTotal());
     }
 

@@ -4,10 +4,12 @@ import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.ItemPedidoDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.ItemPedidoResponseDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.PedidoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.PedidoResponseDTO;
+import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.StatusPagamentoResponseDTO;
 import br.com.lanchonete.autoatendimento.dominio.excecoes.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.dominio.excecoes.ValidacaoException;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.servicos.PedidoService;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.StatusPedido;
+import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.StatusPagamento;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -184,5 +186,85 @@ class PedidoControllerTest {
 
         // Verificar que o serviço foi chamado
         verify(pedidoService).listarPedidos();
+    }
+
+    @Test
+    @DisplayName("Deve consultar status de pagamento PENDENTE com sucesso")
+    void t6() throws Exception {
+        // Mock do serviço
+        StatusPagamentoResponseDTO statusResponse = StatusPagamentoResponseDTO.pendente(1L);
+        when(pedidoService.consultarStatusPagamento(1L))
+                .thenReturn(statusResponse);
+
+        // Executar e verificar
+        mockMvc.perform(get("/pedidos/1/pagamento/status"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.pedidoId").value(1))
+                .andExpect(jsonPath("$.statusPagamento").value("PENDENTE"))
+                .andExpect(jsonPath("$.mensagem").value("Pagamento pendente de processamento"));
+
+        // Verificar que o serviço foi chamado
+        verify(pedidoService).consultarStatusPagamento(1L);
+    }
+
+    @Test
+    @DisplayName("Deve consultar status de pagamento APROVADO com sucesso")
+    void t7() throws Exception {
+        // Mock do serviço
+        StatusPagamentoResponseDTO statusResponse = StatusPagamentoResponseDTO.aprovado(2L);
+        when(pedidoService.consultarStatusPagamento(2L))
+                .thenReturn(statusResponse);
+
+        // Executar e verificar
+        mockMvc.perform(get("/pedidos/2/pagamento/status"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.pedidoId").value(2))
+                .andExpect(jsonPath("$.statusPagamento").value("APROVADO"))
+                .andExpect(jsonPath("$.mensagem").value("Pagamento aprovado com sucesso"));
+
+        // Verificar que o serviço foi chamado
+        verify(pedidoService).consultarStatusPagamento(2L);
+    }
+
+    @Test
+    @DisplayName("Deve consultar status de pagamento REJEITADO com sucesso")
+    void t8() throws Exception {
+        // Mock do serviço
+        StatusPagamentoResponseDTO statusResponse = StatusPagamentoResponseDTO.rejeitado(3L);
+        when(pedidoService.consultarStatusPagamento(3L))
+                .thenReturn(statusResponse);
+
+        // Executar e verificar
+        mockMvc.perform(get("/pedidos/3/pagamento/status"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.pedidoId").value(3))
+                .andExpect(jsonPath("$.statusPagamento").value("REJEITADO"))
+                .andExpect(jsonPath("$.mensagem").value("Pagamento rejeitado"));
+
+        // Verificar que o serviço foi chamado
+        verify(pedidoService).consultarStatusPagamento(3L);
+    }
+
+    @Test
+    @DisplayName("Deve retornar erro 404 ao consultar status de pagamento de pedido inexistente")
+    void t9() throws Exception {
+        // Mock do serviço lançando exceção de recurso não encontrado
+        when(pedidoService.consultarStatusPagamento(999L))
+                .thenThrow(new RecursoNaoEncontradoException("Pedido não encontrado com ID: 999"));
+
+        // Executar e verificar
+        mockMvc.perform(get("/pedidos/999/pagamento/status"))
+                .andExpect(status().isNotFound());
+
+        // Verificar que o serviço foi chamado
+        verify(pedidoService).consultarStatusPagamento(999L);
+    }
+
+    @Test
+    @DisplayName("Deve retornar erro 400 ao consultar status com ID inválido")
+    void t10() throws Exception {
+        // Executar e verificar (Spring converterá automaticamente)
+        mockMvc.perform(get("/pedidos/abc/pagamento/status"))
+                .andExpect(status().isBadRequest());
     }
 }

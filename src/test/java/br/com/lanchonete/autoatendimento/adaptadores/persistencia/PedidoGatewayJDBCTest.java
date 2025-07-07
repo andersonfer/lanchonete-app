@@ -7,6 +7,7 @@ import br.com.lanchonete.autoatendimento.dominio.modelo.cliente.Cliente;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.ItemPedido;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.Pedido;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.StatusPedido;
+import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.StatusPagamento;
 import br.com.lanchonete.autoatendimento.dominio.modelo.produto.Categoria;
 import br.com.lanchonete.autoatendimento.dominio.modelo.produto.Produto;
 import org.junit.jupiter.api.BeforeEach;
@@ -203,6 +204,112 @@ class PedidoGatewayJDBCTest {
     void t7() {
         assertThrows(RecursoNaoEncontradoException.class,
                 () -> pedidoRepositorio.atualizarStatus(999L, StatusPedido.FINALIZADO),
+                "Deve lançar exceção para pedido inexistente");
+    }
+
+    @Test
+    @DisplayName("Deve salvar pedido com status de pagamento PENDENTE por padrão")
+    void t8() {
+        // Criar um pedido
+        Pedido pedido = Pedido.criar(cliente, StatusPedido.RECEBIDO, LocalDateTime.now());
+
+        // Adicionar um item ao pedido
+        ItemPedido item = ItemPedido.criar(produtoLanche, 1);
+        pedido.adicionarItem(item);
+
+        // Salvar o pedido
+        Pedido pedidoSalvo = pedidoRepositorio.salvar(pedido);
+
+        // Buscar o pedido para verificar se foi salvo corretamente
+        Optional<Pedido> pedidoEncontrado = pedidoRepositorio.buscarPorId(pedidoSalvo.getId());
+
+        // Verificações
+        assertTrue(pedidoEncontrado.isPresent(), "O pedido deve ser encontrado");
+        assertEquals(StatusPagamento.PENDENTE, pedidoEncontrado.get().getStatusPagamento(),
+                "Status de pagamento deve ser PENDENTE por padrão");
+    }
+
+    @Test
+    @DisplayName("Deve salvar e recuperar pedido com status de pagamento APROVADO")
+    void t9() {
+        // Criar um pedido
+        Pedido pedido = Pedido.criar(cliente, StatusPedido.RECEBIDO, LocalDateTime.now());
+
+        // Adicionar um item ao pedido
+        ItemPedido item = ItemPedido.criar(produtoLanche, 1);
+        pedido.adicionarItem(item);
+
+        // Alterar status de pagamento para APROVADO
+        pedido.aprovarPagamento();
+
+        // Salvar o pedido
+        Pedido pedidoSalvo = pedidoRepositorio.salvar(pedido);
+
+        // Buscar o pedido para verificar se foi salvo corretamente
+        Optional<Pedido> pedidoEncontrado = pedidoRepositorio.buscarPorId(pedidoSalvo.getId());
+
+        // Verificações
+        assertTrue(pedidoEncontrado.isPresent(), "O pedido deve ser encontrado");
+        assertEquals(StatusPagamento.APROVADO, pedidoEncontrado.get().getStatusPagamento(),
+                "Status de pagamento deve ser APROVADO");
+    }
+
+    @Test
+    @DisplayName("Deve salvar e recuperar pedido com status de pagamento REJEITADO")
+    void t10() {
+        // Criar um pedido
+        Pedido pedido = Pedido.criar(cliente, StatusPedido.RECEBIDO, LocalDateTime.now());
+
+        // Adicionar um item ao pedido
+        ItemPedido item = ItemPedido.criar(produtoLanche, 1);
+        pedido.adicionarItem(item);
+
+        // Alterar status de pagamento para REJEITADO
+        pedido.rejeitarPagamento();
+
+        // Salvar o pedido
+        Pedido pedidoSalvo = pedidoRepositorio.salvar(pedido);
+
+        // Buscar o pedido para verificar se foi salvo corretamente
+        Optional<Pedido> pedidoEncontrado = pedidoRepositorio.buscarPorId(pedidoSalvo.getId());
+
+        // Verificações
+        assertTrue(pedidoEncontrado.isPresent(), "O pedido deve ser encontrado");
+        assertEquals(StatusPagamento.REJEITADO, pedidoEncontrado.get().getStatusPagamento(),
+                "Status de pagamento deve ser REJEITADO");
+    }
+
+    @Test
+    @DisplayName("Deve atualizar status de pagamento de um pedido existente")
+    void t11() {
+        // Criar e salvar um pedido
+        Pedido pedido = Pedido.criar(cliente, StatusPedido.RECEBIDO, LocalDateTime.now());
+        ItemPedido item = ItemPedido.criar(produtoLanche, 1);
+        pedido.adicionarItem(item);
+        Pedido pedidoSalvo = pedidoRepositorio.salvar(pedido);
+
+        // Verificar que foi salvo com status PENDENTE
+        Optional<Pedido> pedidoAntes = pedidoRepositorio.buscarPorId(pedidoSalvo.getId());
+        assertTrue(pedidoAntes.isPresent());
+        assertEquals(StatusPagamento.PENDENTE, pedidoAntes.get().getStatusPagamento());
+
+        // Atualizar status de pagamento para APROVADO
+        pedidoRepositorio.atualizarStatusPagamento(pedidoSalvo.getId(), StatusPagamento.APROVADO);
+
+        // Buscar novamente para verificar a atualização
+        Optional<Pedido> pedidoDepois = pedidoRepositorio.buscarPorId(pedidoSalvo.getId());
+
+        // Verificações
+        assertTrue(pedidoDepois.isPresent(), "O pedido deve ser encontrado");
+        assertEquals(StatusPagamento.APROVADO, pedidoDepois.get().getStatusPagamento(),
+                "Status de pagamento deve ser atualizado para APROVADO");
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao tentar atualizar status de pagamento de pedido inexistente")
+    void t12() {
+        assertThrows(RecursoNaoEncontradoException.class,
+                () -> pedidoRepositorio.atualizarStatusPagamento(999L, StatusPagamento.APROVADO),
                 "Deve lançar exceção para pedido inexistente");
     }
 }

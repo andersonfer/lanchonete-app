@@ -3,9 +3,12 @@ package br.com.lanchonete.autoatendimento.adaptadores.rest.servicos;
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.ItemPedidoInfo;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.PedidoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.PedidoResponseDTO;
+import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.StatusPagamentoResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.RealizarPedido;
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.ListarPedidos;
+import br.com.lanchonete.autoatendimento.aplicacao.portas.entrada.ConsultarStatusPagamentoUC;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.Pedido;
+import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.StatusPagamento;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,11 +19,14 @@ public class PedidoService {
 
     private final RealizarPedido realizarPedido;
     private final ListarPedidos listarPedidos;
+    private final ConsultarStatusPagamentoUC consultarStatusPagamento;
 
     public PedidoService(final RealizarPedido realizarPedido,
-                         final ListarPedidos listarPedidos) {
+                         final ListarPedidos listarPedidos,
+                         final ConsultarStatusPagamentoUC consultarStatusPagamento) {
         this.realizarPedido = realizarPedido;
         this.listarPedidos = listarPedidos;
+        this.consultarStatusPagamento = consultarStatusPagamento;
     }
 
     @Transactional
@@ -41,5 +47,10 @@ public class PedidoService {
         return pedidos.stream()
                 .map(PedidoResponseDTO::converterParaDTO)
                 .toList();
+    }
+
+    public StatusPagamentoResponseDTO consultarStatusPagamento(Long pedidoId) {
+        StatusPagamento statusPagamento = consultarStatusPagamento.executar(pedidoId);
+        return StatusPagamentoResponseDTO.de(pedidoId, statusPagamento);
     }
 }

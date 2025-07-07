@@ -8,6 +8,7 @@ import br.com.lanchonete.autoatendimento.dominio.modelo.cliente.Cliente;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.ItemPedido;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.Pedido;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.StatusPedido;
+import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.StatusPagamento;
 import br.com.lanchonete.autoatendimento.dominio.modelo.produto.Produto;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -50,6 +51,7 @@ public class PedidoGatewayJDBC implements PedidoGateway {
         final Map<String, Object> pedidoParams = new HashMap<>();
         pedidoParams.put("cliente_id", pedido.getCliente() != null ? pedido.getCliente().getId() : null);
         pedidoParams.put("status", pedido.getStatus().name());
+        pedidoParams.put("status_pagamento", pedido.getStatusPagamento().name());
         pedidoParams.put("data_criacao", Timestamp.valueOf(pedido.getDataCriacao()));
         pedidoParams.put("valor_total", pedido.getValorTotal());
 
@@ -134,6 +136,18 @@ public class PedidoGatewayJDBC implements PedidoGateway {
         }
     }
 
+    @Transactional
+    public void atualizarStatusPagamento(final Long pedidoId, final StatusPagamento novoStatusPagamento) {
+        int linhasAfetadas = jdbcTemplate.update(
+                "UPDATE pedido SET status_pagamento = ? WHERE id = ?",
+                novoStatusPagamento.name(), pedidoId
+        );
+
+        if (linhasAfetadas == 0) {
+            throw new RecursoNaoEncontradoException("Pedido não encontrado com ID: " + pedidoId);
+        }
+    }
+
     private Pedido mapearPedido(final ResultSet rs) throws SQLException {
         final Long clienteId = rs.getLong("cliente_id");
         Cliente cliente = null;
@@ -152,6 +166,7 @@ public class PedidoGatewayJDBC implements PedidoGateway {
 
         pedido.setId(rs.getLong("id"));
         pedido.setValorTotal(rs.getBigDecimal("valor_total"));
+        pedido.setStatusPagamento(StatusPagamento.valueOf(rs.getString("status_pagamento")));
 
         return pedido;
     }

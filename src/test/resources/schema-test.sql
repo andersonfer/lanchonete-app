@@ -25,6 +25,7 @@ CREATE TABLE pedido (
     id IDENTITY PRIMARY KEY,
     cliente_id BIGINT,
     status VARCHAR NOT NULL,
+    status_pagamento VARCHAR NOT NULL DEFAULT 'PENDENTE',
     data_criacao TIMESTAMP NOT NULL,
     valor_total DECIMAL(10,2) NOT NULL,
     FOREIGN KEY (cliente_id) REFERENCES cliente(id)

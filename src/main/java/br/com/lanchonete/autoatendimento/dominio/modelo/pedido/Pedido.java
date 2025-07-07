@@ -15,12 +15,14 @@ public class Pedido {
     private Cliente cliente;  // Opcional - cliente pode não se identificar
     private List<ItemPedido> itens;
     private StatusPedido status;
+    private StatusPagamento statusPagamento;
     private LocalDateTime dataCriacao;
     private BigDecimal valorTotal;
 
     private Pedido(Cliente cliente, StatusPedido status, LocalDateTime dataCriacao) {
         this.cliente = cliente;
         this.status = status;
+        this.statusPagamento = StatusPagamento.PENDENTE;
         this.dataCriacao = dataCriacao;
         this.itens = new ArrayList<>();
         this.valorTotal = BigDecimal.ZERO;
@@ -152,6 +154,38 @@ public class Pedido {
         this.valorTotal = valorTotal;
     }
 
+    public StatusPagamento getStatusPagamento() {
+        return statusPagamento;
+    }
+
+    public void setStatusPagamento(StatusPagamento statusPagamento) {
+        this.statusPagamento = statusPagamento;
+    }
+
+    public void aprovarPagamento() {
+        this.statusPagamento = StatusPagamento.APROVADO;
+    }
+
+    public void rejeitarPagamento() {
+        this.statusPagamento = StatusPagamento.REJEITADO;
+    }
+
+    public boolean isPagamentoPendente() {
+        return this.statusPagamento != null && this.statusPagamento.isPendente();
+    }
+
+    public boolean isPagamentoAprovado() {
+        return this.statusPagamento != null && this.statusPagamento.isAprovado();
+    }
+
+    public boolean isPagamentoRejeitado() {
+        return this.statusPagamento != null && this.statusPagamento.isRejeitado();
+    }
+
+    public boolean isPagamentoProcessado() {
+        return this.statusPagamento != null && this.statusPagamento.foiProcessado();
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -162,13 +196,14 @@ public class Pedido {
                 Objects.equals(cliente, pedido.cliente) &&
                 Objects.equals(itens, pedido.itens) &&
                 status == pedido.status &&
+                statusPagamento == pedido.statusPagamento &&
                 Objects.equals(dataCriacao, pedido.dataCriacao) &&
                 Objects.equals(valorTotal, pedido.valorTotal);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, numeroPedido, cliente, itens, status, dataCriacao, valorTotal);
+        return Objects.hash(id, numeroPedido, cliente, itens, status, statusPagamento, dataCriacao, valorTotal);
     }
 
     @Override
@@ -179,6 +214,7 @@ public class Pedido {
                 ", cliente=" + cliente +
                 ", itens=" + itens +
                 ", status=" + status +
+                ", statusPagamento=" + statusPagamento +
                 ", dataCriacao=" + dataCriacao +
                 ", valorTotal=" + valorTotal +
                 '}';

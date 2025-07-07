@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS pedido (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     cliente_id BIGINT,
     status VARCHAR(50) NOT NULL,
+    status_pagamento VARCHAR(50) NOT NULL DEFAULT 'PENDENTE',
     data_criacao DATETIME NOT NULL,
     valor_total DECIMAL(10,2) NOT NULL,
     FOREIGN KEY (cliente_id) REFERENCES cliente(id)

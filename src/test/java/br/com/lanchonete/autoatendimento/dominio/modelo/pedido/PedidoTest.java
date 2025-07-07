@@ -187,4 +187,201 @@ class PedidoTest {
         assertEquals("Data de criação é obrigatória", exception.getMessage(),
                 "Mensagem de erro incorreta");
     }
+
+    @Test
+    @DisplayName("Deve criar pedido com status de pagamento PENDENTE por padrão")
+    void t7() {
+        // Cria um produto
+        Produto produto = Produto.criar("X-Bacon", null, new BigDecimal("25.90"), Categoria.LANCHE);
+
+        // Cria o pedido
+        Pedido pedido = Pedido.criar(
+                null,
+                StatusPedido.RECEBIDO,
+                LocalDateTime.now()
+        );
+
+        // Adiciona um item ao pedido
+        ItemPedido item = ItemPedido.criar(produto, 1);
+        pedido.adicionarItem(item);
+
+        // Verifica se o status de pagamento é PENDENTE por padrão
+        assertEquals(StatusPagamento.PENDENTE, pedido.getStatusPagamento(),
+                "Status de pagamento deve ser PENDENTE por padrão");
+    }
+
+    @Test
+    @DisplayName("Deve permitir alterar status de pagamento para APROVADO")
+    void t8() {
+        // Cria um produto
+        Produto produto = Produto.criar("X-Bacon", null, new BigDecimal("25.90"), Categoria.LANCHE);
+
+        // Cria o pedido
+        Pedido pedido = Pedido.criar(
+                null,
+                StatusPedido.RECEBIDO,
+                LocalDateTime.now()
+        );
+
+        // Adiciona um item ao pedido
+        ItemPedido item = ItemPedido.criar(produto, 1);
+        pedido.adicionarItem(item);
+
+        // Altera o status de pagamento para APROVADO
+        pedido.aprovarPagamento();
+
+        // Verifica se o status foi alterado
+        assertEquals(StatusPagamento.APROVADO, pedido.getStatusPagamento(),
+                "Status de pagamento deve ser APROVADO após aprovação");
+    }
+
+    @Test
+    @DisplayName("Deve permitir alterar status de pagamento para REJEITADO")
+    void t9() {
+        // Cria um produto
+        Produto produto = Produto.criar("X-Bacon", null, new BigDecimal("25.90"), Categoria.LANCHE);
+
+        // Cria o pedido
+        Pedido pedido = Pedido.criar(
+                null,
+                StatusPedido.RECEBIDO,
+                LocalDateTime.now()
+        );
+
+        // Adiciona um item ao pedido
+        ItemPedido item = ItemPedido.criar(produto, 1);
+        pedido.adicionarItem(item);
+
+        // Altera o status de pagamento para REJEITADO
+        pedido.rejeitarPagamento();
+
+        // Verifica se o status foi alterado
+        assertEquals(StatusPagamento.REJEITADO, pedido.getStatusPagamento(),
+                "Status de pagamento deve ser REJEITADO após rejeição");
+    }
+
+    @Test
+    @DisplayName("Deve verificar se pagamento está pendente")
+    void t10() {
+        // Cria um produto
+        Produto produto = Produto.criar("X-Bacon", null, new BigDecimal("25.90"), Categoria.LANCHE);
+
+        // Cria o pedido
+        Pedido pedido = Pedido.criar(
+                null,
+                StatusPedido.RECEBIDO,
+                LocalDateTime.now()
+        );
+
+        // Adiciona um item ao pedido
+        ItemPedido item = ItemPedido.criar(produto, 1);
+        pedido.adicionarItem(item);
+
+        // Verifica se o pagamento está pendente
+        assertTrue(pedido.isPagamentoPendente(),
+                "Pagamento deve estar pendente inicialmente");
+
+        // Aprova o pagamento
+        pedido.aprovarPagamento();
+
+        // Verifica se o pagamento não está mais pendente
+        assertFalse(pedido.isPagamentoPendente(),
+                "Pagamento não deve estar pendente após aprovação");
+    }
+
+    @Test
+    @DisplayName("Deve verificar se pagamento foi aprovado")
+    void t11() {
+        // Cria um produto
+        Produto produto = Produto.criar("X-Bacon", null, new BigDecimal("25.90"), Categoria.LANCHE);
+
+        // Cria o pedido
+        Pedido pedido = Pedido.criar(
+                null,
+                StatusPedido.RECEBIDO,
+                LocalDateTime.now()
+        );
+
+        // Adiciona um item ao pedido
+        ItemPedido item = ItemPedido.criar(produto, 1);
+        pedido.adicionarItem(item);
+
+        // Verifica se o pagamento não está aprovado inicialmente
+        assertFalse(pedido.isPagamentoAprovado(),
+                "Pagamento não deve estar aprovado inicialmente");
+
+        // Aprova o pagamento
+        pedido.aprovarPagamento();
+
+        // Verifica se o pagamento está aprovado
+        assertTrue(pedido.isPagamentoAprovado(),
+                "Pagamento deve estar aprovado após aprovação");
+    }
+
+    @Test
+    @DisplayName("Deve verificar se pagamento foi rejeitado")
+    void t12() {
+        // Cria um produto
+        Produto produto = Produto.criar("X-Bacon", null, new BigDecimal("25.90"), Categoria.LANCHE);
+
+        // Cria o pedido
+        Pedido pedido = Pedido.criar(
+                null,
+                StatusPedido.RECEBIDO,
+                LocalDateTime.now()
+        );
+
+        // Adiciona um item ao pedido
+        ItemPedido item = ItemPedido.criar(produto, 1);
+        pedido.adicionarItem(item);
+
+        // Verifica se o pagamento não está rejeitado inicialmente
+        assertFalse(pedido.isPagamentoRejeitado(),
+                "Pagamento não deve estar rejeitado inicialmente");
+
+        // Rejeita o pagamento
+        pedido.rejeitarPagamento();
+
+        // Verifica se o pagamento está rejeitado
+        assertTrue(pedido.isPagamentoRejeitado(),
+                "Pagamento deve estar rejeitado após rejeição");
+    }
+
+    @Test
+    @DisplayName("Deve verificar se pagamento foi processado")
+    void t13() {
+        // Cria um produto
+        Produto produto = Produto.criar("X-Bacon", null, new BigDecimal("25.90"), Categoria.LANCHE);
+
+        // Cria o pedido
+        Pedido pedido = Pedido.criar(
+                null,
+                StatusPedido.RECEBIDO,
+                LocalDateTime.now()
+        );
+
+        // Adiciona um item ao pedido
+        ItemPedido item = ItemPedido.criar(produto, 1);
+        pedido.adicionarItem(item);
+
+        // Verifica se o pagamento não foi processado inicialmente
+        assertFalse(pedido.isPagamentoProcessado(),
+                "Pagamento não deve estar processado inicialmente");
+
+        // Aprova o pagamento
+        pedido.aprovarPagamento();
+
+        // Verifica se o pagamento foi processado
+        assertTrue(pedido.isPagamentoProcessado(),
+                "Pagamento deve estar processado após aprovação");
+
+        // Cria outro pedido e rejeita o pagamento
+        Pedido pedido2 = Pedido.criar(null, StatusPedido.RECEBIDO, LocalDateTime.now());
+        pedido2.adicionarItem(ItemPedido.criar(produto, 1));
+        pedido2.rejeitarPagamento();
+
+        // Verifica se o pagamento rejeitado também é considerado processado
+        assertTrue(pedido2.isPagamentoProcessado(),
+                "Pagamento rejeitado também deve ser considerado processado");
+    }
 }

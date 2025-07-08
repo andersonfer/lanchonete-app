@@ -19,17 +19,17 @@
 - [x] Implementação clara quanto ao Webhook
 
 #### iv. Lista de pedidos com ordenação específica
-- [ ] Retorna pedidos com suas descrições
-- [ ] Ordenação: Pronto > Em Preparação > Recebido
-- [ ] Pedidos mais antigos primeiro, mais novos depois
-- [ ] Pedidos com status Finalizado NÃO aparecem na lista
+- [x] Retorna pedidos com suas descrições
+- [x] Ordenação: Pronto > Em Preparação > Recebido
+- [x] Pedidos mais antigos primeiro, mais novos depois
+- [x] Pedidos com status Finalizado NÃO aparecem na lista
 
 #### v. Atualizar status do pedido
-- [ ] API para atualização de status
-- [ ] Fluxo completo do pedido implementado
-- [ ] Informação utilizada pela cozinha
-- [ ] Garantia que nenhum pedido seja perdido
-- [ ] Cozinha pode iniciar preparação após pagamento
+- [x] API para atualização de status
+- [x] Fluxo completo do pedido implementado
+- [x] Informação utilizada pela cozinha
+- [x] Garantia que nenhum pedido seja perdido
+- [x] Cozinha pode iniciar preparação após pagamento
 
 #### vi. Integração com Mercado Pago (OPCIONAL - MOCK)
 - [ ] Mock da parte de pagamentos implementado
@@ -85,12 +85,12 @@
    - Inclui: Simulação de processamento, chamada de webhook
 
 **9. Atualizar API de listagem de pedidos com regras de ordenação**
-   - Status: [ ] Pendente - PRÓXIMA PRIORIDADE
+   - Status: [x] Concluído
    - Descrição: Modificar ordenação conforme requisitos
    - Inclui: Query SQL atualizada, exclusão de Finalizados
 
 **10. Implementar APIs para atualização de status do pedido (cozinha)**
-    - Status: [ ] Pendente
+    - Status: [x] Concluído
     - Descrição: APIs para cozinha gerenciar status
     - Inclui: GET /pedidos/cozinha, PUT /pedidos/{id}/status
 
@@ -128,9 +128,9 @@
 
 ### 🎯 PRÓXIMOS PASSOS RECOMENDADOS:
 
-1. **IMEDIATO** - Atualizar listagem de pedidos com ordenação (tarefa 9)
-2. **SEQUENCIAL** - APIs para cozinha gerenciar status (tarefa 10)
-3. **PARALELO** - Criar mock Mercado Pago (tarefa 8)
+1. **IMEDIATO** - Criar mock Mercado Pago (tarefa 8)
+2. **SEQUENCIAL** - Configurar Docker Compose (tarefa 11)
+3. **PARALELO** - Criar testes integrados para fluxo completo (tarefa 12)
 
 ---
 

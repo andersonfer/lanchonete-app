@@ -1,7 +1,9 @@
 package br.com.lanchonete.autoatendimento.infra;
 
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.AtualizarStatusPedido;
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.ConsultarStatusPagamento;
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.ListarPedidos;
+import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.ListarPedidosCozinha;
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.RealizarPedido;
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.webhook.ProcessarWebhookPagamento;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteGateway;
@@ -33,5 +35,15 @@ public class PedidoServiceConfig {
     @Bean
     ProcessarWebhookPagamento processarWebhookPagamento(final PedidoGateway pedidoGateway) {
         return new ProcessarWebhookPagamento(pedidoGateway);
+    }
+
+    @Bean
+    ListarPedidosCozinha listarPedidosCozinha(final PedidoGateway pedidoGateway) {
+        return new ListarPedidosCozinha(pedidoGateway);
+    }
+
+    @Bean
+    AtualizarStatusPedido atualizarStatusPedido(final PedidoGateway pedidoGateway) {
+        return new AtualizarStatusPedido(pedidoGateway);
     }
 }

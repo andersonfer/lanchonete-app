@@ -94,19 +94,20 @@ class ListarPedidosTest {
     }
 
     @Test
-    @DisplayName("Deve listar todos os pedidos")
+    @DisplayName("Deve listar pedidos excluindo os finalizados")
     void t1() {
-        // Mock do repositório retornando 2 pedidos
-        when(pedidoGateway.listarTodos()).thenReturn(Arrays.asList(pedidoComCliente, pedidoSemCliente));
+        // Mock do repositório retornando apenas o pedido não finalizado
+        // (simulando que o filtro já foi aplicado na camada de persistência)
+        when(pedidoGateway.listarTodos()).thenReturn(Arrays.asList(pedidoComCliente));
 
         // Executar o serviço
         List<Pedido> pedidos = listarPedidos.executar();
 
-        // Verificações
+        // Verificações - deve retornar apenas 1 pedido (excluindo FINALIZADO)
         assertNotNull(pedidos, "A lista de pedidos não deve ser nula");
-        assertEquals(2, pedidos.size(), "Deve retornar 2 pedidos");
+        assertEquals(1, pedidos.size(), "Deve retornar apenas 1 pedido (excluindo FINALIZADO)");
 
-        // Verificar o primeiro pedido (com cliente)
+        // Verificar o pedido retornado (com cliente)
         Pedido primeiroPedido = pedidos.get(0);
         assertEquals(1L, primeiroPedido.getId(), "ID do primeiro pedido deve ser 1");
         assertEquals(1L, primeiroPedido.getCliente().getId(), "ID do cliente deve ser 1");
@@ -115,13 +116,10 @@ class ListarPedidosTest {
         assertEquals(1, primeiroPedido.getItens().size(), "Deve ter 1 item");
         assertEquals(new BigDecimal("51.80"), primeiroPedido.getValorTotal(), "Valor total deve ser 51.80");
 
-        // Verificar o segundo pedido (sem cliente)
-        Pedido segundoPedido = pedidos.get(1);
-        assertEquals(2L, segundoPedido.getId(), "ID do segundo pedido deve ser 2");
-        assertNull(segundoPedido.getCliente(), "Cliente deve ser nulo");
-        assertEquals(StatusPedido.FINALIZADO, segundoPedido.getStatus(), "Status deve ser FINALIZADO");
-        assertEquals(1, segundoPedido.getItens().size(), "Deve ter 1 item");
-        assertEquals(new BigDecimal("6.00"), segundoPedido.getValorTotal(), "Valor total deve ser 6.00");
+        // Verificar que nenhum pedido finalizado foi retornado
+        boolean temPedidoFinalizado = pedidos.stream()
+                .anyMatch(p -> p.getStatus() == StatusPedido.FINALIZADO);
+        assertFalse(temPedidoFinalizado, "Não deve retornar pedidos com status FINALIZADO");
 
         // Verificar que o repositório foi chamado
         verify(pedidoGateway).listarTodos();
@@ -139,6 +137,106 @@ class ListarPedidosTest {
         // Verificações
         assertNotNull(pedidos, "A lista de pedidos não deve ser nula");
         assertTrue(pedidos.isEmpty(), "A lista de pedidos deve estar vazia");
+
+        // Verificar que o repositório foi chamado
+        verify(pedidoGateway).listarTodos();
+    }
+
+    @Test
+    @DisplayName("Deve retornar pedidos ordenados por status: PRONTO > EM_PREPARACAO > RECEBIDO")
+    void t3() {
+        // Criar pedidos com diferentes status e horários
+        LocalDateTime agora = LocalDateTime.now();
+        
+        // Produto para os testes
+        Produto produto = Produto.reconstituir(
+                1L, "X-Bacon", "Hambúrguer com bacon", 
+                new BigDecimal("25.90"), Categoria.LANCHE);
+
+        // Pedido RECEBIDO (mais antigo)
+        Pedido pedidoRecebido = Pedido.criar(null, StatusPedido.RECEBIDO, agora.minusHours(3));
+        pedidoRecebido.setId(1L);
+        pedidoRecebido.getItens().add(ItemPedido.reconstituir(1L, pedidoRecebido, produto, 1, 
+                produto.getPreco().getValor(), new BigDecimal("25.90")));
+
+        // Pedido EM_PREPARACAO (meio)
+        Pedido pedidoEmPreparacao = Pedido.criar(null, StatusPedido.EM_PREPARACAO, agora.minusHours(2));
+        pedidoEmPreparacao.setId(2L);
+        pedidoEmPreparacao.getItens().add(ItemPedido.reconstituir(2L, pedidoEmPreparacao, produto, 1, 
+                produto.getPreco().getValor(), new BigDecimal("25.90")));
+
+        // Pedido PRONTO (mais recente)
+        Pedido pedidoPronto = Pedido.criar(null, StatusPedido.PRONTO, agora.minusHours(1));
+        pedidoPronto.setId(3L);
+        pedidoPronto.getItens().add(ItemPedido.reconstituir(3L, pedidoPronto, produto, 1, 
+                produto.getPreco().getValor(), new BigDecimal("25.90")));
+
+        // Mock retornando pedidos já ordenados conforme nova regra
+        when(pedidoGateway.listarTodos()).thenReturn(Arrays.asList(
+                pedidoPronto,      // PRONTO primeiro
+                pedidoEmPreparacao, // EM_PREPARACAO segundo
+                pedidoRecebido     // RECEBIDO por último
+        ));
+
+        // Executar o serviço
+        List<Pedido> pedidos = listarPedidos.executar();
+
+        // Verificações
+        assertNotNull(pedidos, "A lista de pedidos não deve ser nula");
+        assertEquals(3, pedidos.size(), "Deve retornar 3 pedidos");
+
+        // Verificar ordenação por status
+        assertEquals(StatusPedido.PRONTO, pedidos.get(0).getStatus(), 
+                "Primeiro pedido deve ter status PRONTO");
+        assertEquals(StatusPedido.EM_PREPARACAO, pedidos.get(1).getStatus(), 
+                "Segundo pedido deve ter status EM_PREPARACAO");
+        assertEquals(StatusPedido.RECEBIDO, pedidos.get(2).getStatus(), 
+                "Terceiro pedido deve ter status RECEBIDO");
+
+        // Verificar que o repositório foi chamado
+        verify(pedidoGateway).listarTodos();
+    }
+
+    @Test
+    @DisplayName("Deve retornar pedidos do mesmo status ordenados por data de criação (mais antigos primeiro)")
+    void t4() {
+        // Criar múltiplos pedidos com mesmo status mas datas diferentes
+        LocalDateTime agora = LocalDateTime.now();
+        
+        Produto produto = Produto.reconstituir(
+                1L, "X-Bacon", "Hambúrguer com bacon", 
+                new BigDecimal("25.90"), Categoria.LANCHE);
+
+        // Pedido RECEBIDO mais recente
+        Pedido pedidoRecente = Pedido.criar(null, StatusPedido.RECEBIDO, agora.minusMinutes(10));
+        pedidoRecente.setId(1L);
+        pedidoRecente.getItens().add(ItemPedido.reconstituir(1L, pedidoRecente, produto, 1, 
+                produto.getPreco().getValor(), new BigDecimal("25.90")));
+
+        // Pedido RECEBIDO mais antigo
+        Pedido pedidoAntigo = Pedido.criar(null, StatusPedido.RECEBIDO, agora.minusHours(1));
+        pedidoAntigo.setId(2L);
+        pedidoAntigo.getItens().add(ItemPedido.reconstituir(2L, pedidoAntigo, produto, 1, 
+                produto.getPreco().getValor(), new BigDecimal("25.90")));
+
+        // Mock retornando pedidos ordenados por data (mais antigos primeiro)
+        when(pedidoGateway.listarTodos()).thenReturn(Arrays.asList(
+                pedidoAntigo,   // Mais antigo primeiro
+                pedidoRecente   // Mais recente depois
+        ));
+
+        // Executar o serviço
+        List<Pedido> pedidos = listarPedidos.executar();
+
+        // Verificações
+        assertNotNull(pedidos, "A lista de pedidos não deve ser nula");
+        assertEquals(2, pedidos.size(), "Deve retornar 2 pedidos");
+
+        // Verificar ordenação por data (mais antigos primeiro)
+        assertTrue(pedidos.get(0).getDataCriacao().isBefore(pedidos.get(1).getDataCriacao()),
+                "Primeiro pedido deve ser mais antigo que o segundo");
+        assertEquals(2L, pedidos.get(0).getId(), "Primeiro pedido deve ser o mais antigo (ID 2)");
+        assertEquals(1L, pedidos.get(1).getId(), "Segundo pedido deve ser o mais recente (ID 1)");
 
         // Verificar que o repositório foi chamado
         verify(pedidoGateway).listarTodos();

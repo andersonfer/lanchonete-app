@@ -155,28 +155,108 @@ class PedidoGatewayJDBCTest {
     }
 
     @Test
-    @DisplayName("Deve listar todos os pedidos ordenados por data de criação decrescente")
+    @DisplayName("Deve listar pedidos excluindo os finalizados")
     void t5() {
+        // Criar e salvar pedidos com status diferentes
+        LocalDateTime agora = LocalDateTime.now();
+        
+        // Pedido RECEBIDO (deve aparecer na lista)
+        Pedido pedidoRecebido = Pedido.criar(cliente, StatusPedido.RECEBIDO, agora.minusHours(1));
+        pedidoRecebido.setValorTotal(BigDecimal.TEN);
+        Pedido pedidoRecebidoSalvo = pedidoRepositorio.salvar(pedidoRecebido);
 
-        // Criar e salvar dois pedidos com datas diferentes
-        LocalDateTime dataAnterior = LocalDateTime.now().minusHours(1);
-        Pedido pedidoAntigo = Pedido.criar(cliente, StatusPedido.RECEBIDO, dataAnterior);
-        pedidoAntigo.setValorTotal(BigDecimal.TEN);
-        pedidoRepositorio.salvar(pedidoAntigo);
+        // Pedido FINALIZADO (não deve aparecer na lista)
+        Pedido pedidoFinalizado = Pedido.criar(cliente, StatusPedido.FINALIZADO, agora);
+        pedidoFinalizado.setValorTotal(BigDecimal.ONE);
+        pedidoRepositorio.salvar(pedidoFinalizado);
 
-        LocalDateTime dataMaisRecente = LocalDateTime.now();
-        Pedido pedidoRecente = Pedido.criar(cliente, StatusPedido.RECEBIDO, dataMaisRecente);
-        pedidoRecente.setValorTotal(BigDecimal.ONE);
-        pedidoRepositorio.salvar(pedidoRecente);
+        // Listar todos os pedidos
+        List<Pedido> pedidos = pedidoRepositorio.listarTodos();
+
+        // Verificações
+        assertEquals(1, pedidos.size(), "Deve retornar apenas 1 pedido (excluindo FINALIZADO)");
+        assertEquals(pedidoRecebidoSalvo.getId(), pedidos.get(0).getId(), "Deve retornar apenas o pedido RECEBIDO");
+        assertEquals(StatusPedido.RECEBIDO, pedidos.get(0).getStatus(), "Status deve ser RECEBIDO");
+        
+        // Verificar que nenhum pedido finalizado foi retornado
+        boolean temPedidoFinalizado = pedidos.stream()
+                .anyMatch(p -> p.getStatus() == StatusPedido.FINALIZADO);
+        assertFalse(temPedidoFinalizado, "Não deve retornar pedidos com status FINALIZADO");
+    }
+
+    @Test
+    @DisplayName("Deve listar pedidos ordenados por status: PRONTO > EM_PREPARACAO > RECEBIDO")
+    void t13() {
+        // Criar pedidos com diferentes status
+        LocalDateTime agora = LocalDateTime.now();
+        
+        // Pedido RECEBIDO (deve aparecer por último)
+        Pedido pedidoRecebido = Pedido.criar(cliente, StatusPedido.RECEBIDO, agora.minusHours(3));
+        pedidoRecebido.setValorTotal(new BigDecimal("10.00"));
+        Pedido pedidoRecebidoSalvo = pedidoRepositorio.salvar(pedidoRecebido);
+
+        // Pedido EM_PREPARACAO (deve aparecer no meio)
+        Pedido pedidoEmPreparacao = Pedido.criar(cliente, StatusPedido.EM_PREPARACAO, agora.minusHours(2));
+        pedidoEmPreparacao.setValorTotal(new BigDecimal("20.00"));
+        Pedido pedidoEmPreparacaoSalvo = pedidoRepositorio.salvar(pedidoEmPreparacao);
+
+        // Pedido PRONTO (deve aparecer primeiro)
+        Pedido pedidoPronto = Pedido.criar(cliente, StatusPedido.PRONTO, agora.minusHours(1));
+        pedidoPronto.setValorTotal(new BigDecimal("30.00"));
+        Pedido pedidoProntoSalvo = pedidoRepositorio.salvar(pedidoPronto);
+
+        // Listar todos os pedidos
+        List<Pedido> pedidos = pedidoRepositorio.listarTodos();
+
+        // Verificações
+        assertEquals(3, pedidos.size(), "Deve retornar 3 pedidos");
+        
+        // Verificar ordenação por status
+        assertEquals(StatusPedido.PRONTO, pedidos.get(0).getStatus(), 
+                "Primeiro pedido deve ter status PRONTO");
+        assertEquals(StatusPedido.EM_PREPARACAO, pedidos.get(1).getStatus(), 
+                "Segundo pedido deve ter status EM_PREPARACAO");
+        assertEquals(StatusPedido.RECEBIDO, pedidos.get(2).getStatus(), 
+                "Terceiro pedido deve ter status RECEBIDO");
+        
+        // Verificar IDs dos pedidos
+        assertEquals(pedidoProntoSalvo.getId(), pedidos.get(0).getId(), 
+                "Primeiro deve ser o pedido PRONTO");
+        assertEquals(pedidoEmPreparacaoSalvo.getId(), pedidos.get(1).getId(), 
+                "Segundo deve ser o pedido EM_PREPARACAO");
+        assertEquals(pedidoRecebidoSalvo.getId(), pedidos.get(2).getId(), 
+                "Terceiro deve ser o pedido RECEBIDO");
+    }
+
+    @Test
+    @DisplayName("Deve listar pedidos do mesmo status ordenados por data de criação (mais antigos primeiro)")
+    void t14() {
+        // Criar múltiplos pedidos com mesmo status mas datas diferentes
+        LocalDateTime agora = LocalDateTime.now();
+        
+        // Pedido RECEBIDO mais recente
+        Pedido pedidoRecente = Pedido.criar(cliente, StatusPedido.RECEBIDO, agora.minusMinutes(30));
+        pedidoRecente.setValorTotal(new BigDecimal("10.00"));
+        Pedido pedidoRecenteSalvo = pedidoRepositorio.salvar(pedidoRecente);
+
+        // Pedido RECEBIDO mais antigo
+        Pedido pedidoAntigo = Pedido.criar(cliente, StatusPedido.RECEBIDO, agora.minusHours(2));
+        pedidoAntigo.setValorTotal(new BigDecimal("20.00"));
+        Pedido pedidoAntigoSalvo = pedidoRepositorio.salvar(pedidoAntigo);
 
         // Listar todos os pedidos
         List<Pedido> pedidos = pedidoRepositorio.listarTodos();
 
         // Verificações
         assertEquals(2, pedidos.size(), "Deve retornar 2 pedidos");
-        // O pedido mais recente deve vir primeiro devido à ordenação
-        assertTrue(pedidos.get(0).getDataCriacao().isAfter(pedidos.get(1).getDataCriacao()),
-                "O pedido mais recente deve estar em primeiro na lista");
+        
+        // Verificar ordenação por data (mais antigos primeiro)
+        assertTrue(pedidos.get(0).getDataCriacao().isBefore(pedidos.get(1).getDataCriacao()),
+                "Primeiro pedido deve ser mais antigo que o segundo");
+        assertEquals(pedidoAntigoSalvo.getId(), pedidos.get(0).getId(), 
+                "Primeiro pedido deve ser o mais antigo");
+        assertEquals(pedidoRecenteSalvo.getId(), pedidos.get(1).getId(), 
+                "Segundo pedido deve ser o mais recente");
     }
 
     @Test

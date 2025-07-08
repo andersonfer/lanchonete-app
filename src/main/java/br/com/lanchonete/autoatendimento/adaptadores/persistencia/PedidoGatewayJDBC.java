@@ -104,9 +104,18 @@ public class PedidoGatewayJDBC implements PedidoGateway {
 
     @Override
     public List<Pedido> listarTodos() {
-        // 1. Buscar todos os pedidos
+        // 1. Buscar todos os pedidos excluindo FINALIZADO e com ordenação por status e data
         final List<Pedido> pedidos = jdbcTemplate.query(
-                "SELECT * FROM pedido ORDER BY data_criacao DESC",
+                "SELECT * FROM pedido " +
+                "WHERE status != 'FINALIZADO' " +
+                "ORDER BY " +
+                "CASE " +
+                "  WHEN status = 'PRONTO' THEN 1 " +
+                "  WHEN status = 'EM_PREPARACAO' THEN 2 " +
+                "  WHEN status = 'RECEBIDO' THEN 3 " +
+                "  ELSE 4 " +
+                "END, " +
+                "data_criacao ASC",
                 (rs, rowNum) -> mapearPedido(rs)
         );
 

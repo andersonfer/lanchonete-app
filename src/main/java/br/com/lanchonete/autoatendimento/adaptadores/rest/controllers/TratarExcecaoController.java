@@ -24,4 +24,5 @@ public class TratarExcecaoController {
         body.put("erro", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body.toString());
     }
+
 }

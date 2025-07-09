@@ -1,0 +1,314 @@
+# TESTE DO FLUXO COMPLETO - LANCHONETE APP
+# =====================================================
+
+# PASSO 1: Iniciar a aplicação com Docker Compose
+# -----------------------------------------------
+docker-compose up -d && echo
+
+# Aguardar alguns segundos para os serviços iniciarem
+sleep 30 && echo
+
+# Verificar se os serviços estão funcionando
+docker-compose ps && echo
+
+# PASSO 2: Listar produtos disponíveis
+# ------------------------------------
+# Buscar produtos da categoria LANCHE
+curl -X GET "http://localhost:8080/produtos/categoria/LANCHE" && echo
+
+# Buscar produtos da categoria BEBIDA
+curl -X GET "http://localhost:8080/produtos/categoria/BEBIDA" && echo
+
+# Buscar produtos da categoria ACOMPANHAMENTO
+curl -X GET "http://localhost:8080/produtos/categoria/ACOMPANHAMENTO" && echo
+
+# Buscar produtos da categoria SOBREMESA
+curl -X GET "http://localhost:8080/produtos/categoria/SOBREMESA" && echo
+
+# PASSO 3: Criar um pedido (checkout)
+# -----------------------------------
+# Criar pedido com 1 X-Burger (produto ID 1)
+curl -X POST "http://localhost:8080/pedidos/checkout" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "clienteId": null,
+    "itens": [
+      {
+        "produtoId": 1,
+        "quantidade": 1
+      }
+    ]
+  }' && echo
+
+# RESPOSTA ESPERADA:
+# {
+#   "id": 1,
+#   "numeroPedido": "PED000001",
+#   "clienteId": null,
+#   "nomeCliente": null,
+#   "itens": [...],
+#   "status": "RECEBIDO",
+#   "statusPagamento": "PENDENTE",
+#   "valorTotal": 18.90
+# }
+
+# PASSO 4: Processar pagamento (Mock Mercado Pago)
+# ------------------------------------------------
+# Usar o ID do pedido criado no passo anterior
+curl -X POST "http://localhost:8081/pagamentos" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "pedidoId": "1",
+    "valor": 18.90
+  }' && echo
+
+# RESPOSTA ESPERADA:
+# {
+#   "pedidoId": "1",
+#   "status": "PENDENTE"
+# }
+
+# PASSO 5: Aguardar webhook (3 segundos)
+# --------------------------------------
+# O sistema de pagamento enviará um webhook após 3 segundos
+# com 80% de chance de aprovação e 20% de rejeição
+sleep 5 && echo
+
+# Verificar logs do pagamento para confirmar envio do webhook
+docker-compose logs pagamento | tail -10 && echo
+
+# PASSO 6: Verificar status do pagamento
+# --------------------------------------
+# Consultar se o webhook foi processado (pode dar erro se webhook falhou)
+curl -X GET "http://localhost:8080/pedidos/1/pagamento/status" && echo
+
+# PASSO 7: Listar todos os pedidos
+# --------------------------------
+curl -X GET "http://localhost:8080/pedidos" && echo
+
+# PASSO 8: Criar um pedido mais completo
+# --------------------------------------
+# Pedido com múltiplos itens
+curl -X POST "http://localhost:8080/pedidos/checkout" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "clienteId": null,
+    "itens": [
+      {
+        "produtoId": 1,
+        "quantidade": 2
+      },
+      {
+        "produtoId": 2,
+        "quantidade": 1
+      }
+    ]
+  }' && echo
+
+# PASSO 9: Processar pagamento do segundo pedido
+# ----------------------------------------------
+# Usar o ID do pedido criado no passo anterior (provavelmente ID 2)
+curl -X POST "http://localhost:8081/pagamentos" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "pedidoId": "2",
+    "valor": 45.80
+  }' && echo
+
+# PASSO 10: Verificar logs dos serviços
+# -------------------------------------
+# Logs do autoatendimento
+docker-compose logs autoatendimento | tail -20 && echo
+
+# Logs do pagamento
+docker-compose logs pagamento | tail -20 && echo
+
+# Logs do banco de dados
+docker-compose logs db | tail -10 && echo
+
+# PASSO 11: Endpoint da cozinha
+# -----------------------------
+# Listar pedidos para a cozinha (só mostra pedidos com pagamento aprovado)
+curl -X GET "http://localhost:8080/pedidos/cozinha" && echo
+
+# PASSO 12: Testar webhook manualmente
+# ------------------------------------
+# Testar webhook diretamente (só funciona com pedido existente)
+# Isso aprovará o pagamento e o pedido aparecerá na cozinha
+curl -X POST "http://localhost:8080/webhook/pagamento" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "pedidoId": 1,
+    "statusPagamento": "APROVADO"
+  }' && echo
+
+# Verificar se o pedido apareceu na cozinha após webhook
+curl -X GET "http://localhost:8080/pedidos/cozinha" && echo
+
+# PASSO 13: Operações da cozinha - Atualizar status de pedidos
+# ------------------------------------------------------------
+# Atualizar pedido de RECEBIDO para EM_PREPARACAO
+curl -X PUT "http://localhost:8080/pedidos/cozinha/1/status" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "EM_PREPARACAO"
+  }' && echo
+
+# Verificar pedidos na cozinha após atualização
+curl -X GET "http://localhost:8080/pedidos/cozinha" && echo
+
+# Atualizar pedido de EM_PREPARACAO para PRONTO
+curl -X PUT "http://localhost:8080/pedidos/cozinha/1/status" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "PRONTO"
+  }' && echo
+
+# Verificar pedidos na cozinha (pedido PRONTO aparece primeiro na lista)
+curl -X GET "http://localhost:8080/pedidos/cozinha" && echo
+
+# Atualizar pedido de PRONTO para FINALIZADO
+curl -X PUT "http://localhost:8080/pedidos/cozinha/1/status" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "FINALIZADO"
+  }' && echo
+
+# Verificar pedidos na cozinha (pedido FINALIZADO não aparece mais)
+curl -X GET "http://localhost:8080/pedidos/cozinha" && echo
+
+# PASSO 14: Testar fluxo completo com segundo pedido
+# --------------------------------------------------
+# Criar segundo pedido para testar fluxo completo da cozinha
+curl -X POST "http://localhost:8080/pedidos/checkout" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "clienteId": null,
+    "itens": [
+      {
+        "produtoId": 1,
+        "quantidade": 1
+      }
+    ]
+  }' && echo
+
+# Processar pagamento do segundo pedido (use o ID retornado acima)
+curl -X POST "http://localhost:8081/pagamentos" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "pedidoId": "3",
+    "valor": 18.90
+  }' && echo
+
+# Aprovar manualmente o pagamento do segundo pedido
+curl -X POST "http://localhost:8080/webhook/pagamento" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "pedidoId": 3,
+    "statusPagamento": "APROVADO"
+  }' && echo
+
+# Verificar ambos os pedidos na cozinha
+curl -X GET "http://localhost:8080/pedidos/cozinha" && echo
+
+# PASSO 15: Testar ordenação da cozinha
+# -------------------------------------
+# Os pedidos devem aparecer ordenados por prioridade:
+# 1º - PRONTO (se houver)
+# 2º - EM_PREPARACAO (se houver) 
+# 3º - RECEBIDO (se houver)
+# E por data de criação (mais antigo primeiro)
+
+# Colocar o pedido 3 em preparação
+curl -X PUT "http://localhost:8080/pedidos/cozinha/3/status" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "EM_PREPARACAO"
+  }' && echo
+
+# Verificar ordenação (pedido 3 EM_PREPARACAO deve aparecer primeiro que pedido 2 RECEBIDO)
+curl -X GET "http://localhost:8080/pedidos/cozinha" && echo
+
+# PASSO 16: Listar todos os pedidos (endpoint geral)
+# --------------------------------------------------
+# Verificar todos os pedidos do sistema (incluindo finalizados)
+curl -X GET "http://localhost:8080/pedidos" && echo
+
+# PASSO 17: Testar webhook com rejeição
+# -------------------------------------
+# Criar um pedido para testar rejeição de pagamento
+curl -X POST "http://localhost:8080/pedidos/checkout" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "clienteId": null,
+    "itens": [
+      {
+        "produtoId": 1,
+        "quantidade": 1
+      }
+    ]
+  }' && echo
+
+# Processar pagamento (use o ID do pedido criado acima)
+curl -X POST "http://localhost:8081/pagamentos" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "pedidoId": "4",
+    "valor": 18.90
+  }' && echo
+
+# Rejeitar o pagamento manualmente
+curl -X POST "http://localhost:8080/webhook/pagamento" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "pedidoId": 4,
+    "statusPagamento": "REJEITADO"
+  }' && echo
+
+# Verificar que o pedido rejeitado NÃO aparece na cozinha
+curl -X GET "http://localhost:8080/pedidos/cozinha" && echo
+
+# Verificar todos os pedidos (o rejeitado deve aparecer aqui)
+curl -X GET "http://localhost:8080/pedidos" && echo
+
+# PASSO 18: Parar a aplicação
+# ---------------------------
+docker-compose down && echo
+
+# OBSERVAÇÕES IMPORTANTES:
+# =======================
+# 1. O webhook é enviado automaticamente após 3 segundos
+# 2. O pagamento tem 80% de chance de aprovação e 20% de rejeição
+# 3. Todos os endpoints retornam JSON
+# 4. O banco de dados é inicializado com dados de teste
+# 5. Se o webhook falhar, pode aparecer erro 400 nos logs
+# 6. Os IDs dos pedidos são incrementais (1, 2, 3, etc.)
+# 7. Use sempre aspas duplas no JSON para evitar erros
+
+# FLUXO DE STATUS DOS PEDIDOS:
+# ===========================
+# 1. RECEBIDO (inicial após checkout)
+# 2. EM_PREPARACAO (cozinha iniciou preparo)
+# 3. PRONTO (cozinha finalizou preparo)
+# 4. FINALIZADO (pedido entregue/retirado)
+
+# STATUS DE PAGAMENTO:
+# ===================
+# - PENDENTE (inicial)
+# - APROVADO (webhook com sucesso)
+# - REJEITADO (webhook com falha)
+
+# REGRAS DA COZINHA:
+# =================
+# - Só aparecem pedidos com pagamento APROVADO
+# - Pedidos FINALIZADOS não aparecem na cozinha
+# - Ordenação por prioridade: PRONTO > EM_PREPARACAO > RECEBIDO
+# - Dentro da mesma prioridade: mais antigo primeiro
+
+# TROUBLESHOOTING:
+# ===============
+# - Se algum serviço não iniciar: docker-compose restart [nome-servico]
+# - Para ver logs em tempo real: docker-compose logs -f [nome-servico]
+# - Para reconstruir: docker-compose up --build
+# - Para limpar volumes: docker-compose down -v
+# - Se o webhook automático falhar, use o webhook manual

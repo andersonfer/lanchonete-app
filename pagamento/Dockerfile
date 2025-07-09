@@ -25,7 +25,7 @@ RUN chown -R appuser:appuser /app
 USER appuser
 
 # Expor a porta da aplicação
-EXPOSE 8080
+EXPOSE 8081
 
 # Configurar variáveis de ambiente para a JVM
 ENV JAVA_OPTS="-Xms256m -Xmx512m -XX:+UseContainerSupport"

@@ -36,6 +36,5 @@ build/
 *.db
 
 .DS_Store
-/CLAUDE.md
 app.log
 application.log

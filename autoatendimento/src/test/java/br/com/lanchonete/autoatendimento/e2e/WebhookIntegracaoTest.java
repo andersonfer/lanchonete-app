@@ -1,6 +1,6 @@
 package br.com.lanchonete.autoatendimento.e2e;
 
-import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.WebhookPagamentoDTO;
+import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.WebhookPagamentoRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteGateway;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.PedidoGateway;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoGateway;
@@ -74,7 +74,7 @@ class WebhookIntegracaoTest {
     @DisplayName("Deve aprovar pagamento via webhook e verificar alteração no banco")
     void t1() throws Exception {
         // Arrange
-        WebhookPagamentoDTO webhookRequest = new WebhookPagamentoDTO(pedido.getId(), "APROVADO");
+        WebhookPagamentoRequestDTO webhookRequest = new WebhookPagamentoRequestDTO(pedido.getId(), "APROVADO");
         String requestJson = objectMapper.writeValueAsString(webhookRequest);
 
         // Verificar status inicial
@@ -96,7 +96,7 @@ class WebhookIntegracaoTest {
     @DisplayName("Deve rejeitar pagamento via webhook e verificar alteração no banco")
     void t2() throws Exception {
         // Arrange
-        WebhookPagamentoDTO webhookRequest = new WebhookPagamentoDTO(pedido.getId(), "REJEITADO");
+        WebhookPagamentoRequestDTO webhookRequest = new WebhookPagamentoRequestDTO(pedido.getId(), "REJEITADO");
         String requestJson = objectMapper.writeValueAsString(webhookRequest);
 
         // Verificar status inicial
@@ -121,7 +121,7 @@ class WebhookIntegracaoTest {
         pedido.aprovarPagamento();
         pedidoGateway.atualizarStatusPagamento(pedido.getId(), StatusPagamento.APROVADO);
 
-        WebhookPagamentoDTO webhookRequest = new WebhookPagamentoDTO(pedido.getId(), "APROVADO");
+        WebhookPagamentoRequestDTO webhookRequest = new WebhookPagamentoRequestDTO(pedido.getId(), "APROVADO");
         String requestJson = objectMapper.writeValueAsString(webhookRequest);
 
         // Act & Assert
@@ -140,7 +140,7 @@ class WebhookIntegracaoTest {
     void t4() throws Exception {
         // Arrange
         Long pedidoIdInexistente = 999L;
-        WebhookPagamentoDTO webhookRequest = new WebhookPagamentoDTO(pedidoIdInexistente, "APROVADO");
+        WebhookPagamentoRequestDTO webhookRequest = new WebhookPagamentoRequestDTO(pedidoIdInexistente, "APROVADO");
         String requestJson = objectMapper.writeValueAsString(webhookRequest);
 
         // Act & Assert
@@ -158,7 +158,7 @@ class WebhookIntegracaoTest {
     @DisplayName("Deve retornar 400 quando status de pagamento for inválido")
     void t5() throws Exception {
         // Arrange
-        WebhookPagamentoDTO webhookRequest = new WebhookPagamentoDTO(pedido.getId(), "INVALIDO");
+        WebhookPagamentoRequestDTO webhookRequest = new WebhookPagamentoRequestDTO(pedido.getId(), "INVALIDO");
         String requestJson = objectMapper.writeValueAsString(webhookRequest);
 
         // Act & Assert
@@ -182,8 +182,8 @@ class WebhookIntegracaoTest {
         segundoPedido = pedidoGateway.salvar(segundoPedido);
 
         // Arrange - Webhooks para dois pedidos
-        WebhookPagamentoDTO webhook1 = new WebhookPagamentoDTO(pedido.getId(), "APROVADO");
-        WebhookPagamentoDTO webhook2 = new WebhookPagamentoDTO(segundoPedido.getId(), "REJEITADO");
+        WebhookPagamentoRequestDTO webhook1 = new WebhookPagamentoRequestDTO(pedido.getId(), "APROVADO");
+        WebhookPagamentoRequestDTO webhook2 = new WebhookPagamentoRequestDTO(segundoPedido.getId(), "REJEITADO");
 
         String request1Json = objectMapper.writeValueAsString(webhook1);
         String request2Json = objectMapper.writeValueAsString(webhook2);
@@ -212,7 +212,7 @@ class WebhookIntegracaoTest {
     @DisplayName("Deve ser idempotente - mesmo webhook múltiplas vezes deve falhar na segunda tentativa")
     void t7() throws Exception {
         // Arrange
-        WebhookPagamentoDTO webhookRequest = new WebhookPagamentoDTO(pedido.getId(), "APROVADO");
+        WebhookPagamentoRequestDTO webhookRequest = new WebhookPagamentoRequestDTO(pedido.getId(), "APROVADO");
         String requestJson = objectMapper.writeValueAsString(webhookRequest);
 
         // Act - Primeira chamada deve funcionar
@@ -245,7 +245,7 @@ class WebhookIntegracaoTest {
         pedidoAnonimo.adicionarItem(item);
         pedidoAnonimo = pedidoGateway.salvar(pedidoAnonimo);
 
-        WebhookPagamentoDTO webhookRequest = new WebhookPagamentoDTO(pedidoAnonimo.getId(), "APROVADO");
+        WebhookPagamentoRequestDTO webhookRequest = new WebhookPagamentoRequestDTO(pedidoAnonimo.getId(), "APROVADO");
         String requestJson = objectMapper.writeValueAsString(webhookRequest);
 
         // Verificar status inicial
@@ -267,7 +267,7 @@ class WebhookIntegracaoTest {
     @DisplayName("Deve aceitar status em lowercase e converter corretamente")
     void t9() throws Exception {
         // Arrange
-        WebhookPagamentoDTO webhookRequest = new WebhookPagamentoDTO(pedido.getId(), "aprovado");
+        WebhookPagamentoRequestDTO webhookRequest = new WebhookPagamentoRequestDTO(pedido.getId(), "aprovado");
         String requestJson = objectMapper.writeValueAsString(webhookRequest);
 
         // Act - Enviar webhook
@@ -285,7 +285,7 @@ class WebhookIntegracaoTest {
     @DisplayName("Deve rejeitar tentativa de alterar para status PENDENTE")
     void t10() throws Exception {
         // Arrange
-        WebhookPagamentoDTO webhookRequest = new WebhookPagamentoDTO(pedido.getId(), "PENDENTE");
+        WebhookPagamentoRequestDTO webhookRequest = new WebhookPagamentoRequestDTO(pedido.getId(), "PENDENTE");
         String requestJson = objectMapper.writeValueAsString(webhookRequest);
 
         // Act & Assert

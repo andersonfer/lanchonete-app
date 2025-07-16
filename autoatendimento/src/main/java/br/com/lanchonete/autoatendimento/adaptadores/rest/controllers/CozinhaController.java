@@ -1,6 +1,6 @@
 package br.com.lanchonete.autoatendimento.adaptadores.rest.controllers;
 
-import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.AtualizarStatusPedidoDTO;
+import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.AtualizarStatusPedidoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.PedidoResponseDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.mappers.EnumsMapper;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.servicos.CozinhaService;
@@ -50,7 +50,7 @@ public class CozinhaController {
     )
     public ResponseEntity<PedidoResponseDTO> atualizarStatusPedido(
             @PathVariable Long id,
-            @RequestBody AtualizarStatusPedidoDTO request) {
+            @RequestBody AtualizarStatusPedidoRequestDTO request) {
         final PedidoResponseDTO pedido = cozinhaService.atualizarStatusPedido(id, enumsMapper.statusPedidoParaDominio(request.status()));
         return ResponseEntity.ok(pedido);
     }

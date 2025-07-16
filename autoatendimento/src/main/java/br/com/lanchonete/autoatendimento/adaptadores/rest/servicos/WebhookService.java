@@ -1,6 +1,6 @@
 package br.com.lanchonete.autoatendimento.adaptadores.rest.servicos;
 
-import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.WebhookPagamentoDTO;
+import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.WebhookPagamentoRequestDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.webhook.ProcessarWebhookPagamento;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.StatusPagamento;
 import br.com.lanchonete.autoatendimento.dominio.excecoes.ValidacaoException;
@@ -17,7 +17,7 @@ public class WebhookService {
     }
     
     @Transactional
-    public void processarWebhookPagamento(WebhookPagamentoDTO webhookRequest) {
+    public void processarWebhookPagamento(WebhookPagamentoRequestDTO webhookRequest) {
         StatusPagamento statusPagamento = converterStringParaStatus(webhookRequest.statusPagamento());
         
         processarWebhookPagamento.processar(webhookRequest.pedidoId(), statusPagamento);

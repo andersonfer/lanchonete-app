@@ -1,6 +1,6 @@
 package br.com.lanchonete.autoatendimento.e2e;
 
-import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.ItemPedidoDTO;
+import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.ItemPedidoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.PedidoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.PedidoResponseDTO;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteGateway;
@@ -76,9 +76,9 @@ class PedidoE2ETest {
     @DisplayName("Deve realizar checkout de um pedido com cliente e listar o pedido")
     void t1() throws Exception {
         // Criar pedido request
-        List<ItemPedidoDTO> itens = Arrays.asList(
-                new ItemPedidoDTO(produto1.getId(), 2),
-                new ItemPedidoDTO(produto2.getId(), 1)
+        List<ItemPedidoRequestDTO> itens = Arrays.asList(
+                new ItemPedidoRequestDTO(produto1.getId(), 2),
+                new ItemPedidoRequestDTO(produto2.getId(), 1)
         );
         PedidoRequestDTO pedidoRequest = new PedidoRequestDTO(cliente.getCpf().getValor(), itens);
 
@@ -121,8 +121,8 @@ class PedidoE2ETest {
     @DisplayName("Deve realizar checkout de um pedido sem cliente identificado")
     void t2() throws Exception {
         // Criar pedido request sem cliente
-        List<ItemPedidoDTO> itens = Arrays.asList(
-                new ItemPedidoDTO(produto1.getId(), 1)
+        List<ItemPedidoRequestDTO> itens = Arrays.asList(
+                new ItemPedidoRequestDTO(produto1.getId(), 1)
         );
         PedidoRequestDTO pedidoRequest = new PedidoRequestDTO(null, itens);
 
@@ -157,8 +157,8 @@ class PedidoE2ETest {
     @DisplayName("Deve retornar erro 404 ao tentar checkout com CPF inexistente")
     void t3() throws Exception {
         // Criar pedido request com CPF inexistente
-        List<ItemPedidoDTO> itens = Arrays.asList(
-                new ItemPedidoDTO(produto1.getId(), 1)
+        List<ItemPedidoRequestDTO> itens = Arrays.asList(
+                new ItemPedidoRequestDTO(produto1.getId(), 1)
         );
         PedidoRequestDTO pedidoRequest = new PedidoRequestDTO("99999999999", itens);
 
@@ -173,8 +173,8 @@ class PedidoE2ETest {
     @DisplayName("Deve retornar erro 404 ao tentar checkout com produto inexistente")
     void t4() throws Exception {
         // Criar pedido request com produto inexistente
-        List<ItemPedidoDTO> itens = Arrays.asList(
-                new ItemPedidoDTO(999L, 1)
+        List<ItemPedidoRequestDTO> itens = Arrays.asList(
+                new ItemPedidoRequestDTO(999L, 1)
         );
         PedidoRequestDTO pedidoRequest = new PedidoRequestDTO(cliente.getCpf().getValor(), itens);
 
@@ -189,8 +189,8 @@ class PedidoE2ETest {
     @DisplayName("Deve retornar erro 400 ao tentar checkout com quantidade inválida")
     void t5() throws Exception {
         // Criar pedido request com quantidade zero
-        List<ItemPedidoDTO> itens = Arrays.asList(
-                new ItemPedidoDTO(produto1.getId(), 0)
+        List<ItemPedidoRequestDTO> itens = Arrays.asList(
+                new ItemPedidoRequestDTO(produto1.getId(), 0)
         );
         PedidoRequestDTO pedidoRequest = new PedidoRequestDTO(cliente.getCpf().getValor(), itens);
 

@@ -1,6 +1,6 @@
 package br.com.lanchonete.autoatendimento.adaptadores.rest.controllers;
 
-import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.WebhookPagamentoDTO;
+import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.WebhookPagamentoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.servicos.WebhookService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,7 +19,7 @@ public class WebhookController {
     }
     
     @PostMapping("/pagamento")
-    public ResponseEntity<Void> receberWebhookPagamento(@RequestBody WebhookPagamentoDTO webhookRequest) {
+    public ResponseEntity<Void> receberWebhookPagamento(@RequestBody WebhookPagamentoRequestDTO webhookRequest) {
         webhookService.processarWebhookPagamento(webhookRequest);
         return ResponseEntity.ok().build();
     }

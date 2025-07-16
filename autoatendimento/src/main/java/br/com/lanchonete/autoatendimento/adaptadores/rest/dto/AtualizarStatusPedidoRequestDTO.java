@@ -1,6 +1,6 @@
 package br.com.lanchonete.autoatendimento.adaptadores.rest.dto;
 
-public record AtualizarStatusPedidoDTO(
+public record AtualizarStatusPedidoRequestDTO(
         StatusPedidoDTO status
 ) {
 }

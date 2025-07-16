@@ -1,6 +1,6 @@
 package br.com.lanchonete.autoatendimento.adaptadores.rest.dto;
 
-public record WebhookPagamentoDTO(
+public record WebhookPagamentoRequestDTO(
     Long pedidoId,
     String statusPagamento
 ) {

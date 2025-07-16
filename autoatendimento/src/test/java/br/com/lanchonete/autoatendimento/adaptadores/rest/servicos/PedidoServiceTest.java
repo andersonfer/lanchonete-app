@@ -1,6 +1,6 @@
 package br.com.lanchonete.autoatendimento.adaptadores.rest.servicos;
 
-import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.ItemPedidoDTO;
+import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.ItemPedidoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.ItemPedidoResponseDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.PedidoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.PedidoResponseDTO;
@@ -12,7 +12,6 @@ import br.com.lanchonete.autoatendimento.dominio.excecoes.RecursoNaoEncontradoEx
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.RealizarPedido;
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.ListarPedidos;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.StatusPedido;
-import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.StatusPagamento;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.Pedido;
 import br.com.lanchonete.autoatendimento.dominio.modelo.cliente.Cliente;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,9 +55,9 @@ class PedidoServiceTest {
 
     @BeforeEach
     void configurar() {
-        List<ItemPedidoDTO> itens = Arrays.asList(
-                new ItemPedidoDTO(1L, 2),
-                new ItemPedidoDTO(2L, 1)
+        List<ItemPedidoRequestDTO> itens = Arrays.asList(
+                new ItemPedidoRequestDTO(1L, 2),
+                new ItemPedidoRequestDTO(2L, 1)
         );
         pedidoRequest = new PedidoRequestDTO("12345678901", itens);
 

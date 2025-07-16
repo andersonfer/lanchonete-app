@@ -4,7 +4,6 @@ import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.*;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoGateway;
 import br.com.lanchonete.autoatendimento.dominio.modelo.produto.Categoria;
 import br.com.lanchonete.autoatendimento.dominio.modelo.produto.Produto;
-import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.StatusPedido;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -151,11 +150,11 @@ class FluxoCompletoE2ETest {
 
 
         // ETAPA 4: Montar um combo completo e realizar checkout
-        List<ItemPedidoDTO> itensPedido = Arrays.asList(
-                new ItemPedidoDTO(lanche.getId(), 1),        // 1 lanche
-                new ItemPedidoDTO(bebida.getId(), 2),        // 2 bebidas
-                new ItemPedidoDTO(acompanhamento.getId(), 1), // 1 acompanhamento
-                new ItemPedidoDTO(sobremesa.getId(), 1)      // 1 sobremesa
+        List<ItemPedidoRequestDTO> itensPedido = Arrays.asList(
+                new ItemPedidoRequestDTO(lanche.getId(), 1),        // 1 lanche
+                new ItemPedidoRequestDTO(bebida.getId(), 2),        // 2 bebidas
+                new ItemPedidoRequestDTO(acompanhamento.getId(), 1), // 1 acompanhamento
+                new ItemPedidoRequestDTO(sobremesa.getId(), 1)      // 1 sobremesa
         );
 
         PedidoRequestDTO pedidoRequest = new PedidoRequestDTO(cpfCliente, itensPedido);
@@ -220,9 +219,9 @@ class FluxoCompletoE2ETest {
                 .andExpect(jsonPath("$[0].categoria").value("BEBIDA"));
 
         // ETAPA 2: Montar um pedido simples sem identificação do cliente
-        List<ItemPedidoDTO> itensPedido = Arrays.asList(
-                new ItemPedidoDTO(lanche.getId(), 1),
-                new ItemPedidoDTO(bebida.getId(), 1)
+        List<ItemPedidoRequestDTO> itensPedido = Arrays.asList(
+                new ItemPedidoRequestDTO(lanche.getId(), 1),
+                new ItemPedidoRequestDTO(bebida.getId(), 1)
         );
 
         PedidoRequestDTO pedidoRequest = new PedidoRequestDTO(null, itensPedido);
@@ -268,9 +267,9 @@ class FluxoCompletoE2ETest {
     @DisplayName("Deve validar corretamente os erros no fluxo de pedido")
     void t3() throws Exception {
         // ETAPA 1: Tentar realizar checkout com cliente inexistente
-        List<ItemPedidoDTO> itensValidos = Arrays.asList(
-                new ItemPedidoDTO(lanche.getId(), 1),
-                new ItemPedidoDTO(bebida.getId(), 1)
+        List<ItemPedidoRequestDTO> itensValidos = Arrays.asList(
+                new ItemPedidoRequestDTO(lanche.getId(), 1),
+                new ItemPedidoRequestDTO(bebida.getId(), 1)
         );
 
         PedidoRequestDTO pedidoComClienteInexistente = new PedidoRequestDTO("11122233344", itensValidos);
@@ -282,8 +281,8 @@ class FluxoCompletoE2ETest {
                 .andExpect(status().isNotFound());
 
         // ETAPA 2: Tentar realizar checkout com produto inexistente
-        List<ItemPedidoDTO> itensComProdutoInvalido = List.of(
-                new ItemPedidoDTO(999L, 1)
+        List<ItemPedidoRequestDTO> itensComProdutoInvalido = List.of(
+                new ItemPedidoRequestDTO(999L, 1)
         );
 
         PedidoRequestDTO pedidoComProdutoInexistente = new PedidoRequestDTO(null, itensComProdutoInvalido);
@@ -295,7 +294,7 @@ class FluxoCompletoE2ETest {
                 .andExpect(status().isNotFound());
 
         // ETAPA 3: Tentar realizar checkout sem itens
-        List<ItemPedidoDTO> itensSemProdutos = Collections.emptyList();
+        List<ItemPedidoRequestDTO> itensSemProdutos = Collections.emptyList();
         PedidoRequestDTO pedidoSemItens = new PedidoRequestDTO(null, itensSemProdutos);
 
         // Deve retornar erro 400 - pedido deve ter pelo menos um item
@@ -306,8 +305,8 @@ class FluxoCompletoE2ETest {
                 .andExpect(content().string("Pedido deve conter pelo menos um item"));
 
         // ETAPA 4: Tentar realizar checkout com quantidade inválida
-        List<ItemPedidoDTO> itensQuantidadeInvalida = List.of(
-                new ItemPedidoDTO(lanche.getId(), 0)
+        List<ItemPedidoRequestDTO> itensQuantidadeInvalida = List.of(
+                new ItemPedidoRequestDTO(lanche.getId(), 0)
         );
 
         PedidoRequestDTO pedidoQuantidadeInvalida = new PedidoRequestDTO(null, itensQuantidadeInvalida);

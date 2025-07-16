@@ -1,6 +1,6 @@
 package br.com.lanchonete.autoatendimento.e2e;
 
-import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.ItemPedidoDTO;
+import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.ItemPedidoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.PedidoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.PedidoResponseDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.ProdutoRequestDTO;
@@ -78,8 +78,8 @@ class ImutabilidadePrecoPedidoE2ETest {
     @DisplayName("Deve manter o valor original do pedido mesmo após alteração do preço do produto")
     void t1() throws Exception {
         // ETAPA 1: Realizar checkout de um pedido com o preço inicial do produto
-        List<ItemPedidoDTO> itens = Collections.singletonList(
-                new ItemPedidoDTO(produto.getId(), 2) // 2 unidades do produto
+        List<ItemPedidoRequestDTO> itens = Collections.singletonList(
+                new ItemPedidoRequestDTO(produto.getId(), 2) // 2 unidades do produto
         );
         PedidoRequestDTO pedidoRequest = new PedidoRequestDTO(cliente.getCpf().getValor(), itens);
 
@@ -171,8 +171,8 @@ class ImutabilidadePrecoPedidoE2ETest {
     @DisplayName("Deve registrar o valor correto em múltiplos pedidos feitos antes e depois da alteração de preço")
     void t2() throws Exception {
         // ETAPA 1: Realizar o primeiro pedido com o preço inicial
-        List<ItemPedidoDTO> itens = Collections.singletonList(
-                new ItemPedidoDTO(produto.getId(), 1)
+        List<ItemPedidoRequestDTO> itens = Collections.singletonList(
+                new ItemPedidoRequestDTO(produto.getId(), 1)
         );
         PedidoRequestDTO pedidoRequest = new PedidoRequestDTO(cliente.getCpf().getValor(), itens);
 

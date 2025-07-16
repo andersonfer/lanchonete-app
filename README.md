@@ -423,56 +423,78 @@ lanchonete-app/
 
 ## 🎬 Exemplo de Uso Completo
 
+### 1. Subir aplicação
 ```bash
-# 1. Subir aplicação
 docker-compose up -d
+```
 
-# 2. Fazer pedido
+### 2. Fazer pedido
+```bash
 curl -X POST "http://localhost:8080/pedidos/checkout" \
   -H "Content-Type: application/json" \
   -d '{"cpfCliente": null, "itens": [{"produtoId": 1, "quantidade": 1}]}'
+```
 
-# 3. Processar pagamento
+### 3. Processar pagamento
+```bash
 curl -X POST "http://localhost:8081/pagamentos" \
   -H "Content-Type: application/json" \
   -d '{"pedidoId": "1", "valor": 18.90}'
+```
 
-# 4. Aguardar webhook automático (3-5s)
+### 4. Aguardar webhook automático (3-5s)
+```bash
 sleep 5
+```
 
-# 5. Verificar aprovação
+### 5. Verificar aprovação
+```bash
 curl -X GET "http://localhost:8080/pedidos/1/pagamento/status"
+```
 
-# 6. Cozinha - ver pedidos
+### 6. Cozinha - ver pedidos
+```bash
 curl -X GET "http://localhost:8080/pedidos/cozinha"
+```
 
-# 7. Atualizar para EM_PREPARACAO
+### 7. Atualizar para EM_PREPARACAO
+```bash
 curl -X PUT "http://localhost:8080/pedidos/cozinha/1/status" \
   -H "Content-Type: application/json" \
   -d '{"status": "EM_PREPARACAO"}'
+```
 
-# 7.1. Verificar mudança de status na cozinha
+### 7.1. Verificar mudança de status na cozinha
+```bash
 curl -X GET "http://localhost:8080/pedidos/cozinha"
-# Resposta: pedido com status "EM_PREPARACAO"
+```
+*Resposta: pedido com status "EM_PREPARACAO"*
 
-# 8. Atualizar para PRONTO
+### 8. Atualizar para PRONTO
+```bash
 curl -X PUT "http://localhost:8080/pedidos/cozinha/1/status" \
   -H "Content-Type: application/json" \
   -d '{"status": "PRONTO"}'
+```
 
-# 8.1. Verificar mudança de status na cozinha
+### 8.1. Verificar mudança de status na cozinha
+```bash
 curl -X GET "http://localhost:8080/pedidos/cozinha"
-# Resposta: pedido com status "PRONTO" (prioridade máxima)
+```
+*Resposta: pedido com status "PRONTO" (prioridade máxima)*
 
-# 9. Finalizar pedido
+### 9. Finalizar pedido
+```bash
 curl -X PUT "http://localhost:8080/pedidos/cozinha/1/status" \
   -H "Content-Type: application/json" \
   -d '{"status": "FINALIZADO"}'
-
-# 10. Verificar que não aparece mais na cozinha
-curl -X GET "http://localhost:8080/pedidos/cozinha"
-# Resposta: [] (pedido finalizado não aparece mais)
 ```
+
+### 10. Verificar que não aparece mais na cozinha
+```bash
+curl -X GET "http://localhost:8080/pedidos/cozinha"
+```
+*Resposta: [] (pedido finalizado não aparece mais)*
 
 ## 🏗️ Arquitetura Técnica
 

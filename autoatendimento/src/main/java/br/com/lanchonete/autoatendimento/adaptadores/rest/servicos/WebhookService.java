@@ -5,6 +5,7 @@ import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.webhook.ProcessarW
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.StatusPagamento;
 import br.com.lanchonete.autoatendimento.dominio.excecoes.ValidacaoException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class WebhookService {
@@ -15,6 +16,7 @@ public class WebhookService {
         this.processarWebhookPagamento = processarWebhookPagamento;
     }
     
+    @Transactional
     public void processarWebhookPagamento(WebhookPagamentoDTO webhookRequest) {
         StatusPagamento statusPagamento = converterStringParaStatus(webhookRequest.statusPagamento());
         

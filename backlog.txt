@@ -32,9 +32,9 @@
 - [x] Cozinha pode iniciar preparação após pagamento
 
 #### vi. Integração com Mercado Pago (OPCIONAL - MOCK)
-- [ ] Mock da parte de pagamentos implementado
-- [ ] Simulação de QRCode para pagamento
-- [ ] Integração com WebHook para capturar pagamentos
+- [x] Mock da parte de pagamentos implementado
+- [x] Simulação de QRCode para pagamento
+- [x] Integração com WebHook para capturar pagamentos
 
 ---
 
@@ -58,7 +58,7 @@
    - Inclui: Mapeamento de enum StatusPagamento
 
 **4. Criar estrutura do projeto mock-mercado-pago**
-   - Status: [ ] Pendente
+   - Status: [x] Concluído
    - Descrição: Novo projeto Spring Boot separado
    - Inclui: Estrutura básica, application.yml, Dockerfile
 
@@ -80,7 +80,7 @@
    - Inclui: Atualização de StatusPagamento (APROVADO/REJEITADO)
 
 **8. Implementar mock do Mercado Pago com comportamento aleatório**
-   - Status: [ ] Pendente
+   - Status: [x] Concluído
    - Descrição: APIs no projeto mock-mercado-pago
    - Inclui: Simulação de processamento, chamada de webhook
 
@@ -94,18 +94,19 @@
     - Descrição: APIs para cozinha gerenciar status
     - Inclui: GET /pedidos/cozinha, PUT /pedidos/{id}/status
 
-### 🔴 PRIORIDADE ALTA - CORREÇÃO CRÍTICA
+### 🔴 PRIORIDADE ALTA - CORREÇÃO CRÍTICA ✅ CONCLUÍDA
 
 **11. Corrigir webhook automático do serviço de pagamento**
-    - Status: [ ] Pendente
+    - Status: [x] Concluído
     - Descrição: Webhook automático retorna erro 400 Bad Request
     - Causa: WebClient não enviando Content-Type: application/json
     - Solução: Adicionar header explícito no WebhookService.java linha 22
     - Código: `.header("Content-Type", "application/json")`
     - Impacto: Webhook manual funciona, mas automático falha
     - Severidade: ALTA - Funcionalidade principal comprometida
+    - Validação: Testado com sucesso em Docker Compose
 
-### 🟢 PRIORIDADE BAIXA - INFRAESTRUTURA E FINALIZAÇÃO
+### 🟢 PRIORIDADE BAIXA - INFRAESTRUTURA E FINALIZAÇÃO ✅ CONCLUÍDA
 
 **12. Configurar Docker Compose para ambos os projetos**
     - Status: [x] Concluído
@@ -118,13 +119,14 @@
     - Inclui: Testes de aprovação e rejeição
 
 **14. Atualizar documentação e collection de APIs**
-    - Status: [ ] Pendente
+    - Status: [x] Concluído
     - Descrição: README.md, Swagger, collection Postman
     - Inclui: Instruções Docker, exemplos de uso
+    - Detalhes: README totalmente reescrito com foco em Docker Compose e curl
 
 ---
 
-## PROGRESSO ATUAL (11/07/2025)
+## PROGRESSO ATUAL (16/07/2025)
 
 ### ✅ CONCLUÍDO:
 - **Fundação StatusPagamento**: enum, entidade, persistência ✅
@@ -136,27 +138,33 @@
 - **Testes**: 36+ testes passando (unitários + integração + E2E) ✅
 - **Testes de Integração**: fluxo completo validado ✅
 - **Validação Manual**: webhook testado em aplicação real ✅
+- **Correção Webhook Automático**: erro 400 Bad Request corrigido ✅
+- **Documentação Completa**: README totalmente reescrito com Docker Compose ✅
 
 ### 🔄 EM ANDAMENTO:
 - Nenhuma tarefa em andamento
 
-### ⚠️ PENDENTE - PRIORIDADE ALTA:
-- **Webhook Automático**: Falha com erro 400 Bad Request - NECESSITA CORREÇÃO IMEDIATA
+### ⚠️ PENDENTE:
+- **ITEM 1 DO TECH CHALLENGE**: 100% CONCLUÍDO ✅
+- **TODAS AS FUNCIONALIDADES**: Implementadas e testadas ✅
 
 ### 🎯 PRÓXIMOS PASSOS RECOMENDADOS:
 
-1. **IMEDIATO** - Corrigir webhook automático (tarefa 11) - **PRIORIDADE ALTA**
-2. **SEQUENCIAL** - Finalizar documentação (tarefa 14)
+**FASE 2 - ITEM 1**: ✅ **COMPLETAMENTE FINALIZADO**
+
+**Próximas fases do Tech Challenge:**
+1. **ITEM 2** - Melhorias de arquitetura e infraestrutura
+2. **ITEM 3** - Implementações avançadas
 
 ---
 
-## ESTIMATIVA DE EXECUÇÃO (REVISADA)
+## ESTIMATIVA DE EXECUÇÃO (FINAL)
 - ✅ Fundação (1-3): ~2-3 dias - **CONCLUÍDO**
 - ✅ APIs Core (5-7): ~2-3 dias - **CONCLUÍDO**
 - ✅ Complementares (8-10): ~2-3 dias - **CONCLUÍDO**
-- 🔄 Finalização (11-14): ~1-2 dias - **EM ANDAMENTO**
-- **Total estimado**: 6-9 dias de desenvolvimento (**~90% concluído**)
-- **Pendência crítica**: Correção webhook automático (30min de trabalho)
+- ✅ Finalização (11-14): ~1-2 dias - **CONCLUÍDO**
+- **Total real**: 8 dias de desenvolvimento (**100% concluído**)
+- **Status**: TECH CHALLENGE FASE 2 - ITEM 1 FINALIZADO COM SUCESSO
 
 ---
 
@@ -169,4 +177,5 @@
 ---
 
 Data de criação: 16/06/2025
-Última atualização: 11/07/2025
+Última atualização: 16/07/2025
+Status: TECH CHALLENGE FASE 2 - ITEM 1 COMPLETAMENTE FINALIZADO ✅

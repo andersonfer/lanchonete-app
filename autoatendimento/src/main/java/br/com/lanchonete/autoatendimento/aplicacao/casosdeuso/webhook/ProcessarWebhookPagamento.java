@@ -5,7 +5,6 @@ import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.Pedido;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.StatusPagamento;
 import br.com.lanchonete.autoatendimento.dominio.excecoes.ValidacaoException;
 import br.com.lanchonete.autoatendimento.dominio.excecoes.RecursoNaoEncontradoException;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -17,7 +16,6 @@ public class ProcessarWebhookPagamento {
         this.pedidoGateway = pedidoGateway;
     }
     
-    @Transactional
     public void processar(Long pedidoId, StatusPagamento novoStatus) {
         validarParametros(pedidoId, novoStatus);
         

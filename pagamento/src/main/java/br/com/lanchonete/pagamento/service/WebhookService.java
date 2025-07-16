@@ -20,6 +20,7 @@ public class WebhookService {
             
             webClient.post()
                     .uri(webhookUrl)
+                    .header("Content-Type", "application/json")
                     .bodyValue(request)
                     .retrieve()
                     .bodyToMono(Void.class)

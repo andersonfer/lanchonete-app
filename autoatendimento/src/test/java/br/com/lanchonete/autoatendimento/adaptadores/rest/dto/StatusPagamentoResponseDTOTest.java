@@ -14,13 +14,13 @@ class StatusPagamentoResponseDTOTest {
         // Criar DTO com status PENDENTE
         StatusPagamentoResponseDTO dto = new StatusPagamentoResponseDTO(
                 1L, 
-                StatusPagamento.PENDENTE, 
+                StatusPagamentoDTO.PENDENTE, 
                 "Pagamento pendente de processamento"
         );
 
         // Verificações
         assertEquals(1L, dto.pedidoId());
-        assertEquals(StatusPagamento.PENDENTE, dto.statusPagamento());
+        assertEquals(StatusPagamentoDTO.PENDENTE, dto.statusPagamento());
         assertEquals("Pagamento pendente de processamento", dto.mensagem());
     }
 
@@ -30,13 +30,13 @@ class StatusPagamentoResponseDTOTest {
         // Criar DTO com status APROVADO
         StatusPagamentoResponseDTO dto = new StatusPagamentoResponseDTO(
                 2L, 
-                StatusPagamento.APROVADO, 
+                StatusPagamentoDTO.APROVADO, 
                 "Pagamento aprovado com sucesso"
         );
 
         // Verificações
         assertEquals(2L, dto.pedidoId());
-        assertEquals(StatusPagamento.APROVADO, dto.statusPagamento());
+        assertEquals(StatusPagamentoDTO.APROVADO, dto.statusPagamento());
         assertEquals("Pagamento aprovado com sucesso", dto.mensagem());
     }
 
@@ -46,13 +46,13 @@ class StatusPagamentoResponseDTOTest {
         // Criar DTO com status REJEITADO
         StatusPagamentoResponseDTO dto = new StatusPagamentoResponseDTO(
                 3L, 
-                StatusPagamento.REJEITADO, 
+                StatusPagamentoDTO.REJEITADO, 
                 "Pagamento rejeitado"
         );
 
         // Verificações
         assertEquals(3L, dto.pedidoId());
-        assertEquals(StatusPagamento.REJEITADO, dto.statusPagamento());
+        assertEquals(StatusPagamentoDTO.REJEITADO, dto.statusPagamento());
         assertEquals("Pagamento rejeitado", dto.mensagem());
     }
 
@@ -64,7 +64,7 @@ class StatusPagamentoResponseDTOTest {
 
         // Verificações
         assertEquals(1L, dto.pedidoId());
-        assertEquals(StatusPagamento.PENDENTE, dto.statusPagamento());
+        assertEquals(StatusPagamentoDTO.PENDENTE, dto.statusPagamento());
         assertEquals("Pagamento pendente de processamento", dto.mensagem());
     }
 
@@ -76,7 +76,7 @@ class StatusPagamentoResponseDTOTest {
 
         // Verificações
         assertEquals(2L, dto.pedidoId());
-        assertEquals(StatusPagamento.APROVADO, dto.statusPagamento());
+        assertEquals(StatusPagamentoDTO.APROVADO, dto.statusPagamento());
         assertEquals("Pagamento aprovado com sucesso", dto.mensagem());
     }
 
@@ -88,7 +88,7 @@ class StatusPagamentoResponseDTOTest {
 
         // Verificações
         assertEquals(3L, dto.pedidoId());
-        assertEquals(StatusPagamento.REJEITADO, dto.statusPagamento());
+        assertEquals(StatusPagamentoDTO.REJEITADO, dto.statusPagamento());
         assertEquals("Pagamento rejeitado", dto.mensagem());
     }
 
@@ -101,13 +101,13 @@ class StatusPagamentoResponseDTOTest {
         StatusPagamentoResponseDTO rejeitado = StatusPagamentoResponseDTO.de(3L, StatusPagamento.REJEITADO);
 
         // Verificações
-        assertEquals(StatusPagamento.PENDENTE, pendente.statusPagamento());
+        assertEquals(StatusPagamentoDTO.PENDENTE, pendente.statusPagamento());
         assertEquals("Pagamento pendente de processamento", pendente.mensagem());
 
-        assertEquals(StatusPagamento.APROVADO, aprovado.statusPagamento());
+        assertEquals(StatusPagamentoDTO.APROVADO, aprovado.statusPagamento());
         assertEquals("Pagamento aprovado com sucesso", aprovado.mensagem());
 
-        assertEquals(StatusPagamento.REJEITADO, rejeitado.statusPagamento());
+        assertEquals(StatusPagamentoDTO.REJEITADO, rejeitado.statusPagamento());
         assertEquals("Pagamento rejeitado", rejeitado.mensagem());
     }
 

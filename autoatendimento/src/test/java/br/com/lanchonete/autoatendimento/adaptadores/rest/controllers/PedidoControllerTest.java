@@ -5,6 +5,8 @@ import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.ItemPedidoResponse
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.PedidoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.PedidoResponseDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.StatusPagamentoResponseDTO;
+import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.StatusPedidoDTO;
+import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.StatusPagamentoDTO;
 import br.com.lanchonete.autoatendimento.dominio.excecoes.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.dominio.excecoes.ValidacaoException;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.servicos.PedidoService;
@@ -72,8 +74,8 @@ class PedidoControllerTest {
                 1L,
                 "João Silva",
                 itensResponse,
-                StatusPedido.RECEBIDO,
-                StatusPagamento.PENDENTE,
+                StatusPedidoDTO.RECEBIDO,
+                StatusPagamentoDTO.PENDENTE,
                 LocalDateTime.now(),
                 new BigDecimal("57.80")
         );
@@ -85,8 +87,8 @@ class PedidoControllerTest {
                 null,
                 null,
                 Collections.singletonList(itensResponse.get(1)),
-                StatusPedido.RECEBIDO,
-                StatusPagamento.PENDENTE,
+                StatusPedidoDTO.RECEBIDO,
+                StatusPagamentoDTO.PENDENTE,
                 LocalDateTime.now(),
                 new BigDecimal("6.00")
         );

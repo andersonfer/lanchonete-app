@@ -1,5 +1,6 @@
 package br.com.lanchonete.autoatendimento.adaptadores.rest.servicos;
 
+import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.CategoriaDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.ProdutoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.ProdutoResponseDTO;
 import br.com.lanchonete.autoatendimento.dominio.excecoes.ValidacaoException;
@@ -67,7 +68,7 @@ class ProdutoServiceTest {
                 "X-Bacon",
                 "Hambúrguer com bacon",
                 new BigDecimal("25.90"),
-                Categoria.LANCHE
+                CategoriaDTO.LANCHE
         );
 
         produto = Produto.reconstituir(
@@ -94,7 +95,7 @@ class ProdutoServiceTest {
         assertEquals(produto.getNome(), dto.nome());
         assertEquals(produto.getDescricao(), dto.descricao());
         assertEquals(produto.getPreco().getValor(), dto.preco());
-        assertEquals(produto.getCategoria(), dto.categoria());
+        assertEquals(CategoriaDTO.LANCHE, dto.categoria());
         verify(buscarProdutosPorCategoria).executar(Categoria.LANCHE);
     }
 
@@ -133,7 +134,7 @@ class ProdutoServiceTest {
         assertEquals(produto.getNome(), resultado.nome());
         assertEquals(produto.getDescricao(), resultado.descricao());
         assertEquals(produto.getPreco().getValor(), resultado.preco());
-        assertEquals(produto.getCategoria(), resultado.categoria());
+        assertEquals(CategoriaDTO.LANCHE, resultado.categoria());
         verify(criarProduto).executar(anyString(), anyString(), any(BigDecimal.class), any(Categoria.class));
     }
 
@@ -160,7 +161,7 @@ class ProdutoServiceTest {
         assertEquals(produto.getNome(), resultado.nome());
         assertEquals(produto.getDescricao(), resultado.descricao());
         assertEquals(produto.getPreco().getValor(), resultado.preco());
-        assertEquals(produto.getCategoria(), resultado.categoria());
+        assertEquals(CategoriaDTO.LANCHE, resultado.categoria());
         verify(editarProduto).executar(eq(1L), anyString(), anyString(), any(BigDecimal.class), any(Categoria.class));
     }
 

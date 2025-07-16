@@ -177,7 +177,7 @@ class FluxoCompletoE2ETest {
 
         // Verificar dados do pedido
         assertNotNull(pedidoResponse.id(), "O ID do pedido não deveria ser nulo");
-        assertEquals(StatusPedido.RECEBIDO, pedidoResponse.status());
+        assertEquals(StatusPedidoDTO.RECEBIDO, pedidoResponse.status());
         assertEquals(4, pedidoResponse.itens().size());
 
         // Calcular valor total esperado: 1 lanche + 2 bebidas + 1 acompanhamento + 1 sobremesa
@@ -246,7 +246,7 @@ class FluxoCompletoE2ETest {
         assertNotNull(pedidoResponse.id(), "O ID do pedido não deveria ser nulo");
         assertNull(pedidoResponse.clienteId(), "O ID do cliente deveria ser nulo");
         assertNull(pedidoResponse.nomeCliente(), "O nome do cliente deveria ser nulo");
-        assertEquals(StatusPedido.RECEBIDO, pedidoResponse.status());
+        assertEquals(StatusPedidoDTO.RECEBIDO, pedidoResponse.status());
         assertEquals(2, pedidoResponse.itens().size());
 
         // Calcular valor total esperado: 1 lanche + 1 bebida

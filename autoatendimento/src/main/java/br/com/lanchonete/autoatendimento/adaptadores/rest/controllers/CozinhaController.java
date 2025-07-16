@@ -48,7 +48,7 @@ public class CozinhaController {
     public ResponseEntity<PedidoResponseDTO> atualizarStatusPedido(
             @PathVariable Long id,
             @RequestBody AtualizarStatusPedidoDTO request) {
-        final PedidoResponseDTO pedido = cozinhaService.atualizarStatusPedido(id, request.status());
+        final PedidoResponseDTO pedido = cozinhaService.atualizarStatusPedido(id, request.converterParaDominio());
         return ResponseEntity.ok(pedido);
     }
 }

@@ -4,14 +4,14 @@ import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.StatusPagamento;
 
 public record StatusPagamentoResponseDTO(
         Long pedidoId,
-        StatusPagamento statusPagamento,
+        StatusPagamentoDTO statusPagamento,
         String mensagem
 ) {
 
     public static StatusPagamentoResponseDTO pendente(Long pedidoId) {
         return new StatusPagamentoResponseDTO(
                 pedidoId,
-                StatusPagamento.PENDENTE,
+                StatusPagamentoDTO.PENDENTE,
                 "Pagamento pendente de processamento"
         );
     }
@@ -19,7 +19,7 @@ public record StatusPagamentoResponseDTO(
     public static StatusPagamentoResponseDTO aprovado(Long pedidoId) {
         return new StatusPagamentoResponseDTO(
                 pedidoId,
-                StatusPagamento.APROVADO,
+                StatusPagamentoDTO.APROVADO,
                 "Pagamento aprovado com sucesso"
         );
     }
@@ -27,7 +27,7 @@ public record StatusPagamentoResponseDTO(
     public static StatusPagamentoResponseDTO rejeitado(Long pedidoId) {
         return new StatusPagamentoResponseDTO(
                 pedidoId,
-                StatusPagamento.REJEITADO,
+                StatusPagamentoDTO.REJEITADO,
                 "Pagamento rejeitado"
         );
     }

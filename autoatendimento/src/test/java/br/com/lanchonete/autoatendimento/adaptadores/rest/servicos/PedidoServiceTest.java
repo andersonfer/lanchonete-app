@@ -4,6 +4,8 @@ import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.ItemPedidoDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.ItemPedidoResponseDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.PedidoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.PedidoResponseDTO;
+import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.StatusPedidoDTO;
+import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.StatusPagamentoDTO;
 import br.com.lanchonete.autoatendimento.dominio.excecoes.ValidacaoException;
 import br.com.lanchonete.autoatendimento.dominio.excecoes.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.RealizarPedido;
@@ -69,8 +71,8 @@ class PedidoServiceTest {
                 1L,
                 "João Silva",
                 itensResponse,
-                StatusPedido.RECEBIDO,
-                StatusPagamento.PENDENTE,
+                StatusPedidoDTO.RECEBIDO,
+                StatusPagamentoDTO.PENDENTE,
                 LocalDateTime.now(),
                 new BigDecimal("57.80")
         );
@@ -93,7 +95,7 @@ class PedidoServiceTest {
         assertEquals(1L, resultado.id());
         assertEquals(1L, resultado.clienteId());
         assertEquals("João Silva", resultado.nomeCliente());
-        assertEquals(StatusPedido.RECEBIDO, resultado.status());
+        assertEquals(StatusPedidoDTO.RECEBIDO, resultado.status());
         assertEquals(new BigDecimal("57.80"), resultado.valorTotal());
     }
 
@@ -134,8 +136,8 @@ class PedidoServiceTest {
         assertEquals(pedido.getNumeroPedido().getValor(), dto.numeroPedido());
         assertEquals(pedido.getCliente().getId(), dto.clienteId());
         assertEquals(pedido.getCliente().getNome(), dto.nomeCliente());
-        assertEquals(pedido.getStatus(), dto.status());
-        assertEquals(pedido.getStatusPagamento(), dto.statusPagamento());
+        assertEquals(StatusPedidoDTO.RECEBIDO, dto.status());
+        assertEquals(StatusPagamentoDTO.PENDENTE, dto.statusPagamento());
         assertEquals(pedido.getValorTotal(), dto.valorTotal());
     }
 

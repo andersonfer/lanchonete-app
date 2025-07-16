@@ -14,8 +14,8 @@ public record PedidoResponseDTO(
         Long clienteId,
         String nomeCliente,
         List<ItemPedidoResponseDTO> itens,
-        StatusPedido status,
-        StatusPagamento statusPagamento,
+        StatusPedidoDTO status,
+        StatusPagamentoDTO statusPagamento,
         LocalDateTime dataCriacao,
         BigDecimal valorTotal
 ) {
@@ -42,10 +42,27 @@ public record PedidoResponseDTO(
                 clienteId,
                 nomeCliente,
                 itensDTO,
-                pedido.getStatus(),
-                pedido.getStatusPagamento(),
+                converterStatusPedidoParaDTO(pedido.getStatus()),
+                converterStatusPagamentoParaDTO(pedido.getStatusPagamento()),
                 pedido.getDataCriacao(),
                 pedido.getValorTotal()
         );
+    }
+    
+    private static StatusPagamentoDTO converterStatusPagamentoParaDTO(StatusPagamento statusPagamento) {
+        return switch (statusPagamento) {
+            case PENDENTE -> StatusPagamentoDTO.PENDENTE;
+            case APROVADO -> StatusPagamentoDTO.APROVADO;
+            case REJEITADO -> StatusPagamentoDTO.REJEITADO;
+        };
+    }
+    
+    private static StatusPedidoDTO converterStatusPedidoParaDTO(StatusPedido statusPedido) {
+        return switch (statusPedido) {
+            case RECEBIDO -> StatusPedidoDTO.RECEBIDO;
+            case EM_PREPARACAO -> StatusPedidoDTO.EM_PREPARACAO;
+            case PRONTO -> StatusPedidoDTO.PRONTO;
+            case FINALIZADO -> StatusPedidoDTO.FINALIZADO;
+        };
     }
 }

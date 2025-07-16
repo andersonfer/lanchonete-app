@@ -30,7 +30,7 @@ class ProdutoResponseDTOTest {
         assertEquals("X-Bacon", dto.nome(), "O nome deveria ser 'X-Bacon'");
         assertEquals("Hambúrguer com bacon", dto.descricao(), "A descrição não foi mapeada corretamente");
         assertEquals(new BigDecimal("29.90"), dto.preco(), "O preço não foi mapeado corretamente");
-        assertEquals(Categoria.LANCHE, dto.categoria(), "A categoria não foi mapeada corretamente");
+        assertEquals(CategoriaDTO.LANCHE, dto.categoria(), "A categoria não foi mapeada corretamente");
     }
 
     @Test

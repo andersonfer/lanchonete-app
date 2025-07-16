@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class PedidoMapper implements Mapper<Pedido, PedidoResponseDTO> {
+public class PedidoMapper implements DTOMapper<Pedido> {
 
     private final EnumsMapper enumsMapper;
 
@@ -47,8 +47,4 @@ public class PedidoMapper implements Mapper<Pedido, PedidoResponseDTO> {
         );
     }
 
-    @Override
-    public Pedido paraDominio(PedidoResponseDTO dto) {
-        throw new UnsupportedOperationException("Conversão de PedidoResponseDTO para Pedido não é suportada");
-    }
 }

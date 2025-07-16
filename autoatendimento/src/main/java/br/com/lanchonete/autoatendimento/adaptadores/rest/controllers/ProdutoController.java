@@ -7,11 +7,11 @@ import br.com.lanchonete.autoatendimento.adaptadores.rest.servicos.ProdutoServic
 import br.com.lanchonete.autoatendimento.dominio.modelo.produto.Categoria;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@Component
+@RestController
 public class ProdutoController implements ProdutoApi {
 
     private final ProdutoService produtoService;

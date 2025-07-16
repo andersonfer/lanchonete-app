@@ -6,11 +6,11 @@ import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.ClienteResponseDTO
 import br.com.lanchonete.autoatendimento.adaptadores.rest.servicos.ClienteService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Optional;
 
-@Component
+@RestController
 public class ClienteController implements ClienteApi {
 
     private final ClienteService clienteService;

@@ -7,13 +7,13 @@ import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.StatusPagamentoRes
 import br.com.lanchonete.autoatendimento.adaptadores.rest.servicos.PedidoService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@Component
+@RestController
 public class PedidoController implements PedidoApi {
 
     private final PedidoService pedidoService;
@@ -34,7 +34,7 @@ public class PedidoController implements PedidoApi {
         return ResponseEntity.ok(pedidos);
     }
 
-    @GetMapping("/{id}/pagamento/status")
+    @Override
     public ResponseEntity<StatusPagamentoResponseDTO> consultarStatusPagamento(@PathVariable Long id) {
         final StatusPagamentoResponseDTO statusResponse = pedidoService.consultarStatusPagamento(id);
         return ResponseEntity.ok(statusResponse);

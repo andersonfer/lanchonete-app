@@ -145,6 +145,7 @@ public class PedidoGatewayJDBC implements PedidoGateway {
         }
     }
 
+    @Override
     @Transactional
     public void atualizarStatusPagamento(final Long pedidoId, final StatusPagamento novoStatusPagamento) {
         int linhasAfetadas = jdbcTemplate.update(

@@ -2,6 +2,7 @@ package br.com.lanchonete.autoatendimento.adaptadores.rest.api;
 
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.PedidoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.PedidoResponseDTO;
+import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.StatusPagamentoResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -36,4 +37,15 @@ public interface PedidoApi {
             }
     )
     ResponseEntity<List<PedidoResponseDTO>> listarPedidos();
+
+    @GetMapping("/{id}/pagamento/status")
+    @Operation(
+            summary = "Consultar status de pagamento",
+            description = "Retorna o status atual do pagamento do pedido",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Status de pagamento retornado com sucesso"),
+                    @ApiResponse(responseCode = "404", description = "Pedido não encontrado")
+            }
+    )
+    ResponseEntity<StatusPagamentoResponseDTO> consultarStatusPagamento(@PathVariable Long id);
 }

@@ -1,181 +1,127 @@
-# BACKLOG - TECH CHALLENGE FASE 2 - ITEM 1
+# BACKLOG - TECH CHALLENGE FASE 2 - PENDÊNCIAS
 
-## ENTREGÁVEIS DO ITEM 1 (Checklist de Progresso)
+## ENTREGÁVEIS PENDENTES
 
-### a. Alterar/criar as APIs:
+### 🔴 PRIORIDADE CRÍTICA - KUBERNETES
 
-#### i. Checkout Pedido
-- [x] API que recebe produtos solicitados
-- [x] Retorna identificação do pedido (ID)
-- [x] Integra com fluxo de pagamento (statusPagamento: PENDENTE)
+**1. Criar manifests YAML para Deployment**
+   - Status: [ ] Pendente
+   - Descrição: Criar deployment.yaml para autoatendimento e pagamento
+   - Inclui: Configurações de container, recursos, health checks
 
-#### ii. Consultar status de pagamento pedido
-- [x] API que informa se pagamento foi aprovado ou não
-- [x] Busca por ID do pedido
+**2. Criar manifests YAML para Service**
+   - Status: [ ] Pendente
+   - Descrição: Criar service.yaml para expor aplicações
+   - Inclui: ClusterIP, LoadBalancer ou NodePort
 
-#### iii. Webhook para receber confirmação de pagamento
-- [x] Endpoint para receber notificações externas
-- [x] Processa pagamento aprovado ou recusado
-- [x] Implementação clara quanto ao Webhook
+**3. Implementar ConfigMap para configurações**
+   - Status: [ ] Pendente
+   - Descrição: Criar configmap.yaml para configurações não sensíveis
+   - Inclui: URLs, timeouts, configurações de aplicação
 
-#### iv. Lista de pedidos com ordenação específica
-- [x] Retorna pedidos com suas descrições
-- [x] Ordenação: Pronto > Em Preparação > Recebido
-- [x] Pedidos mais antigos primeiro, mais novos depois
-- [x] Pedidos com status Finalizado NÃO aparecem na lista
+**4. Implementar Secrets para dados sensíveis**
+   - Status: [ ] Pendente
+   - Descrição: Criar secrets.yaml para senhas, tokens, etc.
+   - Inclui: Credenciais de banco, chaves de API
 
-#### v. Atualizar status do pedido
-- [x] API para atualização de status
-- [x] Fluxo completo do pedido implementado
-- [x] Informação utilizada pela cozinha
-- [x] Garantia que nenhum pedido seja perdido
-- [x] Cozinha pode iniciar preparação após pagamento
+**5. Configurar HPA (Horizontal Pod Autoscaler)**
+   - Status: [ ] Pendente
+   - Descrição: Criar hpa.yaml para escalabilidade automática
+   - Inclui: Métricas de CPU/memória, min/max replicas
 
-#### vi. Integração com Mercado Pago (OPCIONAL - MOCK)
-- [x] Mock da parte de pagamentos implementado
-- [x] Simulação de QRCode para pagamento
-- [x] Integração com WebHook para capturar pagamentos
+**6. Configurar banco de dados no Kubernetes**
+   - Status: [ ] Pendente
+   - Descrição: Deployment MySQL com PersistentVolume
+   - Inclui: StatefulSet, PVC, storage class
 
----
+### 🟡 PRIORIDADE ALTA - DOCUMENTAÇÃO
 
-## BACKLOG DE TAREFAS
+**7. Criar desenho da arquitetura**
+   - Status: [ ] Pendente
+   - Descrição: Diagrama contemplando requisitos de negócio e infraestrutura
+   - Inclui: Componentes, fluxos, HPA, banco de dados
 
-### 🔴 PRIORIDADE ALTA - FUNDAÇÃO ✅ CONCLUÍDA
+**8. Atualizar README com documentação completa**
+   - Status: [ ] Pendente
+   - Descrição: Documentação completa do projeto
+   - Inclui: Arquitetura, instruções de execução, APIs
 
-**1. Criar enum StatusPagamento no domínio**
-   - Status: [x] Concluído
-   - Descrição: Implementar enum StatusPagamento no pacote dominio/modelo
-   - Inclui: Estados PENDENTE, APROVADO, REJEITADO
+**9. Criar/atualizar collection de APIs**
+   - Status: [ ] Pendente
+   - Descrição: Collection Postman ou Swagger atualizada
+   - Inclui: Exemplos de requisições, casos de uso
 
-**2. Atualizar entidade Pedido para incluir StatusPagamento**
-   - Status: [x] Concluído
-   - Descrição: Adicionar campo StatusPagamento na entidade Pedido
-   - Inclui: Métodos para manipular status de pagamento
+**10. Criar guia de execução do projeto**
+    - Status: [ ] Pendente
+    - Descrição: Instruções passo a passo para execução
+    - Inclui: Pré-requisitos, ordem de execução, troubleshooting
 
-**3. Ajustar PedidoGatewayJDBC para persistir StatusPagamento**
-   - Status: [x] Concluído
-   - Descrição: Atualizar queries para incluir campo status_pagamento
-   - Inclui: Mapeamento de enum StatusPagamento
+### 🟢 PRIORIDADE MÉDIA - ENTREGA FINAL
 
-**4. Criar estrutura do projeto mock-mercado-pago**
-   - Status: [x] Concluído
-   - Descrição: Novo projeto Spring Boot separado
-   - Inclui: Estrutura básica, application.yml, Dockerfile
+**11. Gravar vídeo demonstrativo**
+    - Status: [ ] Pendente
+    - Descrição: Vídeo demonstrando arquitetura e funcionamento
+    - Inclui: Evidências de endpoints, infraestrutura, escalabilidade
 
-### 🟡 PRIORIDADE MÉDIA - APIs CORE ✅ CONCLUÍDA
-
-**5. Implementar APIs de checkout com retorno de pedidoId**
-   - Status: [x] Concluído
-   - Descrição: Atualizar endpoint de checkout
-   - Inclui: Inicialização com StatusPagamento.PENDENTE
-
-**6. Implementar API de consulta de status de pagamento**
-   - Status: [x] Concluído
-   - Descrição: Nova API GET /pedidos/{id}/pagamento/status
-   - Inclui: DTO de resposta, validações
-
-**7. Implementar webhook para receber confirmação de pagamento**
-   - Status: [x] Concluído
-   - Descrição: Nova API POST /webhook/pagamento
-   - Inclui: Atualização de StatusPagamento (APROVADO/REJEITADO)
-
-**8. Implementar mock do Mercado Pago com comportamento aleatório**
-   - Status: [x] Concluído
-   - Descrição: APIs no projeto mock-mercado-pago
-   - Inclui: Simulação de processamento, chamada de webhook
-
-**9. Atualizar API de listagem de pedidos com regras de ordenação**
-   - Status: [x] Concluído
-   - Descrição: Modificar ordenação conforme requisitos
-   - Inclui: Query SQL atualizada, exclusão de Finalizados
-
-**10. Implementar APIs para atualização de status do pedido (cozinha)**
-    - Status: [x] Concluído
-    - Descrição: APIs para cozinha gerenciar status
-    - Inclui: GET /pedidos/cozinha, PUT /pedidos/{id}/status
-
-### 🔴 PRIORIDADE ALTA - CORREÇÃO CRÍTICA ✅ CONCLUÍDA
-
-**11. Corrigir webhook automático do serviço de pagamento**
-    - Status: [x] Concluído
-    - Descrição: Webhook automático retorna erro 400 Bad Request
-    - Causa: WebClient não enviando Content-Type: application/json
-    - Solução: Adicionar header explícito no WebhookService.java linha 22
-    - Código: `.header("Content-Type", "application/json")`
-    - Impacto: Webhook manual funciona, mas automático falha
-    - Severidade: ALTA - Funcionalidade principal comprometida
-    - Validação: Testado com sucesso em Docker Compose
-
-### 🟢 PRIORIDADE BAIXA - INFRAESTRUTURA E FINALIZAÇÃO ✅ CONCLUÍDA
-
-**12. Configurar Docker Compose para ambos os projetos**
-    - Status: [x] Concluído
-    - Descrição: docker-compose.yml na raiz
-    - Inclui: Networks, variáveis de ambiente
-
-**13. Criar testes integrados para fluxo completo de pagamento**
-    - Status: [x] Concluído
-    - Descrição: Testes E2E do fluxo checkout → webhook → status
-    - Inclui: Testes de aprovação e rejeição
-
-**14. Atualizar documentação e collection de APIs**
-    - Status: [x] Concluído
-    - Descrição: README.md, Swagger, collection Postman
-    - Inclui: Instruções Docker, exemplos de uso
-    - Detalhes: README totalmente reescrito com foco em Docker Compose e curl
+**12. Configurar repositório para entrega**
+    - Status: [ ] Pendente
+    - Descrição: Adicionar usuário soat-architecture ao repositório privado
+    - Inclui: Verificação de permissões, estrutura do projeto
 
 ---
 
-## PROGRESSO ATUAL (16/07/2025)
+## PRÓXIMOS PASSOS IMEDIATOS
 
-### ✅ CONCLUÍDO:
-- **Fundação StatusPagamento**: enum, entidade, persistência ✅
-- **API Checkout**: integração com statusPagamento ✅
-- **API Consulta Status**: endpoint GET /pedidos/{id}/pagamento/status ✅
-- **Webhook de Pagamento**: endpoint POST /webhook/pagamento ✅
-- **Mock Mercado Pago**: projeto pagamento implementado ✅
-- **Docker Compose**: orquestração completa dos serviços ✅
-- **Testes**: 36+ testes passando (unitários + integração + E2E) ✅
-- **Testes de Integração**: fluxo completo validado ✅
-- **Validação Manual**: webhook testado em aplicação real ✅
-- **Correção Webhook Automático**: erro 400 Bad Request corrigido ✅
-- **Documentação Completa**: README totalmente reescrito com Docker Compose ✅
+### 1. KUBERNETES (CRÍTICO)
+- [ ] Criar estrutura de diretórios k8s/
+- [ ] Implementar manifests básicos (deployment, service)
+- [ ] Configurar ConfigMap e Secrets
+- [ ] Implementar HPA
+- [ ] Testar localmente (minikube/kind)
 
-### 🔄 EM ANDAMENTO:
-- Nenhuma tarefa em andamento
+### 2. DOCUMENTAÇÃO (ALTA)
+- [ ] Desenhar arquitetura (draw.io, lucidchart)
+- [ ] Reescrever README
+- [ ] Atualizar collection de APIs
+- [ ] Criar guia de execução
 
-### ⚠️ PENDENTE:
-- **ITEM 1 DO TECH CHALLENGE**: 100% CONCLUÍDO ✅
-- **TODAS AS FUNCIONALIDADES**: Implementadas e testadas ✅
-
-### 🎯 PRÓXIMOS PASSOS RECOMENDADOS:
-
-**FASE 2 - ITEM 1**: ✅ **COMPLETAMENTE FINALIZADO**
-
-**Próximas fases do Tech Challenge:**
-1. **ITEM 2** - Melhorias de arquitetura e infraestrutura
-2. **ITEM 3** - Implementações avançadas
+### 3. ENTREGA (MÉDIA)
+- [ ] Gravar vídeo demonstrativo
+- [ ] Configurar repositório para avaliação
 
 ---
 
-## ESTIMATIVA DE EXECUÇÃO (FINAL)
-- ✅ Fundação (1-3): ~2-3 dias - **CONCLUÍDO**
-- ✅ APIs Core (5-7): ~2-3 dias - **CONCLUÍDO**
-- ✅ Complementares (8-10): ~2-3 dias - **CONCLUÍDO**
-- ✅ Finalização (11-14): ~1-2 dias - **CONCLUÍDO**
-- **Total real**: 8 dias de desenvolvimento (**100% concluído**)
-- **Status**: TECH CHALLENGE FASE 2 - ITEM 1 FINALIZADO COM SUCESSO
+## ESTIMATIVA DE EXECUÇÃO
+
+- 🔴 **Kubernetes**: 3-4 dias
+- 🟡 **Documentação**: 1-2 dias
+- 🟢 **Entrega Final**: 1 dia
+
+**Total estimado**: 5-7 dias para finalização completa
 
 ---
 
-## ANOTAÇÕES
-- Usar StatusPedido e StatusPagamento separados ✅
-- StatusPagamento como enum dentro da entidade Pedido ✅
-- Mock com 80% aprovação, 20% rejeição aleatória
-- Docker Compose gerencia ambos os projetos
+## CRITÉRIOS DE ACEITAÇÃO
+
+### Kubernetes:
+- [ ] Aplicações rodando em pods
+- [ ] HPA funcionando com métricas
+- [ ] Secrets e ConfigMaps implementados
+- [ ] Banco de dados persistente
+- [ ] Manifests no Github
+
+### Documentação:
+- [ ] Diagrama de arquitetura completo
+- [ ] README com instruções claras
+- [ ] Collection de APIs funcional
+- [ ] Guia de execução testado
+
+### Entrega:
+- [ ] Vídeo demonstrativo gravado
+- [ ] Repositório configurado para avaliação
+- [ ] Todos os requisitos atendidos
 
 ---
 
-Data de criação: 16/06/2025
-Última atualização: 16/07/2025
-Status: TECH CHALLENGE FASE 2 - ITEM 1 COMPLETAMENTE FINALIZADO ✅
+Data de criação: 16/07/2025
+Status: FASE 2 - ITENS 2 e 3 PENDENTES

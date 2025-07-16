@@ -1,6 +1,7 @@
 package br.com.lanchonete.autoatendimento.adaptadores.rest.servicos;
 
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.PedidoResponseDTO;
+import br.com.lanchonete.autoatendimento.adaptadores.rest.mappers.PedidoMapper;
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.AtualizarStatusPedido;
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.ListarPedidosCozinha;
 import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.PedidoGateway;
@@ -18,19 +19,22 @@ public class CozinhaService {
     private final ListarPedidosCozinha listarPedidosCozinha;
     private final AtualizarStatusPedido atualizarStatusPedido;
     private final PedidoGateway pedidoGateway;
+    private final PedidoMapper pedidoMapper;
 
     public CozinhaService(final ListarPedidosCozinha listarPedidosCozinha,
                           final AtualizarStatusPedido atualizarStatusPedido,
-                          final PedidoGateway pedidoGateway) {
+                          final PedidoGateway pedidoGateway,
+                          final PedidoMapper pedidoMapper) {
         this.listarPedidosCozinha = listarPedidosCozinha;
         this.atualizarStatusPedido = atualizarStatusPedido;
         this.pedidoGateway = pedidoGateway;
+        this.pedidoMapper = pedidoMapper;
     }
 
     public List<PedidoResponseDTO> listarPedidosCozinha() {
         List<Pedido> pedidos = listarPedidosCozinha.executar();
         return pedidos.stream()
-                .map(PedidoResponseDTO::converterParaDTO)
+                .map(pedidoMapper::paraDTO)
                 .toList();
     }
 
@@ -43,6 +47,6 @@ public class CozinhaService {
         Pedido pedidoAtualizado = pedidoGateway.buscarPorId(pedidoId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Pedido não encontrado após atualização"));
         
-        return PedidoResponseDTO.converterParaDTO(pedidoAtualizado);
+        return pedidoMapper.paraDTO(pedidoAtualizado);
     }
 }

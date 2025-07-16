@@ -3,6 +3,7 @@ package br.com.lanchonete.autoatendimento.adaptadores.rest.servicos;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.CategoriaDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.ProdutoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.ProdutoResponseDTO;
+import br.com.lanchonete.autoatendimento.adaptadores.rest.mappers.ProdutoMapper;
 import br.com.lanchonete.autoatendimento.dominio.excecoes.ValidacaoException;
 import br.com.lanchonete.autoatendimento.dominio.excecoes.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto.BuscarProdutosPorCategoria;
@@ -47,6 +48,9 @@ class ProdutoServiceTest {
     @Mock
     private RemoverProduto removerProduto;
 
+    @Mock
+    private ProdutoMapper produtoMapper;
+
     @InjectMocks
     private ProdutoService produtoService;
 
@@ -85,18 +89,15 @@ class ProdutoServiceTest {
     void t1() {
         List<Produto> produtos = Arrays.asList(produto);
         when(buscarProdutosPorCategoria.executar(Categoria.LANCHE)).thenReturn(produtos);
+        when(produtoMapper.paraDTO(produto)).thenReturn(produtoResponse);
 
         List<ProdutoResponseDTO> resultado = produtoService.buscarPorCategoria(Categoria.LANCHE);
 
         assertNotNull(resultado);
         assertEquals(1, resultado.size());
-        ProdutoResponseDTO dto = resultado.get(0);
-        assertEquals(produto.getId(), dto.id());
-        assertEquals(produto.getNome(), dto.nome());
-        assertEquals(produto.getDescricao(), dto.descricao());
-        assertEquals(produto.getPreco().getValor(), dto.preco());
-        assertEquals(CategoriaDTO.LANCHE, dto.categoria());
+        assertEquals(produtoResponse, resultado.get(0));
         verify(buscarProdutosPorCategoria).executar(Categoria.LANCHE);
+        verify(produtoMapper).paraDTO(produto);
     }
 
     @Test
@@ -126,16 +127,14 @@ class ProdutoServiceTest {
     @DisplayName("Deve criar produto com sucesso quando use case executa corretamente")
     void t4() {
         when(criarProduto.executar(anyString(), anyString(), any(BigDecimal.class), any(Categoria.class))).thenReturn(produto);
+        when(produtoMapper.paraDTO(produto)).thenReturn(produtoResponse);
 
         ProdutoResponseDTO resultado = produtoService.criar(produtoRequest);
 
         assertNotNull(resultado);
-        assertEquals(produto.getId(), resultado.id());
-        assertEquals(produto.getNome(), resultado.nome());
-        assertEquals(produto.getDescricao(), resultado.descricao());
-        assertEquals(produto.getPreco().getValor(), resultado.preco());
-        assertEquals(CategoriaDTO.LANCHE, resultado.categoria());
+        assertEquals(produtoResponse, resultado);
         verify(criarProduto).executar(anyString(), anyString(), any(BigDecimal.class), any(Categoria.class));
+        verify(produtoMapper).paraDTO(produto);
     }
 
     @Test
@@ -153,16 +152,14 @@ class ProdutoServiceTest {
     @DisplayName("Deve editar produto com sucesso quando use case executa corretamente")
     void t6() {
         when(editarProduto.executar(eq(1L), anyString(), anyString(), any(BigDecimal.class), any(Categoria.class))).thenReturn(produto);
+        when(produtoMapper.paraDTO(produto)).thenReturn(produtoResponse);
 
         ProdutoResponseDTO resultado = produtoService.editar(1L, produtoRequest);
 
         assertNotNull(resultado);
-        assertEquals(produto.getId(), resultado.id());
-        assertEquals(produto.getNome(), resultado.nome());
-        assertEquals(produto.getDescricao(), resultado.descricao());
-        assertEquals(produto.getPreco().getValor(), resultado.preco());
-        assertEquals(CategoriaDTO.LANCHE, resultado.categoria());
+        assertEquals(produtoResponse, resultado);
         verify(editarProduto).executar(eq(1L), anyString(), anyString(), any(BigDecimal.class), any(Categoria.class));
+        verify(produtoMapper).paraDTO(produto);
     }
 
     @Test

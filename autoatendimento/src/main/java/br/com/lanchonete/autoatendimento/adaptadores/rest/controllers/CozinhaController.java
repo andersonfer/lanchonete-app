@@ -2,6 +2,7 @@ package br.com.lanchonete.autoatendimento.adaptadores.rest.controllers;
 
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.AtualizarStatusPedidoDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.PedidoResponseDTO;
+import br.com.lanchonete.autoatendimento.adaptadores.rest.mappers.EnumsMapper;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.servicos.CozinhaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -17,9 +18,11 @@ import java.util.List;
 public class CozinhaController {
 
     private final CozinhaService cozinhaService;
+    private final EnumsMapper enumsMapper;
 
-    public CozinhaController(final CozinhaService cozinhaService) {
+    public CozinhaController(final CozinhaService cozinhaService, final EnumsMapper enumsMapper) {
         this.cozinhaService = cozinhaService;
+        this.enumsMapper = enumsMapper;
     }
 
     @GetMapping
@@ -48,7 +51,7 @@ public class CozinhaController {
     public ResponseEntity<PedidoResponseDTO> atualizarStatusPedido(
             @PathVariable Long id,
             @RequestBody AtualizarStatusPedidoDTO request) {
-        final PedidoResponseDTO pedido = cozinhaService.atualizarStatusPedido(id, request.converterParaDominio());
+        final PedidoResponseDTO pedido = cozinhaService.atualizarStatusPedido(id, enumsMapper.statusPedidoParaDominio(request.status()));
         return ResponseEntity.ok(pedido);
     }
 }

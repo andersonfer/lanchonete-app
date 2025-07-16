@@ -6,6 +6,7 @@ import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.PedidoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.PedidoResponseDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.StatusPedidoDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.StatusPagamentoDTO;
+import br.com.lanchonete.autoatendimento.adaptadores.rest.mappers.PedidoMapper;
 import br.com.lanchonete.autoatendimento.dominio.excecoes.ValidacaoException;
 import br.com.lanchonete.autoatendimento.dominio.excecoes.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido.RealizarPedido;
@@ -42,6 +43,9 @@ class PedidoServiceTest {
 
     @Mock
     private ListarPedidos listarPedidos;
+
+    @Mock
+    private PedidoMapper pedidoMapper;
 
     @InjectMocks
     private PedidoService pedidoService;
@@ -88,15 +92,12 @@ class PedidoServiceTest {
     @DisplayName("Deve realizar checkout com sucesso quando use case executa corretamente")
     void t1() {
         when(realizarPedido.executar(anyString(), anyList())).thenReturn(pedido);
+        when(pedidoMapper.paraDTO(pedido)).thenReturn(pedidoResponse);
 
         PedidoResponseDTO resultado = pedidoService.realizarCheckout(pedidoRequest);
 
         assertNotNull(resultado);
-        assertEquals(1L, resultado.id());
-        assertEquals(1L, resultado.clienteId());
-        assertEquals("João Silva", resultado.nomeCliente());
-        assertEquals(StatusPedidoDTO.RECEBIDO, resultado.status());
-        assertEquals(new BigDecimal("57.80"), resultado.valorTotal());
+        assertEquals(pedidoResponse, resultado);
     }
 
     @Test
@@ -126,19 +127,13 @@ class PedidoServiceTest {
     void t4() {
         List<Pedido> pedidos = Arrays.asList(pedido);
         when(listarPedidos.executar()).thenReturn(pedidos);
+        when(pedidoMapper.paraDTO(pedido)).thenReturn(pedidoResponse);
 
         List<PedidoResponseDTO> resultado = pedidoService.listarPedidos();
 
         assertNotNull(resultado);
         assertEquals(1, resultado.size());
-        PedidoResponseDTO dto = resultado.get(0);
-        assertEquals(pedido.getId(), dto.id());
-        assertEquals(pedido.getNumeroPedido().getValor(), dto.numeroPedido());
-        assertEquals(pedido.getCliente().getId(), dto.clienteId());
-        assertEquals(pedido.getCliente().getNome(), dto.nomeCliente());
-        assertEquals(StatusPedidoDTO.RECEBIDO, dto.status());
-        assertEquals(StatusPagamentoDTO.PENDENTE, dto.statusPagamento());
-        assertEquals(pedido.getValorTotal(), dto.valorTotal());
+        assertEquals(pedidoResponse, resultado.get(0));
     }
 
     @Test

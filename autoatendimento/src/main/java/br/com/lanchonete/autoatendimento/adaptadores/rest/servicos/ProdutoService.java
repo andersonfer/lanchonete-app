@@ -2,6 +2,7 @@ package br.com.lanchonete.autoatendimento.adaptadores.rest.servicos;
 
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.ProdutoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.ProdutoResponseDTO;
+import br.com.lanchonete.autoatendimento.adaptadores.rest.mappers.ProdutoMapper;
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto.BuscarProdutosPorCategoria;
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto.CriarProduto;
 import br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto.EditarProduto;
@@ -20,21 +21,24 @@ public class ProdutoService {
     private final CriarProduto criarProduto;
     private final EditarProduto editarProduto;
     private final RemoverProduto removerProduto;
+    private final ProdutoMapper produtoMapper;
 
     public ProdutoService(final BuscarProdutosPorCategoria buscarProdutosPorCategoria,
                           final CriarProduto criarProduto,
                           final EditarProduto editarProduto,
-                          final RemoverProduto removerProduto) {
+                          final RemoverProduto removerProduto,
+                          final ProdutoMapper produtoMapper) {
         this.buscarProdutosPorCategoria = buscarProdutosPorCategoria;
         this.criarProduto = criarProduto;
         this.editarProduto = editarProduto;
         this.removerProduto = removerProduto;
+        this.produtoMapper = produtoMapper;
     }
 
     public List<ProdutoResponseDTO> buscarPorCategoria(final Categoria categoria) {
         List<Produto> produtos = buscarProdutosPorCategoria.executar(categoria);
         return produtos.stream()
-                .map(ProdutoResponseDTO::converterParaDTO)
+                .map(produtoMapper::paraDTO)
                 .toList();
     }
 
@@ -46,7 +50,7 @@ public class ProdutoService {
                 produtoRequest.preco(),
                 produtoRequest.categoria()
         );
-        return ProdutoResponseDTO.converterParaDTO(produtoSalvo);
+        return produtoMapper.paraDTO(produtoSalvo);
     }
 
     @Transactional
@@ -58,7 +62,7 @@ public class ProdutoService {
                 produtoRequest.preco(),
                 produtoRequest.categoria()
         );
-        return ProdutoResponseDTO.converterParaDTO(produtoAtualizado);
+        return produtoMapper.paraDTO(produtoAtualizado);
     }
 
     @Transactional

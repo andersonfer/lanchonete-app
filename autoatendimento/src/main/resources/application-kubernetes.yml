@@ -1,0 +1,56 @@
+# Profile específico para Kubernetes
+spring:
+  # Configuração do banco de dados (via environment variables)
+  datasource:
+    url: jdbc:mysql://${DB_HOST:mysql-service}:${DB_PORT:3306}/${DB_NAME:lanchonete}?useSSL=false&allowPublicKeyRetrieval=true
+    driverClassName: com.mysql.cj.jdbc.Driver
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  
+  # Configurações de inicialização do banco
+  sql:
+    init:
+      mode: always
+      platform: mysql
+      schema-locations: classpath:schema-mysql.sql
+      data-locations: classpath:data-mysql.sql
+  
+  # Desabilitar H2 console (não é necessário no Kubernetes)
+  h2:
+    console:
+      enabled: false
+  
+  # Configurações de lifecycle para graceful shutdown
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
+# Configurações do servidor
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+
+# Configurações do Spring Boot Actuator para health checks
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true  # Habilita endpoints /health/liveness e /health/readiness
+  health:
+    readinessstate:
+      enabled: true
+    livenessstate:
+      enabled: true
+
+# Configurações de logging
+logging:
+  level:
+    br.com.lanchonete: ${LOG_LEVEL:INFO}
+    org.springframework.web: ${LOG_LEVEL:INFO}
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"

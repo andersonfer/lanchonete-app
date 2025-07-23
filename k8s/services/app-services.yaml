@@ -1,0 +1,36 @@
+# Service do Autoatendimento - NodePort para acesso externo
+apiVersion: v1
+kind: Service
+metadata:
+  name: autoatendimento-service
+  labels:
+    app: autoatendimento
+spec:
+  type: NodePort                  # Acesso externo via Minikube IP + porta
+  selector:
+    app: autoatendimento          # Conecta com Pods app=autoatendimento
+  ports:
+  - name: http
+    port: 8080                    # Porta interna do Service
+    targetPort: 8080              # Porta do container
+    nodePort: 30080               # Porta externa (30000-32767)
+    protocol: TCP
+
+---
+# Service do Pagamento - NodePort para acesso externo
+apiVersion: v1
+kind: Service
+metadata:
+  name: pagamento-service
+  labels:
+    app: pagamento
+spec:
+  type: NodePort                  # Acesso externo via Minikube IP + porta
+  selector:
+    app: pagamento                # Conecta com Pods app=pagamento
+  ports:
+  - name: http
+    port: 8081                    # Porta interna do Service
+    targetPort: 8081              # Porta do container
+    nodePort: 30081               # Porta externa
+    protocol: TCP

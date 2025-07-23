@@ -1,0 +1,72 @@
+# Deployment do Pagamento
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pagamento-deployment
+  labels:
+    app: pagamento
+spec:
+  replicas: 2                     # Começar com 2 réplicas
+  selector:
+    matchLabels:
+      app: pagamento
+  template:
+    metadata:
+      labels:
+        app: pagamento
+    spec:
+      containers:
+      - name: app
+        image: lanchonete-app_pagamento:latest
+        imagePullPolicy: Never    # Usar imagem local do Minikube
+        ports:
+        - containerPort: 8081
+          name: http
+        
+        # Configurações via ConfigMap
+        envFrom:
+        - configMapRef:
+            name: pagamento-config
+            
+        # Recursos limitados (pagamento é mais leve)
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "50m"            # 0.05 CPU
+          limits:
+            memory: "256Mi"
+            cpu: "150m"           # 0.15 CPU máximo
+            
+        # Health checks usando Spring Boot Actuator
+        startupProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8081
+            scheme: HTTP
+          initialDelaySeconds: 20   # Pagamento inicia mais rápido (sem DB)
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 8       # 40 segundos total aguardando
+          successThreshold: 1
+        
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8081
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 2
+          failureThreshold: 3
+          successThreshold: 1
+        
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8081
+            scheme: HTTP
+          initialDelaySeconds: 40   # Menos tempo que autoatendimento
+          periodSeconds: 15
+          timeoutSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1

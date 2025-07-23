@@ -1,0 +1,75 @@
+# Deployment do Autoatendimento
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autoatendimento-deployment
+  labels:
+    app: autoatendimento
+spec:
+  replicas: 2                     # Começar com 2 réplicas
+  selector:
+    matchLabels:
+      app: autoatendimento
+  template:
+    metadata:
+      labels:
+        app: autoatendimento
+    spec:
+      containers:
+      - name: app
+        image: lanchonete-app_autoatendimento:latest
+        imagePullPolicy: Never    # Usar imagem local do Minikube
+        ports:
+        - containerPort: 8080
+          name: http
+        
+        # Configurações via ConfigMap (dados não sensíveis)
+        envFrom:
+        - configMapRef:
+            name: autoatendimento-config
+        # Configurações via Secret (senhas do banco)
+        - secretRef:
+            name: mysql-secret
+            
+        # Recursos limitados para ambiente de desenvolvimento
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"           # 0.1 CPU
+          limits:
+            memory: "512Mi"
+            cpu: "200m"           # 0.2 CPU máximo
+            
+        # Health checks usando Spring Boot Actuator
+        startupProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 30   # Java demora para inicializar
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 12      # 60 segundos total aguardando
+          successThreshold: 1
+        
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 2
+          failureThreshold: 3
+          successThreshold: 1
+        
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 60   # Aguardar app estar completamente pronta
+          periodSeconds: 15
+          timeoutSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1

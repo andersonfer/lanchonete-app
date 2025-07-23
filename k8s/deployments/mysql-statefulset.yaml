@@ -1,0 +1,89 @@
+# StatefulSet para MySQL com storage persistente
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql-statefulset
+  labels:
+    app: mysql
+spec:
+  serviceName: mysql-headless-service  # Service headless necessário para StatefulSet
+  replicas: 1                          # MySQL = apenas 1 réplica
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:8.0
+        ports:
+        - containerPort: 3306
+          name: mysql
+        
+        # Configurações via ConfigMap (dados não sensíveis)
+        envFrom:
+        - configMapRef:
+            name: mysql-config
+        # Configurações via Secret (senhas)
+        - secretRef:
+            name: mysql-secret
+            
+        # Volume mount - onde MySQL vai salvar os dados
+        volumeMounts:
+        - name: mysql-storage
+          mountPath: /var/lib/mysql    # Pasta padrão de dados do MySQL
+          
+        # Recursos limitados para ambiente de desenvolvimento
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"               # 0.1 CPU
+          limits:
+            memory: "512Mi"
+            cpu: "300m"               # 0.3 CPU máximo
+            
+        # Health checks para MySQL
+        startupProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "mysqladmin ping -h localhost -u root -p$MYSQL_ROOT_PASSWORD"
+          initialDelaySeconds: 15     # MySQL demora para inicializar
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 10        # 50 segundos total aguardando
+          successThreshold: 1
+        
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "mysql -h localhost -u root -p$MYSQL_ROOT_PASSWORD -e 'SELECT 1'"
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 2
+          failureThreshold: 3
+          successThreshold: 1
+        
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "mysqladmin ping -h localhost -u root -p$MYSQL_ROOT_PASSWORD"
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1
+          
+      # Volume que conecta ao PersistentVolumeClaim
+      volumes:
+      - name: mysql-storage
+        persistentVolumeClaim:
+          claimName: mysql-pvc

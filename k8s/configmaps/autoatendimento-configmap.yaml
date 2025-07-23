@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: autoatendimento-config
+  labels:
+    app: autoatendimento
+    component: config
+data:
+  # Configurações do servidor
+  SERVER_PORT: "8080"
+  SPRING_PROFILES_ACTIVE: "kubernetes"
+  
+  # Configurações do banco de dados (não sensíveis)
+  DB_HOST: "mysql-service"
+  DB_PORT: "3306"
+  DB_NAME: "lanchonete"
+  
+  # Configurações de inicialização do banco
+  SPRING_SQL_INIT_PLATFORM: "mysql"
+  SPRING_SQL_INIT_MODE: "always"
+  
+  # Configurações de logging
+  LOG_LEVEL: "INFO"
+  
+  # Configurações de performance
+  JAVA_OPTS: "-Xms256m -Xmx512m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"

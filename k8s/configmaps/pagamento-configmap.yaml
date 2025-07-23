@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pagamento-config
+  labels:
+    app: pagamento
+    component: config
+data:
+  # Configurações do servidor
+  SERVER_PORT: "8081"
+  SPRING_PROFILES_ACTIVE: "kubernetes"
+  
+  # Configurações do mock Mercado Pago
+  MOCK_WEBHOOK_URL: "http://autoatendimento-service:8080/webhook/pagamento"
+  MOCK_DELAY: "3000"
+  MOCK_APPROVAL_RATE: "80"
+  
+  # Configurações de logging
+  LOG_LEVEL: "INFO"
+  
+  # Configurações de performance
+  JAVA_OPTS: "-Xms128m -Xmx256m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"

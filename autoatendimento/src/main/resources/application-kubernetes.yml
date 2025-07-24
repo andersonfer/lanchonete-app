@@ -1,18 +1,15 @@
-# Profile Kubernetes com configuração mais explícita
+# Profile Kubernetes com Actuator TOTALMENTE configurado
 spring:
-  # FORÇAR MYSQL - NÃO H2
   datasource:
     url: jdbc:mysql://${DB_HOST:mysql-service}:${DB_PORT:3306}/${DB_NAME:lanchonete}?useSSL=false&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
     driverClassName: com.mysql.cj.jdbc.Driver
     username: ${DB_USERNAME:lanchonete}
     password: ${DB_PASSWORD:lanchonete123}
 
-  # DESABILITAR H2 EXPLICITAMENTE
   h2:
     console:
       enabled: false
 
-  # CONFIGURAÇÕES DE INICIALIZAÇÃO
   sql:
     init:
       mode: always
@@ -21,7 +18,6 @@ spring:
       data-locations: classpath:data-mysql.sql
       continue-on-error: true
 
-  # JPA/HIBERNATE PARA MYSQL
   jpa:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
@@ -29,38 +25,42 @@ spring:
     show-sql: false
     defer-datasource-initialization: true
 
-  # Configurações de lifecycle
   lifecycle:
     timeout-per-shutdown-phase: 30s
 
-# Configurações do servidor
 server:
   port: ${SERVER_PORT:8080}
   shutdown: graceful
 
-# Configurações do Spring Boot Actuator
+# CONFIGURAÇÃO COMPLETA DO ACTUATOR
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: "*"
       base-path: /actuator
   endpoint:
     health:
       show-details: always
+      show-components: always
       probes:
         enabled: true
   health:
     readinessstate:
-      enabled: true
+      enabled: true                     # Habilitar /health/readiness
     livenessstate:
-      enabled: true
+      enabled: true                     # Habilitar /health/liveness
+    db:
+      enabled: true                     # Health check do banco
+    diskspace:
+      enabled: true                     # Health check de disco
+  server:
+    port: ${SERVER_PORT:8080}           # Actuator na mesma porta da app
 
-# Logging mais detalhado para debug
+# Logging
 logging:
   level:
-    com.zaxxer.hikari: DEBUG
-    org.springframework.jdbc: DEBUG
+    org.springframework.boot.actuate: DEBUG  # Debug do Actuator
     br.com.lanchonete: INFO
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

@@ -1,4 +1,4 @@
-# Profile específico para Kubernetes
+# Profile Kubernetes Pagamento com Actuator TOTALMENTE configurado
 server:
   port: ${SERVER_PORT:8081}
   shutdown: graceful
@@ -6,49 +6,52 @@ server:
 spring:
   application:
     name: pagamento-service
-  
-  # Configurações de lifecycle para graceful shutdown
   lifecycle:
     timeout-per-shutdown-phase: 30s
 
-# Configuração do mock do Mercado Pago (usando service names do Kubernetes)
+# Configuração do mock
 mock:
   webhook:
     url: ${MOCK_WEBHOOK_URL:http://autoatendimento-service:8080/webhook/pagamento}
   processamento:
-    delay: ${MOCK_DELAY:3000}  # 3 segundos em milissegundos
+    delay: ${MOCK_DELAY:3000}
   aprovacao:
-    percentual: ${MOCK_APPROVAL_RATE:80}  # 80% de aprovação
+    percentual: ${MOCK_APPROVAL_RATE:80}
 
-# Configurações do Spring Boot Actuator para health checks
+# CONFIGURAÇÃO COMPLETA DO ACTUATOR
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: "*"                    # Expor TODOS os endpoints
       base-path: /actuator
   endpoint:
     health:
       show-details: always
+      show-components: always
       probes:
-        enabled: true  # Habilita endpoints /health/liveness e /health/readiness
+        enabled: true                   # CRITICAL: Habilitar probes
   health:
     readinessstate:
-      enabled: true
+      enabled: true                     # Habilitar /health/readiness
     livenessstate:
-      enabled: true
+      enabled: true                     # Habilitar /health/liveness
+    diskspace:
+      enabled: true                     # Health check de disco
+  server:
+    port: ${SERVER_PORT:8081}           # Actuator na mesma porta da app
 
-# Configuração do Swagger (mantém igual ao padrão)
+# Configuração do Swagger
 springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
 
-# Configurações de logging
+# Logging
 logging:
   level:
-    br.com.lanchonete: ${LOG_LEVEL:INFO}
-    org.springframework.web: ${LOG_LEVEL:INFO}
+    org.springframework.boot.actuate: DEBUG  # Debug do Actuator
+    br.com.lanchonete: INFO
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

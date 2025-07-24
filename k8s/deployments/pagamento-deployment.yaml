@@ -38,35 +38,35 @@ spec:
             cpu: "150m"           # 0.15 CPU máximo
             
         # Health checks usando Spring Boot Actuator
-        startupProbe:
-          httpGet:
-            path: /actuator/health
-            port: 8081
-            scheme: HTTP
-          initialDelaySeconds: 20   # Pagamento inicia mais rápido (sem DB)
-          periodSeconds: 5
-          timeoutSeconds: 3
-          failureThreshold: 8       # 40 segundos total aguardando
-          successThreshold: 1
-        
-        readinessProbe:
-          httpGet:
-            path: /actuator/health/readiness
-            port: 8081
-            scheme: HTTP
-          initialDelaySeconds: 5
-          periodSeconds: 5
-          timeoutSeconds: 2
-          failureThreshold: 3
-          successThreshold: 1
-        
-        livenessProbe:
-          httpGet:
-            path: /actuator/health/liveness
-            port: 8081
-            scheme: HTTP
-          initialDelaySeconds: 40   # Menos tempo que autoatendimento
-          periodSeconds: 15
-          timeoutSeconds: 5
-          failureThreshold: 3
-          successThreshold: 1
+#        startupProbe:
+#          httpGet:
+#            path: /actuator/health
+#            port: 8081
+#            scheme: HTTP
+#          initialDelaySeconds: 20   # Pagamento inicia mais rápido (sem DB)
+#          periodSeconds: 5
+#          timeoutSeconds: 3
+#          failureThreshold: 8       # 40 segundos total aguardando
+#          successThreshold: 1
+#
+#        readinessProbe:
+#          httpGet:
+#            path: /actuator/health/readiness
+#            port: 8081
+#            scheme: HTTP
+#          initialDelaySeconds: 5
+#          periodSeconds: 5
+#          timeoutSeconds: 2
+#          failureThreshold: 3
+#          successThreshold: 1
+#
+#        livenessProbe:
+#          httpGet:
+#            path: /actuator/health/liveness
+#            port: 8081
+#            scheme: HTTP
+#          initialDelaySeconds: 40   # Menos tempo que autoatendimento
+#          periodSeconds: 15
+#          timeoutSeconds: 5
+#          failureThreshold: 3
+#          successThreshold: 1

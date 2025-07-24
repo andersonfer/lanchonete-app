@@ -1,26 +1,35 @@
-# Profile específico para Kubernetes
+# Profile Kubernetes com configuração mais explícita
 spring:
-  # Configuração do banco de dados (via environment variables)
+  # FORÇAR MYSQL - NÃO H2
   datasource:
-    url: jdbc:mysql://${DB_HOST:mysql-service}:${DB_PORT:3306}/${DB_NAME:lanchonete}?useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://${DB_HOST:mysql-service}:${DB_PORT:3306}/${DB_NAME:lanchonete}?useSSL=false&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
     driverClassName: com.mysql.cj.jdbc.Driver
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-  
-  # Configurações de inicialização do banco
+    username: ${DB_USERNAME:lanchonete}
+    password: ${DB_PASSWORD:lanchonete123}
+
+  # DESABILITAR H2 EXPLICITAMENTE
+  h2:
+    console:
+      enabled: false
+
+  # CONFIGURAÇÕES DE INICIALIZAÇÃO
   sql:
     init:
       mode: always
       platform: mysql
       schema-locations: classpath:schema-mysql.sql
       data-locations: classpath:data-mysql.sql
-  
-  # Desabilitar H2 console (não é necessário no Kubernetes)
-  h2:
-    console:
-      enabled: false
-  
-  # Configurações de lifecycle para graceful shutdown
+      continue-on-error: true
+
+  # JPA/HIBERNATE PARA MYSQL
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    defer-datasource-initialization: true
+
+  # Configurações de lifecycle
   lifecycle:
     timeout-per-shutdown-phase: 30s
 
@@ -29,7 +38,7 @@ server:
   port: ${SERVER_PORT:8080}
   shutdown: graceful
 
-# Configurações do Spring Boot Actuator para health checks
+# Configurações do Spring Boot Actuator
 management:
   endpoints:
     web:
@@ -40,17 +49,18 @@ management:
     health:
       show-details: always
       probes:
-        enabled: true  # Habilita endpoints /health/liveness e /health/readiness
+        enabled: true
   health:
     readinessstate:
       enabled: true
     livenessstate:
       enabled: true
 
-# Configurações de logging
+# Logging mais detalhado para debug
 logging:
   level:
-    br.com.lanchonete: ${LOG_LEVEL:INFO}
-    org.springframework.web: ${LOG_LEVEL:INFO}
+    com.zaxxer.hikari: DEBUG
+    org.springframework.jdbc: DEBUG
+    br.com.lanchonete: INFO
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

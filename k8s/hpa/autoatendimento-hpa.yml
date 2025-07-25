@@ -1,0 +1,42 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: autoatendimento-hpa
+  labels:
+    app: autoatendimento
+    component: hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: autoatendimento-deployment
+  minReplicas: 2                           # Mínimo: sempre 2 Pods
+  maxReplicas: 10                          # Máximo: pode escalar até 10 Pods
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 45             # SENSÍVEL: Escala quando CPU > 45%
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 20       # RÁPIDO: Escala em 20 segundos
+      policies:
+        - type: Percent
+          value: 150                         # AGRESSIVO: Pode aumentar 150% dos Pods
+          periodSeconds: 20
+        - type: Pods
+          value: 4                           # Adiciona até 4 Pods por vez
+          periodSeconds: 20
+      selectPolicy: Max                    # Usa política mais agressiva
+    scaleDown:
+      stabilizationWindowSeconds: 120      # Scale down conservador: 2 minutos
+      policies:
+        - type: Percent
+          value: 25                          # Remove 25% dos Pods por vez
+          periodSeconds: 30
+        - type: Pods
+          value: 2                           # Ou remove até 2 Pods por vez
+          periodSeconds: 30
+      selectPolicy: Min

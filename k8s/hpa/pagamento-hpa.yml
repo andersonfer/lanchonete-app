@@ -1,0 +1,42 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: pagamento-hpa
+  labels:
+    app: pagamento
+    component: hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: pagamento-deployment
+  minReplicas: 2                           # Mínimo: sempre 2 Pods
+  maxReplicas: 6                           # Máximo: pode escalar até 6 Pods
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 30             # ULTRA SENSÍVEL: Escala quando CPU > 30%
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 15       # ULTRA RÁPIDO: Escala em 15 segundos
+      policies:
+        - type: Percent
+          value: 100                         # Pode dobrar o número de Pods
+          periodSeconds: 15
+        - type: Pods
+          value: 3                           # Adiciona até 3 Pods por vez
+          periodSeconds: 15
+      selectPolicy: Max                    # Usa política mais agressiva
+    scaleDown:
+      stabilizationWindowSeconds: 180      # Scale down conservador: 3 minutos
+      policies:
+        - type: Percent
+          value: 50                          # Remove 50% dos Pods por vez
+          periodSeconds: 60
+        - type: Pods
+          value: 1                           # Ou remove 1 Pod por vez
+          periodSeconds: 60
+      selectPolicy: Min                    # Usa política mais conservadora

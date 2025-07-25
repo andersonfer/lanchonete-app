@@ -1,4 +1,4 @@
-# Deployment do Autoatendimento
+# Deployment do Autoatendimento - CONFIGURAÇÃO FINAL SENSÍVEL
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -6,7 +6,7 @@ metadata:
   labels:
     app: autoatendimento
 spec:
-  replicas: 2                     # Começar com 2 réplicas
+  replicas: 2
   selector:
     matchLabels:
       app: autoatendimento
@@ -16,60 +16,59 @@ spec:
         app: autoatendimento
     spec:
       containers:
-      - name: app
-        image: lanchonete-app_autoatendimento:latest
-        imagePullPolicy: Never    # Usar imagem local do Minikube
-        ports:
-        - containerPort: 8080
-          name: http
-        
-        # Configurações via ConfigMap (dados não sensíveis)
-        envFrom:
-        - configMapRef:
-            name: autoatendimento-config
-        # Configurações via Secret (senhas do banco)
-        - secretRef:
-            name: mysql-secret
-            
-        # Recursos limitados para ambiente de desenvolvimento
-        resources:
-          requests:
-            memory: "256Mi"
-            cpu: "100m"           # 0.1 CPU
-          limits:
-            memory: "512Mi"
-            cpu: "200m"           # 0.2 CPU máximo
-            
-        # Health checks usando Spring Boot Actuator
-#        startupProbe:
-#          httpGet:
-#            path: /actuator/health
-#            port: 8080
-#            scheme: HTTP
-#          initialDelaySeconds: 30   # Java demora para inicializar
-#          periodSeconds: 5
-#          timeoutSeconds: 3
-#          failureThreshold: 12      # 60 segundos total aguardando
-#          successThreshold: 1
-#
-#        readinessProbe:
-#          httpGet:
-#            path: /actuator/health/readiness
-#            port: 8080
-#            scheme: HTTP
-#          initialDelaySeconds: 10
-#          periodSeconds: 5
-#          timeoutSeconds: 2
-#          failureThreshold: 3
-#          successThreshold: 1
-#
-#        livenessProbe:
-#          httpGet:
-#            path: /actuator/health/liveness
-#            port: 8080
-#            scheme: HTTP
-#          initialDelaySeconds: 60   # Aguardar app estar completamente pronta
-#          periodSeconds: 15
-#          timeoutSeconds: 5
-#          failureThreshold: 3
-#          successThreshold: 1
+        - name: app
+          image: lanchonete-app_autoatendimento:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+              name: http
+
+          # Configurações via ConfigMap e Secret
+          envFrom:
+            - configMapRef:
+                name: autoatendimento-config
+            - secretRef:
+                name: mysql-secret
+
+          # RESOURCE LIMITS OTIMIZADOS PARA HPA SENSÍVEL
+          resources:
+            requests:
+              memory: "300Mi"
+              cpu: "100m"             # REDUZIDO: 150m → 100m (mais sensível)
+            limits:
+              memory: "600Mi"
+              cpu: "400m"
+
+          # Health checks otimizados
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 12
+            successThreshold: 1
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 3
+            successThreshold: 1
+
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1

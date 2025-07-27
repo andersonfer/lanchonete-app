@@ -1,4 +1,4 @@
-# Deployment do Autoatendimento - CONFIGURAÇÃO FINAL SENSÍVEL
+# Deployment do Autoatendimento - STARTUP PROBE IGUAL AO PAGAMENTO
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: lanchonete-app-autoatendimento:latest
+          image: lanchonete-app_autoatendimento:latest
           imagePullPolicy: Never
           ports:
             - containerPort: 8080
@@ -39,16 +39,16 @@ spec:
               memory: "600Mi"
               cpu: "400m"
 
-          # Health checks otimizados
+          # STARTUP PROBE IGUAL AO PAGAMENTO
           startupProbe:
             httpGet:
               path: /actuator/health
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 30
-            periodSeconds: 5
-            timeoutSeconds: 3
-            failureThreshold: 12
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 15
             successThreshold: 1
 
           readinessProbe:

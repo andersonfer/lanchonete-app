@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: lanchonete-app_autoatendimento:latest
+          image: lanchonete-app-autoatendimento:latest
           imagePullPolicy: Never
           ports:
             - containerPort: 8080

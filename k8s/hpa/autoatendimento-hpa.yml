@@ -5,46 +5,17 @@ metadata:
   labels:
     app: autoatendimento
     component: hpa
-    version: "threshold-corrigido"
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
     name: autoatendimento-deployment
-
-  # CONFIGURAÇÃO DE REPLICAS
   minReplicas: 2
   maxReplicas: 3
-
-  # MÉTRICAS COM THRESHOLD CORRIGIDO
   metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          type: Utilization
-          averageUtilization: 70
     - type: Resource
       resource:
         name: memory
         target:
           type: Utilization
-          averageUtilization: 85        # CORRIGIDO: 75% → 85% (acima do baseline de 79%)
-
-  # COMPORTAMENTO OTIMIZADO
-  behavior:
-    scaleUp:
-      stabilizationWindowSeconds: 0    # SEM DELAY para scale up
-      policies:
-        - type: Pods
-          value: 1                     # Escalar 1 pod por vez
-          periodSeconds: 15            # A cada 15 segundos
-      selectPolicy: Max                # Política mais agressiva
-
-    scaleDown:
-      stabilizationWindowSeconds: 300  # 5 minutos para scale down
-      policies:
-        - type: Pods
-          value: 1                     # Remover 1 pod por vez
-          periodSeconds: 120           # A cada 2 minutos
-      selectPolicy: Min                # Política conservadora
+          averageUtilization: 90          # Threshold bem alto

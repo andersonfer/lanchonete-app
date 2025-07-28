@@ -5,44 +5,46 @@ metadata:
   labels:
     app: autoatendimento
     component: hpa
+    version: "optimized"
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
     name: autoatendimento-deployment
-  minReplicas: 2
-  maxReplicas: 3
+
+  # CONFIGURAÇÃO DE REPLICAS
+  minReplicas: 2                    # Mínimo para alta disponibilidade
+  maxReplicas: 3                    # Máximo seguro para cluster pequeno
+
+  # MÉTRICAS OTIMIZADAS
   metrics:
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 70
+          averageUtilization: 70    # CPU threshold
     - type: Resource
       resource:
         name: memory
         target:
           type: Utilization
-          averageUtilization: 85
+          averageUtilization: 75    # REDUZIDO: 85% → 75% (mais sensível)
+
+  # COMPORTAMENTO OTIMIZADO
   behavior:
     scaleUp:
-      stabilizationWindowSeconds: 60
+      stabilizationWindowSeconds: 0  # SEM DELAY para scale up
       policies:
-        - type: Percent
-          value: 50
-          periodSeconds: 60
         - type: Pods
-          value: 1
-          periodSeconds: 30
-      selectPolicy: Max
+          value: 1                   # Escalar 1 pod por vez
+          periodSeconds: 15          # A cada 15 segundos
+      selectPolicy: Max              # Política mais agressiva
+
     scaleDown:
-      stabilizationWindowSeconds: 180
+      stabilizationWindowSeconds: 300 # 5 minutos para scale down
       policies:
-        - type: Percent
-          value: 10
-          periodSeconds: 120
         - type: Pods
-          value: 1
-          periodSeconds: 120
-      selectPolicy: Min
+          value: 1                    # Remover 1 pod por vez
+          periodSeconds: 120          # A cada 2 minutos
+      selectPolicy: Min               # Política conservadora

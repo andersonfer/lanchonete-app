@@ -10,39 +10,33 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: pagamento-deployment
-  minReplicas: 2                           # Mínimo: sempre 2 Pods
-  maxReplicas: 4                           # Máximo: reduzido de 6 para 4
+  minReplicas: 2
+  maxReplicas: 4
   metrics:
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 75             # MENOS SENSÍVEL: 30% → 75%
+          averageUtilization: 75
     - type: Resource
       resource:
         name: memory
         target:
           type: Utilization
-          averageUtilization: 80             # Adicionar métrica de memória
+          averageUtilization: 75           # THRESHOLD MAIS BAIXO (80% → 75%)
   behavior:
     scaleUp:
-      stabilizationWindowSeconds: 300      # MAIS CONSERVADOR: 15s → 5min
+      stabilizationWindowSeconds: 60      # 1 minuto para scale up
       policies:
-        - type: Percent
-          value: 50                          # MENOS AGRESSIVO: 100% → 50%
-          periodSeconds: 90                  # MAIS LENTO: 15s → 90s
         - type: Pods
-          value: 1                           # MENOS PODS: 3 → 1 por vez
-          periodSeconds: 90
-      selectPolicy: Min                    # CONSERVADOR: Max → Min
+          value: 1                         # Escalar 1 pod por vez
+          periodSeconds: 30                # A cada 30 segundos
+      selectPolicy: Max
     scaleDown:
-      stabilizationWindowSeconds: 600      # MAIS CONSERVADOR: 3min → 10min
+      stabilizationWindowSeconds: 600     # 10 minutos para scale down
       policies:
-        - type: Percent
-          value: 25                          # CONSERVADOR: 50% → 25%
-          periodSeconds: 180                 # MAIS LENTO: 60s → 3min
         - type: Pods
-          value: 1                           # Remove apenas 1 pod por vez
-          periodSeconds: 180
-      selectPolicy: Min                    # Política mais conservadora
+          value: 1                         # Remover 1 pod por vez
+          periodSeconds: 180               # A cada 3 minutos
+      selectPolicy: Min

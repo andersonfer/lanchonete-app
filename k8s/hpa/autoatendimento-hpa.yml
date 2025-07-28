@@ -11,32 +11,38 @@ spec:
     kind: Deployment
     name: autoatendimento-deployment
   minReplicas: 2                           # Mínimo: sempre 2 Pods
-  maxReplicas: 10                          # Máximo: pode escalar até 10 Pods
+  maxReplicas: 6                           # Máximo: reduzido de 10 para 6
   metrics:
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 45             # SENSÍVEL: Escala quando CPU > 45%
+          averageUtilization: 70             # MENOS SENSÍVEL: 45% → 70%
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80             # Adicionar métrica de memória
   behavior:
     scaleUp:
-      stabilizationWindowSeconds: 20       # RÁPIDO: Escala em 20 segundos
+      stabilizationWindowSeconds: 300      # MAIS CONSERVADOR: 20s → 5min
       policies:
         - type: Percent
-          value: 150                         # AGRESSIVO: Pode aumentar 150% dos Pods
-          periodSeconds: 20
+          value: 50                          # MENOS AGRESSIVO: 150% → 50%
+          periodSeconds: 60                  # MAIS LENTO: 20s → 60s
         - type: Pods
-          value: 4                           # Adiciona até 4 Pods por vez
-          periodSeconds: 20
-      selectPolicy: Max                    # Usa política mais agressiva
+          value: 2                           # MENOS PODS: 4 → 2 por vez
+          periodSeconds: 60
+      selectPolicy: Min                    # CONSERVADOR: Max → Min
     scaleDown:
-      stabilizationWindowSeconds: 120      # Scale down conservador: 2 minutos
+      stabilizationWindowSeconds: 600      # MAIS CONSERVADOR: 2min → 10min
       policies:
         - type: Percent
-          value: 25                          # Remove 25% dos Pods por vez
-          periodSeconds: 30
+          value: 10                          # MUITO CONSERVADOR: 25% → 10%
+          periodSeconds: 120                 # MAIS LENTO: 30s → 2min
         - type: Pods
-          value: 2                           # Ou remove até 2 Pods por vez
-          periodSeconds: 30
-      selectPolicy: Min
+          value: 1                           # Remove apenas 1 pod por vez
+          periodSeconds: 120
+      selectPolicy: Min                    # Política mais conservadora

@@ -1,4 +1,3 @@
-# Deployment do Pagamento - CONFIGURAÇÃO FINAL SENSÍVEL
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,7 +16,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: lanchonete-app-pagamento:latest
+          image: lanchonete-app_pagamento:latest
           imagePullPolicy: Never
           ports:
             - containerPort: 8081
@@ -28,16 +27,16 @@ spec:
             - configMapRef:
                 name: pagamento-config
 
-          # RESOURCE LIMITS OTIMIZADOS PARA HPA ULTRA SENSÍVEL
+          # RESOURCE LIMITS AJUSTADOS para HPA MENOS SENSÍVEL
           resources:
             requests:
-              memory: "200Mi"
-              cpu: "50m"              # REDUZIDO: 100m → 50m (ultra sensível)
+              memory: "256Mi"                # AUMENTADO: 200Mi → 256Mi
+              cpu: "150m"                    # AUMENTADO: 50m → 150m (crítico!)
             limits:
-              memory: "400Mi"
-              cpu: "300m"
+              memory: "512Mi"                # AUMENTADO: 400Mi → 512Mi
+              cpu: "500m"                    # AUMENTADO: 300m → 500m
 
-          # Health checks otimizados (mais tolerantes após ajustes)
+          # Health checks otimizados (mais tolerantes)
           startupProbe:
             httpGet:
               path: /actuator/health

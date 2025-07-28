@@ -11,7 +11,7 @@ spec:
     kind: Deployment
     name: autoatendimento-deployment
   minReplicas: 2
-  maxReplicas: 6
+  maxReplicas: 3
   metrics:
     - type: Resource
       resource:
@@ -24,7 +24,7 @@ spec:
         name: memory
         target:
           type: Utilization
-          averageUtilization: 70
+          averageUtilization: 85
   behavior:
     scaleUp:
       stabilizationWindowSeconds: 60

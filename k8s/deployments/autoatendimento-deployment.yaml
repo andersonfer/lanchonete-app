@@ -33,11 +33,11 @@ spec:
           # RESOURCE LIMITS OTIMIZADOS PARA HPA SENSÍVEL
           resources:
             requests:
-              memory: "300Mi"
-              cpu: "100m"             # REDUZIDO: 150m → 100m (mais sensível)
+              memory: "200Mi"
+              cpu: "50m"
             limits:
-              memory: "600Mi"
-              cpu: "400m"
+              memory: "400Mi"
+              cpu: "200m"
 
           # STARTUP PROBE IGUAL AO PAGAMENTO
           startupProbe:

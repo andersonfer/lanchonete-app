@@ -5,6 +5,7 @@ metadata:
   labels:
     app: pagamento
     component: hpa
+    version: "simples"
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -15,28 +16,7 @@ spec:
   metrics:
     - type: Resource
       resource:
-        name: cpu
-        target:
-          type: Utilization
-          averageUtilization: 75
-    - type: Resource
-      resource:
         name: memory
         target:
           type: Utilization
-          averageUtilization: 75           # THRESHOLD MAIS BAIXO (80% → 75%)
-  behavior:
-    scaleUp:
-      stabilizationWindowSeconds: 60      # 1 minuto para scale up
-      policies:
-        - type: Pods
-          value: 1                         # Escalar 1 pod por vez
-          periodSeconds: 30                # A cada 30 segundos
-      selectPolicy: Max
-    scaleDown:
-      stabilizationWindowSeconds: 600     # 10 minutos para scale down
-      policies:
-        - type: Pods
-          value: 1                         # Remover 1 pod por vez
-          periodSeconds: 180               # A cada 3 minutos
-      selectPolicy: Min
+          averageUtilization: 85

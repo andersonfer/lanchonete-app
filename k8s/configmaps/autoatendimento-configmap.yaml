@@ -23,4 +23,4 @@ data:
   LOG_LEVEL: "INFO"
   
   # Configurações de performance
-  JAVA_OPTS: "-Xms256m -Xmx512m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+  JAVA_OPTS: "-Xms128m -Xmx300m -XX:+UseContainerSupport -XX:+UseG1GC"

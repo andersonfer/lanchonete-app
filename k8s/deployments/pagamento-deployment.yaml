@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: lanchonete-app_pagamento:latest
+          image: lanchonete-app-pagamento:latest
           imagePullPolicy: Never
           ports:
             - containerPort: 8081

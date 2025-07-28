@@ -5,7 +5,7 @@ metadata:
   labels:
     app: autoatendimento
     component: hpa
-    version: "optimized"
+    version: "threshold-corrigido"
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -13,38 +13,38 @@ spec:
     name: autoatendimento-deployment
 
   # CONFIGURAÇÃO DE REPLICAS
-  minReplicas: 2                    # Mínimo para alta disponibilidade
-  maxReplicas: 3                    # Máximo seguro para cluster pequeno
+  minReplicas: 2
+  maxReplicas: 3
 
-  # MÉTRICAS OTIMIZADAS
+  # MÉTRICAS COM THRESHOLD CORRIGIDO
   metrics:
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 70    # CPU threshold
+          averageUtilization: 70
     - type: Resource
       resource:
         name: memory
         target:
           type: Utilization
-          averageUtilization: 75    # REDUZIDO: 85% → 75% (mais sensível)
+          averageUtilization: 85        # CORRIGIDO: 75% → 85% (acima do baseline de 79%)
 
   # COMPORTAMENTO OTIMIZADO
   behavior:
     scaleUp:
-      stabilizationWindowSeconds: 0  # SEM DELAY para scale up
+      stabilizationWindowSeconds: 0    # SEM DELAY para scale up
       policies:
         - type: Pods
-          value: 1                   # Escalar 1 pod por vez
-          periodSeconds: 15          # A cada 15 segundos
-      selectPolicy: Max              # Política mais agressiva
+          value: 1                     # Escalar 1 pod por vez
+          periodSeconds: 15            # A cada 15 segundos
+      selectPolicy: Max                # Política mais agressiva
 
     scaleDown:
-      stabilizationWindowSeconds: 300 # 5 minutos para scale down
+      stabilizationWindowSeconds: 300  # 5 minutos para scale down
       policies:
         - type: Pods
-          value: 1                    # Remover 1 pod por vez
-          periodSeconds: 120          # A cada 2 minutos
-      selectPolicy: Min               # Política conservadora
+          value: 1                     # Remover 1 pod por vez
+          periodSeconds: 120           # A cada 2 minutos
+      selectPolicy: Min                # Política conservadora

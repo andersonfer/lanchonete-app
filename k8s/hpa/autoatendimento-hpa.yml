@@ -9,11 +9,11 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: autoatendimento-deployment
-  
+
   # Configuração de réplicas
   minReplicas: 2                    # Mínimo que já está rodando
   maxReplicas: 4                    # Máximo para minikube (não sobrecarregar)
-  
+
   # Métricas de scaling
   metrics:
     - type: Resource
@@ -29,7 +29,7 @@ spec:
     scaleUp:
       stabilizationWindowSeconds: 60     # Aguardar 1min antes de escalar up
       policies:
-        - type: Replicas
+        - type: Pods                       # CORRIGIDO: Replicas → Pods
           value: 1                         # Adicionar 1 pod por vez
           periodSeconds: 60                # A cada 1 minuto
         - type: Percent
@@ -40,7 +40,7 @@ spec:
     scaleDown:
       stabilizationWindowSeconds: 180    # Aguardar 3min antes de escalar down
       policies:
-        - type: Replicas
+        - type: Pods                       # CORRIGIDO: Replicas → Pods
           value: 1                         # Remover 1 pod por vez
           periodSeconds: 120               # A cada 2 minutos
       selectPolicy: Min                  # Política mais conservadora

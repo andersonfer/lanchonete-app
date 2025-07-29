@@ -1,4 +1,3 @@
-# Deployment do Autoatendimento - STARTUP PROBE IGUAL AO PAGAMENTO
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -30,25 +29,25 @@ spec:
             - secretRef:
                 name: mysql-secret
 
-          # RESOURCE LIMITS OTIMIZADOS PARA HPA SENSÍVEL
+          # OTIMIZAÇÃO 1: Resources baseados no consumo real observado
           resources:
             requests:
-              memory: "300Mi"
-              cpu: "200m"
+              memory: "250Mi"    # Baseado nos 223Mi observados + margem
+              cpu: "100m"        # CPU request adequado para HPA (observado: 14-28m)
             limits:
-              memory: "400Mi"
-              cpu: "200m"
+              memory: "350Mi"    # Limite não muito apertado (vs 400Mi anterior)
+              cpu: "300m"        # Limite conservador para picos
 
-          # STARTUP PROBE IGUAL AO PAGAMENTO
+          # OTIMIZAÇÃO 2: Health checks ESCALONADOS (startup generoso, operação eficiente)
           startupProbe:
             httpGet:
               path: /actuator/health
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 120
-            periodSeconds: 15
-            timeoutSeconds: 10
-            failureThreshold: 20
+            initialDelaySeconds: 60     # REDUZIDO: 120s → 60s
+            periodSeconds: 10           # REDUZIDO: 15s → 10s
+            timeoutSeconds: 5           # REDUZIDO: 10s → 5s
+            failureThreshold: 12        # 60s + (10s × 12) = 180s total (3min vs 5min antes)
             successThreshold: 1
 
           readinessProbe:
@@ -56,10 +55,10 @@ spec:
               path: /actuator/health/readiness
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 10
-            periodSeconds: 5
-            timeoutSeconds: 2
-            failureThreshold: 3
+            initialDelaySeconds: 5      # Rápido após startup
+            periodSeconds: 5            # REDUZIDO: mais frequente
+            timeoutSeconds: 3           # Timeout agressivo
+            failureThreshold: 2         # REDUZIDO: falha rápida se problema
             successThreshold: 1
 
           livenessProbe:
@@ -67,8 +66,8 @@ spec:
               path: /actuator/health/liveness
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 60
-            periodSeconds: 15
-            timeoutSeconds: 5
-            failureThreshold: 3
+            initialDelaySeconds: 90     # REDUZIDO: 60s → 90s (depois do startup)
+            periodSeconds: 20           # REDUZIDO: 15s → 20s
+            timeoutSeconds: 5           # REDUZIDO: 5s timeout
+            failureThreshold: 3         # Padrão
             successThreshold: 1

@@ -19,8 +19,21 @@ data:
   SPRING_SQL_INIT_PLATFORM: "mysql"
   SPRING_SQL_INIT_MODE: "always"
   
-  # Configurações de logging
-  LOG_LEVEL: "INFO"
+  # Configurações de logging (menos verboso = startup mais rápido)
+  LOG_LEVEL: "WARN"                    # REDUZIDO: INFO → WARN
   
-  # Configurações de performance
-  JAVA_OPTS: "-Xms128m -Xmx300m -XX:+UseContainerSupport -XX:+UseG1GC"
+  # OTIMIZAÇÃO PRINCIPAL: JAVA_OPTS para startup RÁPIDO
+  JAVA_OPTS: >-
+    -Xms200m
+    -Xmx300m
+    -XX:+UseContainerSupport
+    -XX:MaxRAMPercentage=75.0
+    -XX:+UseG1GC
+    -XX:MaxGCPauseMillis=200
+    -XX:+UnlockExperimentalVMOptions
+    -XX:+UseJVMCICompiler
+    -XX:+EnableJVMCI
+    -Djava.security.egd=file:/dev/./urandom
+    -Dspring.backgroundpreinitializer.ignore=true
+    -Dspring.jmx.enabled=false
+    -Dspring.main.lazy-initialization=true

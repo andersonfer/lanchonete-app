@@ -30,38 +30,24 @@ spec:
             - containerPort: 3306
               name: mysql
 
-          # Configurações básicas via environment
-          env:
-            - name: MYSQL_ROOT_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: mysql-secret
-                  key: root-password
-            - name: MYSQL_DATABASE
-              value: "lanchonete"
-            - name: MYSQL_USER
-              valueFrom:
-                secretKeyRef:
-                  name: mysql-secret
-                  key: username
-            - name: MYSQL_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: mysql-secret
-                  key: password
+          # Configurações via ConfigMap (dados não sensíveis)
+          envFrom:
+            - configMapRef:
+                name: mysql-config
+            # Configurações via Secret (senhas)
+            - secretRef:
+                name: mysql-secret
 
           # OTIMIZAÇÃO 1: Configurações CONSERVADORAS para economia de recursos
           args:
             # Configurações de memória (otimizadas mas seguras)
             - --innodb-buffer-pool-size=64M        # Reduzido do padrão 128M
-            - --innodb-log-file-size=32M           # Menor para menos I/O
             - --max-connections=50                 # Reduzido de 151 padrão
             - --table-open-cache=64               # Reduzido de 4000 padrão
             - --performance-schema=OFF            # Desabilita monitoring (economiza RAM)
             - --innodb-flush-log-at-trx-commit=2  # Menos durabilidade, mais performance
             # Configurações seguras (sem risco de crash)
             - --skip-name-resolve                 # Não resolver DNS (mais rápido)
-            - --default-authentication-plugin=mysql_native_password  # Compatibilidade
             # Configurações de buffer e cache menores
             - --join-buffer-size=128K
             - --sort-buffer-size=256K

@@ -1,3 +1,10 @@
+# StatefulSet MySQL 8.0 OTIMIZADO para Minikube
+# Otimizações SEGURAS aplicadas:
+# - Mantém MySQL 8.0 (compatibilidade com dados existentes)
+# - Resources ajustados para consumo real observado
+# - Configurações conservadoras (sem risco de crash)
+# - Health checks otimizados para startup mais rápido
+
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -17,8 +24,8 @@ spec:
     spec:
       containers:
         - name: mysql
-          # OTIMIZAÇÃO 1: MySQL 5.7 (mais leve que 8.0)
-          image: mysql:5.7
+          # MANTÉM MySQL 8.0 para compatibilidade
+          image: mysql:8.0
           ports:
             - containerPort: 3306
               name: mysql
@@ -43,50 +50,50 @@ spec:
                   name: mysql-secret
                   key: password
 
-          # OTIMIZAÇÃO 2: Configurações ultra-lean para minikube
+          # OTIMIZAÇÃO 1: Configurações CONSERVADORAS para economia de recursos
           args:
-            - --innodb-buffer-pool-size=32M        # Reduzido de 128M padrão
-            - --innodb-log-file-size=16M          # Reduzido para economizar I/O
+            # Configurações de memória (otimizadas mas seguras)
+            - --innodb-buffer-pool-size=64M        # Reduzido do padrão 128M
+            - --innodb-log-file-size=32M           # Menor para menos I/O
+            - --max-connections=50                 # Reduzido de 151 padrão
+            - --table-open-cache=64               # Reduzido de 4000 padrão
+            - --performance-schema=OFF            # Desabilita monitoring (economiza RAM)
             - --innodb-flush-log-at-trx-commit=2  # Menos durabilidade, mais performance
-            - --max-connections=50                # Reduzido de 151 padrão
-            - --table-open-cache=32              # Reduzido de 2000 padrão
-            - --query-cache-size=8M              # Cache pequeno mas útil
-            - --query-cache-type=1               # Habilitar query cache
-            - --query-cache-limit=1M             # Limite por query
-            - --thread-cache-size=4              # Cache de threads pequeno
-            - --tmp-table-size=8M                # Tabelas temporárias menores
-            - --max-heap-table-size=8M           # Heap tables menores
-            - --sort-buffer-size=256K            # Buffer de ordenação menor
-            - --read-buffer-size=128K            # Buffer de leitura menor
-            - --join-buffer-size=128K            # Buffer de join menor
-            - --skip-name-resolve                # Não resolver nomes (mais rápido)
-            - --sql-mode=STRICT_TRANS_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO
+            # Configurações seguras (sem risco de crash)
+            - --skip-name-resolve                 # Não resolver DNS (mais rápido)
+            - --default-authentication-plugin=mysql_native_password  # Compatibilidade
+            # Configurações de buffer e cache menores
+            - --join-buffer-size=128K
+            - --sort-buffer-size=256K
+            - --read-buffer-size=128K
+            - --binlog-cache-size=32K
+            - --thread-cache-size=8
 
           # Volume mount
           volumeMounts:
             - name: mysql-storage
               mountPath: /var/lib/mysql
 
-          # OTIMIZAÇÃO 3: Resources baseados no consumo real observado
+          # OTIMIZAÇÃO 2: Resources baseados no consumo observado (409Mi)
           resources:
             requests:
-              memory: "300Mi"     # Baseado nos 409Mi observados
-              cpu: "50m"          # Reduzido (observado: 23m)
+              memory: "350Mi"     # Próximo ao observado, mas com margem
+              cpu: "50m"          # Baseado nos 23m observados
             limits:
-              memory: "400Mi"     # Limite próximo ao request
+              memory: "450Mi"     # Limite não muito apertado
               cpu: "200m"         # Limite conservador
 
-          # OTIMIZAÇÃO 4: Health checks otimizados (menos agressivos)
+          # OTIMIZAÇÃO 3: Health checks mais rápidos
           startupProbe:
             exec:
               command:
                 - sh
                 - -c
                 - "mysqladmin ping -h localhost -u root -p$MYSQL_ROOT_PASSWORD"
-            initialDelaySeconds: 20      # Reduzido de 30s
+            initialDelaySeconds: 30      # Mais conservador para MySQL 8.0
             periodSeconds: 5
-            timeoutSeconds: 3
-            failureThreshold: 8          # Reduzido de 10
+            timeoutSeconds: 5
+            failureThreshold: 12         # 1 minuto total
             successThreshold: 1
 
           readinessProbe:
@@ -95,9 +102,9 @@ spec:
                 - sh
                 - -c
                 - "mysql -h localhost -u root -p$MYSQL_ROOT_PASSWORD -e 'SELECT 1'"
-            initialDelaySeconds: 5
+            initialDelaySeconds: 10
             periodSeconds: 5
-            timeoutSeconds: 2
+            timeoutSeconds: 3
             failureThreshold: 3
             successThreshold: 1
 
@@ -107,9 +114,9 @@ spec:
                 - sh
                 - -c
                 - "mysqladmin ping -h localhost -u root -p$MYSQL_ROOT_PASSWORD"
-            initialDelaySeconds: 60       # Aumentado para dar tempo de estabilizar
-            periodSeconds: 15             # Menos frequente
-            timeoutSeconds: 5
+            initialDelaySeconds: 90       # Bem conservador
+            periodSeconds: 30             # Menos frequente
+            timeoutSeconds: 10
             failureThreshold: 3
             successThreshold: 1
 

@@ -502,7 +502,6 @@ else
         echo "$body"
     fi
 fi
-echo
 
 # =============================================================================
 # PASSO 17: Verificação final da cozinha
@@ -541,6 +540,7 @@ fi
 echo -e "${BLUE}"
 echo "🚀 INICIANDO GRUPO 4: Operações da Cozinha"
 echo "========================================="
+echo -e "🎯 Usando pedidos recém-criados: $PEDIDO_ID_1, $PEDIDO_ID_2, $PEDIDO_ID_3"
 echo -e "${NC}"
 
 # =============================================================================
@@ -550,22 +550,22 @@ echo -e "${NC}"
 make_request "GET" "$AUTOATENDIMENTO_URL/pedidos/cozinha" "" "PASSO 19: Estado inicial da cozinha"
 
 # =============================================================================
-# PASSO 20: Atualizar primeiro pedido RECEBIDO → EM_PREPARACAO
+# PASSO 20: Atualizar primeiro pedido anônimo RECEBIDO → EM_PREPARACAO
 # =============================================================================
 
 STATUS_EM_PREPARACAO_JSON='{
   "status": "EM_PREPARACAO"
 }'
 
-# Usar o primeiro pedido da cozinha (ID 5)
-make_request "PUT" "$AUTOATENDIMENTO_URL/pedidos/cozinha/5/status" "$STATUS_EM_PREPARACAO_JSON" "PASSO 20: Pedido 5 - RECEBIDO → EM_PREPARACAO"
+# Usar o primeiro pedido anônimo criado
+make_request "PUT" "$AUTOATENDIMENTO_URL/pedidos/cozinha/$PEDIDO_ID_2/status" "$STATUS_EM_PREPARACAO_JSON" "PASSO 20: Pedido $PEDIDO_ID_2 - RECEBIDO → EM_PREPARACAO"
 
 # =============================================================================
 # PASSO 21: Atualizar segundo pedido RECEBIDO → EM_PREPARACAO
 # =============================================================================
 
-# Usar o segundo pedido da cozinha (ID 6)
-make_request "PUT" "$AUTOATENDIMENTO_URL/pedidos/cozinha/6/status" "$STATUS_EM_PREPARACAO_JSON" "PASSO 21: Pedido 6 - RECEBIDO → EM_PREPARACAO"
+# Usar o pedido extra criado
+make_request "PUT" "$AUTOATENDIMENTO_URL/pedidos/cozinha/$PEDIDO_ID_3/status" "$STATUS_EM_PREPARACAO_JSON" "PASSO 21: Pedido $PEDIDO_ID_3 - RECEBIDO → EM_PREPARACAO"
 
 # =============================================================================
 # PASSO 22: Atualizar primeiro pedido EM_PREPARACAO → PRONTO
@@ -575,14 +575,14 @@ STATUS_PRONTO_JSON='{
   "status": "PRONTO"
 }'
 
-make_request "PUT" "$AUTOATENDIMENTO_URL/pedidos/cozinha/5/status" "$STATUS_PRONTO_JSON" "PASSO 22: Pedido 5 - EM_PREPARACAO → PRONTO"
+make_request "PUT" "$AUTOATENDIMENTO_URL/pedidos/cozinha/$PEDIDO_ID_2/status" "$STATUS_PRONTO_JSON" "PASSO 22: Pedido $PEDIDO_ID_2 - EM_PREPARACAO → PRONTO"
 
 # =============================================================================
-# PASSO 23: Atualizar terceiro pedido direto para PRONTO
+# PASSO 23: Atualizar terceiro pedido (com cliente) direto para EM_PREPARACAO
 # =============================================================================
 
-# Usar o terceiro pedido (ID 8) direto para PRONTO
-make_request "PUT" "$AUTOATENDIMENTO_URL/pedidos/cozinha/8/status" "$STATUS_PRONTO_JSON" "PASSO 23: Pedido 8 - RECEBIDO → PRONTO"
+# Usar o primeiro pedido (com cliente)
+make_request "PUT" "$AUTOATENDIMENTO_URL/pedidos/cozinha/$PEDIDO_ID_1/status" "$STATUS_EM_PREPARACAO_JSON" "PASSO 23: Pedido $PEDIDO_ID_1 - RECEBIDO → EM_PREPARACAO"
 
 # =============================================================================
 # PASSO 24: Finalizar primeiro pedido PRONTO → FINALIZADO
@@ -592,7 +592,7 @@ STATUS_FINALIZADO_JSON='{
   "status": "FINALIZADO"
 }'
 
-make_request "PUT" "$AUTOATENDIMENTO_URL/pedidos/cozinha/5/status" "$STATUS_FINALIZADO_JSON" "PASSO 24: Pedido 5 - PRONTO → FINALIZADO"
+make_request "PUT" "$AUTOATENDIMENTO_URL/pedidos/cozinha/$PEDIDO_ID_2/status" "$STATUS_FINALIZADO_JSON" "PASSO 24: Pedido $PEDIDO_ID_2 - PRONTO → FINALIZADO"
 
 # =============================================================================
 # PASSO 25: Verificar que pedido finalizado não aparece na cozinha
@@ -601,40 +601,32 @@ make_request "PUT" "$AUTOATENDIMENTO_URL/pedidos/cozinha/5/status" "$STATUS_FINA
 make_request "GET" "$AUTOATENDIMENTO_URL/pedidos/cozinha" "" "PASSO 25: Verificar que FINALIZADO não aparece na cozinha"
 
 # =============================================================================
-# PASSO 26: Finalizar segundo pedido
+# PASSO 26: Fluxo completo do segundo pedido (EM_PREPARACAO → PRONTO → FINALIZADO)
 # =============================================================================
 
-make_request "PUT" "$AUTOATENDIMENTO_URL/pedidos/cozinha/8/status" "$STATUS_FINALIZADO_JSON" "PASSO 26: Pedido 8 - PRONTO → FINALIZADO"
+make_request "PUT" "$AUTOATENDIMENTO_URL/pedidos/cozinha/$PEDIDO_ID_3/status" "$STATUS_PRONTO_JSON" "PASSO 26.1: Pedido $PEDIDO_ID_3 - EM_PREPARACAO → PRONTO"
+
+make_request "PUT" "$AUTOATENDIMENTO_URL/pedidos/cozinha/$PEDIDO_ID_3/status" "$STATUS_FINALIZADO_JSON" "PASSO 26.2: Pedido $PEDIDO_ID_3 - PRONTO → FINALIZADO"
 
 # =============================================================================
-# PASSO 27: Fluxo completo do pedido restante (6 - EM_PREPARACAO → PRONTO → FINALIZADO)
+# PASSO 27: Fluxo completo do último pedido restante
 # =============================================================================
 
-make_request "PUT" "$AUTOATENDIMENTO_URL/pedidos/cozinha/6/status" "$STATUS_PRONTO_JSON" "PASSO 27.1: Pedido 6 - EM_PREPARACAO → PRONTO"
+make_request "PUT" "$AUTOATENDIMENTO_URL/pedidos/cozinha/$PEDIDO_ID_1/status" "$STATUS_PRONTO_JSON" "PASSO 27.1: Pedido $PEDIDO_ID_1 - EM_PREPARACAO → PRONTO"
 
-make_request "PUT" "$AUTOATENDIMENTO_URL/pedidos/cozinha/6/status" "$STATUS_FINALIZADO_JSON" "PASSO 27.2: Pedido 6 - PRONTO → FINALIZADO"
-
-# =============================================================================
-# PASSO 28: Processar último pedido restante na cozinha (ID 10)
-# =============================================================================
-
-make_request "PUT" "$AUTOATENDIMENTO_URL/pedidos/cozinha/10/status" "$STATUS_EM_PREPARACAO_JSON" "PASSO 28.1: Pedido 10 - RECEBIDO → EM_PREPARACAO"
-
-make_request "PUT" "$AUTOATENDIMENTO_URL/pedidos/cozinha/10/status" "$STATUS_PRONTO_JSON" "PASSO 28.2: Pedido 10 - EM_PREPARACAO → PRONTO"
-
-make_request "PUT" "$AUTOATENDIMENTO_URL/pedidos/cozinha/10/status" "$STATUS_FINALIZADO_JSON" "PASSO 28.3: Pedido 10 - PRONTO → FINALIZADO"
+make_request "PUT" "$AUTOATENDIMENTO_URL/pedidos/cozinha/$PEDIDO_ID_1/status" "$STATUS_FINALIZADO_JSON" "PASSO 27.2: Pedido $PEDIDO_ID_1 - PRONTO → FINALIZADO"
 
 # =============================================================================
-# PASSO 29: Verificar cozinha vazia
+# PASSO 28: Verificar cozinha vazia
 # =============================================================================
 
-make_request "GET" "$AUTOATENDIMENTO_URL/pedidos/cozinha" "" "PASSO 29: Verificar cozinha vazia (todos finalizados)"
+make_request "GET" "$AUTOATENDIMENTO_URL/pedidos/cozinha" "" "PASSO 28: Verificar cozinha vazia (todos finalizados)"
 
 # =============================================================================
-# PASSO 30: Verificar lista completa (incluindo finalizados)
+# PASSO 29: Verificar lista completa (incluindo finalizados)
 # =============================================================================
 
-make_request "GET" "$AUTOATENDIMENTO_URL/pedidos" "" "PASSO 30: Lista completa mostra pedidos finalizados"
+make_request "GET" "$AUTOATENDIMENTO_URL/pedidos" "" "PASSO 29: Lista completa mostra pedidos finalizados"
 
 # =============================================================================
 # RESUMO DO GRUPO 4
@@ -645,7 +637,7 @@ echo "📊 RESUMO DO GRUPO 4"
 echo "===================="
 echo -e "${NC}"
 
-print_success "✅ Fluxo completo da cozinha testado"
+print_success "✅ Fluxo completo da cozinha testado com pedidos recém-criados"
 print_success "✅ Transições de status funcionando corretamente"
 print_success "✅ Pedidos finalizados removidos da cozinha"
 print_success "✅ Todas as operações da cozinha validadas"

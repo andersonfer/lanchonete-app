@@ -133,11 +133,7 @@ make_request "GET" "$AUTOATENDIMENTO_URL/produtos/categoria/SOBREMESA" "" "PASSO
 # PASSO 2: Cadastrar cliente novo (CPF diferente)
 # =============================================================================
 
-CLIENTE_NOVO_JSON='{
-  "nome": "Maria Silva Testes",
-  "cpf": "98765432100",
-  "email": "maria.testes@lanchonete.com"
-}'
+CLIENTE_NOVO_JSON='{"nome": "Maria Silva Testes", "cpf": "98765432100", "email": "maria.testes@lanchonete.com"}'
 
 make_request "POST" "$AUTOATENDIMENTO_URL/clientes" "$CLIENTE_NOVO_JSON" "PASSO 2: Cadastrar cliente novo"
 cadastro_status=$?
@@ -159,12 +155,7 @@ make_request "GET" "$AUTOATENDIMENTO_URL/clientes/cpf/$CLIENTE_CPF_EXISTENTE" ""
 # =============================================================================
 
 # 4.1 - Criar novo produto
-PRODUTO_JSON='{
-  "nome": "Produto Teste Script",
-  "descricao": "Produto criado para teste do script",
-  "preco": 15.50,
-  "categoria": "LANCHE"
-}'
+PRODUTO_JSON='{"nome": "Produto Teste Script", "descricao": "Produto criado para teste do script", "preco": 15.50, "categoria": "LANCHE"}'
 
 print_step "PASSO 4.1: Criar novo produto"
 response=$(curl -s -w "\n%{http_code}" -X "POST" "$AUTOATENDIMENTO_URL/produtos" \
@@ -195,12 +186,7 @@ echo
 
 # 4.2 - Editar produto (só se foi criado com sucesso)
 if [[ $http_code -ge 200 && $http_code -lt 300 ]]; then
-    PRODUTO_EDIT_JSON='{
-      "nome": "Produto Teste Editado",
-      "descricao": "Produto editado pelo script de teste",
-      "preco": 17.90,
-      "categoria": "LANCHE"
-    }'
+    PRODUTO_EDIT_JSON='{"nome": "Produto Teste Editado", "descricao": "Produto editado pelo script de teste", "preco": 17.90, "categoria": "LANCHE"}'
     
     make_request "PUT" "$AUTOATENDIMENTO_URL/produtos/$PRODUTO_ID" "$PRODUTO_EDIT_JSON" "PASSO 4.2: Editar produto criado"
 fi
@@ -242,19 +228,7 @@ echo -e "${NC}"
 # PASSO 5: Checkout com cliente cadastrado
 # =============================================================================
 
-PEDIDO_COM_CLIENTE_JSON='{
-  "clienteId": 1,
-  "itens": [
-    {
-      "produtoId": 1,
-      "quantidade": 2
-    },
-    {
-      "produtoId": 7,
-      "quantidade": 1
-    }
-  ]
-}'
+PEDIDO_COM_CLIENTE_JSON='{"clienteId": 1, "itens": [{"produtoId": 1, "quantidade": 2}, {"produtoId": 7, "quantidade": 1}]}'
 
 print_step "PASSO 5: Checkout com cliente cadastrado (ID: 1)"
 response=$(curl -s -w "\n%{http_code}" -X "POST" "$AUTOATENDIMENTO_URL/pedidos/checkout" \
@@ -296,10 +270,7 @@ echo
 # =============================================================================
 
 if [[ $http_code -ge 200 && $http_code -lt 300 ]]; then
-    PAGAMENTO_JSON="{
-      \"pedidoId\": \"$PEDIDO_ID_1\",
-      \"valor\": $VALOR_PEDIDO_1
-    }"
+    PAGAMENTO_JSON="{\"pedidoId\": \"$PEDIDO_ID_1\", \"valor\": $VALOR_PEDIDO_1}"
     
     make_request "POST" "$PAGAMENTO_URL/pagamentos" "$PAGAMENTO_JSON" "PASSO 6: Processar pagamento do pedido $PEDIDO_ID_1"
     
@@ -362,19 +333,7 @@ echo -e "${NC}"
 # PASSO 11: Checkout sem cliente (anônimo)
 # =============================================================================
 
-PEDIDO_ANONIMO_JSON='{
-  "clienteId": null,
-  "itens": [
-    {
-      "produtoId": 2,
-      "quantidade": 1
-    },
-    {
-      "produtoId": 14,
-      "quantidade": 2
-    }
-  ]
-}'
+PEDIDO_ANONIMO_JSON='{"clienteId": null, "itens": [{"produtoId": 2, "quantidade": 1}, {"produtoId": 14, "quantidade": 2}]}'
 
 print_step "PASSO 11: Checkout anônimo (sem cliente)"
 response=$(curl -s -w "\n%{http_code}" -X "POST" "$AUTOATENDIMENTO_URL/pedidos/checkout" \
@@ -416,10 +375,7 @@ echo
 # =============================================================================
 
 if [[ $http_code -ge 200 && $http_code -lt 300 ]]; then
-    PAGAMENTO_ANONIMO_JSON="{
-      \"pedidoId\": \"$PEDIDO_ID_2\",
-      \"valor\": $VALOR_PEDIDO_2
-    }"
+    PAGAMENTO_ANONIMO_JSON="{\"pedidoId\": \"$PEDIDO_ID_2\", \"valor\": $VALOR_PEDIDO_2}"
     
     make_request "POST" "$PAGAMENTO_URL/pagamentos" "$PAGAMENTO_ANONIMO_JSON" "PASSO 12: Processar pagamento do pedido anônimo $PEDIDO_ID_2"
     
@@ -449,15 +405,7 @@ fi
 # PASSO 16: Criar mais um pedido para garantir aprovação
 # =============================================================================
 
-PEDIDO_EXTRA_JSON='{
-  "clienteId": null,
-  "itens": [
-    {
-      "produtoId": 17,
-      "quantidade": 1
-    }
-  ]
-}'
+PEDIDO_EXTRA_JSON='{"clienteId": null, "itens": [{"produtoId": 17, "quantidade": 1}]}'
 
 print_step "PASSO 16: Criar pedido extra (tentativa de aprovação)"
 response=$(curl -s -w "\n%{http_code}" -X "POST" "$AUTOATENDIMENTO_URL/pedidos/checkout" \
@@ -482,10 +430,7 @@ if [[ $http_code -ge 200 && $http_code -lt 300 ]]; then
     echo "💰 Valor total: $VALOR_PEDIDO_3"
     
     # Processar pagamento do terceiro pedido
-    PAGAMENTO_EXTRA_JSON="{
-      \"pedidoId\": \"$PEDIDO_ID_3\",
-      \"valor\": $VALOR_PEDIDO_3
-    }"
+    PAGAMENTO_EXTRA_JSON="{\"pedidoId\": \"$PEDIDO_ID_3\", \"valor\": $VALOR_PEDIDO_3}"
     
     make_request "POST" "$PAGAMENTO_URL/pagamentos" "$PAGAMENTO_EXTRA_JSON" "PASSO 16.1: Processar pagamento do pedido extra"
     
@@ -553,9 +498,7 @@ make_request "GET" "$AUTOATENDIMENTO_URL/pedidos/cozinha" "" "PASSO 19: Estado i
 # PASSO 20: Atualizar primeiro pedido anônimo RECEBIDO → EM_PREPARACAO
 # =============================================================================
 
-STATUS_EM_PREPARACAO_JSON='{
-  "status": "EM_PREPARACAO"
-}'
+STATUS_EM_PREPARACAO_JSON='{"status": "EM_PREPARACAO"}'
 
 # Usar o primeiro pedido anônimo criado
 make_request "PUT" "$AUTOATENDIMENTO_URL/pedidos/cozinha/$PEDIDO_ID_2/status" "$STATUS_EM_PREPARACAO_JSON" "PASSO 20: Pedido $PEDIDO_ID_2 - RECEBIDO → EM_PREPARACAO"
@@ -571,9 +514,7 @@ make_request "PUT" "$AUTOATENDIMENTO_URL/pedidos/cozinha/$PEDIDO_ID_3/status" "$
 # PASSO 22: Atualizar primeiro pedido EM_PREPARACAO → PRONTO
 # =============================================================================
 
-STATUS_PRONTO_JSON='{
-  "status": "PRONTO"
-}'
+STATUS_PRONTO_JSON='{"status": "PRONTO"}'
 
 make_request "PUT" "$AUTOATENDIMENTO_URL/pedidos/cozinha/$PEDIDO_ID_2/status" "$STATUS_PRONTO_JSON" "PASSO 22: Pedido $PEDIDO_ID_2 - EM_PREPARACAO → PRONTO"
 
@@ -588,9 +529,7 @@ make_request "PUT" "$AUTOATENDIMENTO_URL/pedidos/cozinha/$PEDIDO_ID_1/status" "$
 # PASSO 24: Finalizar primeiro pedido PRONTO → FINALIZADO
 # =============================================================================
 
-STATUS_FINALIZADO_JSON='{
-  "status": "FINALIZADO"
-}'
+STATUS_FINALIZADO_JSON='{"status": "FINALIZADO"}'
 
 make_request "PUT" "$AUTOATENDIMENTO_URL/pedidos/cozinha/$PEDIDO_ID_2/status" "$STATUS_FINALIZADO_JSON" "PASSO 24: Pedido $PEDIDO_ID_2 - PRONTO → FINALIZADO"
 

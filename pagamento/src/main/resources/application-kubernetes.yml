@@ -51,7 +51,6 @@ springdoc:
 # Logging
 logging:
   level:
-    org.springframework.boot.actuate: DEBUG  # Debug do Actuator
     br.com.lanchonete: INFO
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

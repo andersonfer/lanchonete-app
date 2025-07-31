@@ -1,539 +1,486 @@
-# Sistema de Autoatendimento para Lanchonete
+# Sistema de Autoatendimento para Lanchonete - Fase 2
 
-Este é um projeto para o Tech Challenge da pós-graduação SOAT - fase 2.
+Este é um projeto para o Tech Challenge da pós-graduação SOAT - **Fase 2: Kubernetes**.
 
 **Aluno:** Anderson Fér - rm363691  
-**Vídeo de demonstração:** https://youtu.be/lOOEKc5jY6I
+**Vídeo de demonstração:** [A ser adicionado]
 
 ## Descrição do Projeto
 
-Sistema de autoatendimento para uma lanchonete de bairro, permitindo que os clientes façam pedidos sem interagir com um atendente. O sistema integra com um mock do Mercado Pago para processamento de pagamentos e possui um fluxo completo de gerenciamento de pedidos na cozinha.
-
-## Arquitetura do Sistema
-
-O projeto é composto por **dois microserviços** implementados em Java 17 com Spring Boot:
-
-### 🍔 **Autoatendimento** (Porta 8080)
-- Sistema principal de pedidos
-- Clean Architecture + DDD
-- Integração com webhook de pagamento
-- APIs para cozinha
-- Banco MySQL em produção
-
-### 💳 **Pagamento** (Porta 8081)
-- Mock do Mercado Pago
-- Simulação de processamento de pagamento
-- Webhook automático para autoatendimento
-- Comportamento aleatório (80% aprovação)
+Sistema de autoatendimento para lanchonete implementado com arquitetura de microserviços rodando em cluster Kubernetes. O sistema permite pedidos sem interação com atendentes, processamento de pagamentos via mock do Mercado Pago e gerenciamento completo de pedidos na cozinha, com escalabilidade automática baseada em demanda.
 
 ## Tecnologias Utilizadas
 
-- **Java 17**
-- **Spring Boot 3.4.4**
-- **Spring Data JDBC**
-- **MySQL 8.0** (produção)
-- **H2 Database** (desenvolvimento)
-- **Docker & Docker Compose**
-- **SpringDoc OpenAPI (Swagger)**
-- **WebClient** (comunicação entre serviços)
+**Backend & Framework:**
+- Java 17
+- Spring Boot 3.4.4
+- Spring Data JDBC
+- SpringDoc OpenAPI (Swagger)
 
-## 🚀 Como Executar
+**Banco de Dados:**
+- MySQL 8.0 (produção)
+- H2 Database (desenvolvimento/testes)
+
+**Containerização:**
+- Docker & Docker Compose
+- Kubernetes (Minikube)
+- Container Registry Local
+
+**Orquestração Kubernetes:**
+- Deployments & StatefulSets
+- Services (NodePort, ClusterIP)
+- ConfigMaps & Secrets
+- PersistentVolumes & PersistentVolumeClaims
+- HorizontalPodAutoscaler (HPA)
+
+**Comunicação:**
+- WebClient (comunicação entre microserviços)
+- REST APIs
+- Webhooks automáticos
+
+**Arquitetura:**
+- Clean Architecture
+- Domain-Driven Design (DDD)
+- Microserviços
+
+## Arquitetura do Sistema
+
+### Visão Geral
+Sistema distribuído em microserviços rodando em cluster Kubernetes (Minikube) com escalabilidade automática.
+
+### Estrutura da Arquitetura
+
+#### Organização de Diretórios
+```
+lanchonete-app/
+├── autoatendimento/                 # Microserviço principal
+│   ├── src/main/java/
+│   │   ├── dominio/                 # Camada de Domínio (Clean Architecture)
+│   │   │   ├── entidades/           # Entidades de negócio
+│   │   │   ├── valueobjects/        # CPF, Email, Preco
+│   │   │   └── enums/               # StatusPedido, Categoria
+│   │   ├── aplicacao/               # Camada de Aplicação
+│   │   │   ├── casosdeuso/          # Use Cases por contexto
+│   │   │   └── portas/              # Interfaces para gateways
+│   │   ├── adaptadores/             # Camada de Adaptadores
+│   │   │   ├── rest/                # Controllers e Services
+│   │   │   └── gateways/            # Implementação de portas
+│   │   └── infra/                   # Camada de Infraestrutura
+│   └── Dockerfile
+├── pagamento/                       # Mock Mercado Pago
+├── k8s/                            # Manifests Kubernetes
+│   ├── deployments/                 # Deployments e StatefulSets
+│   ├── services/                    # Services (NodePort, ClusterIP)
+│   ├── configmaps/                  # Configurações não sensíveis
+│   ├── secrets/                     # Credenciais e dados sensíveis
+│   ├── storage/                     # PersistentVolumes e PVCs
+│   └── hpa/                         # HorizontalPodAutoscaler
+├── aplicar_manifests.sh             # Script de deploy automatizado
+├── validar_deploy_k8s.sh           # Script de validação
+├── teste-carga-hpa.sh              # Script de teste de escalabilidade
+└── limpar_k8s.sh                   # Script de limpeza
+```
+
+#### Kubernetes (Orquestração)
+**APLICAÇÕES:**
+- autoatendimento-deployment (2-4 pods) → lanchonete-app-autoatendimento:latest
+- pagamento-deployment (2-4 pods) → lanchonete-app-pagamento:latest
+
+**SERVIÇOS DE REDE:**
+- autoatendimento-service (NodePort 30080) → autoatendimento pods
+- pagamento-service (NodePort 30081) → pagamento pods
+- mysql-service (ClusterIP 3306) → mysql pod
+
+**BANCO DE DADOS:**
+- mysql-statefulset (1 pod) + PersistentVolume 10Gi
+
+**CONFIGURAÇÕES:**
+- ConfigMaps: autoatendimento-config, pagamento-config
+- Secrets: mysql-secret (credenciais do banco)
+
+**ESCALABILIDADE:**
+- HPA autoatendimento: 2-4 pods (CPU target 60%)
+- HPA pagamento: 2-4 pods (Memory target 90%)
+
+**ACESSO EXTERNO:**
+- Autoatendimento: http://minikube-ip:30080
+- Pagamento: http://minikube-ip:30081
+
+
+### [📊 Diagrama HPA - A ser adicionado]
+
+
+
+
+## APIs Disponíveis
+
+### 🍔 **Serviço Autoatendimento** (minikube-ip:30080)
+
+#### **Clientes**
+- `POST /clientes` - Cadastrar cliente
+- `GET /clientes/cpf/{cpf}` - Buscar cliente por CPF
+
+#### **Produtos**
+- `GET /produtos/categoria/{categoria}` - Buscar produtos por categoria
+   - Categorias: `LANCHE`, `BEBIDA`, `ACOMPANHAMENTO`, `SOBREMESA`
+- `POST /produtos` - Criar produto
+- `PUT /produtos/{id}` - Editar produto
+- `DELETE /produtos/{id}` - Remover produto
+
+#### **Pedidos**
+- `POST /pedidos/checkout` - Realizar checkout de pedido
+- `GET /pedidos` - Listar todos os pedidos
+- `GET /pedidos/{id}/pagamento/status` - Consultar status de pagamento
+
+#### **Cozinha**
+- `GET /pedidos/cozinha` - Listar pedidos da cozinha (ordenados por prioridade)
+- `PUT /pedidos/cozinha/{id}/status` - Atualizar status de pedidos
+   - Status: `RECEBIDO`, `EM_PREPARACAO`, `PRONTO`, `FINALIZADO`
+
+#### **Webhooks**
+- `POST /webhook/pagamento` - Receber notificações de pagamento (interno)
+
+### 💳 **Serviço Pagamento** (minikube-ip:30081)
+
+#### **Pagamentos**
+- `POST /pagamentos` - Processar pagamento (Mock Mercado Pago)
+
+### 📖 **Documentação**
+- **Autoatendimento:** http://minikube-ip:30080/swagger-ui/index.html
+- **Pagamento:** http://minikube-ip:30081/swagger-ui/index.html
+
+## Como Executar
 
 ### Pré-requisitos
-- Docker
-- Docker Compose
-- Git
+- **Minikube** instalado e funcionando
+- **kubectl** configurado
+- **Docker** (para build das imagens)
+- **Git**
 
-### Executando com Docker Compose
+### 1. Setup do Ambiente
 
-1. **Clone o repositório:**
+**Iniciar Minikube:**
+```bash
+minikube start
+minikube addons enable metrics-server
+```
+
+**Clonar o repositório:**
 ```bash
 git clone https://github.com/andersonfer/lanchonete-app.git
 cd lanchonete-app
 ```
 
-2. **Execute o Docker Compose:**
-```bash
-docker-compose up -d
-```
-
-3. **Aguarde os serviços iniciarem** (≈ 30 segundos)
-
-4. **Acesse a documentação:**
-   - **Autoatendimento:** http://localhost:8080/swagger-ui.html
-   - **Pagamento:** http://localhost:8081/swagger-ui.html
-
-### Serviços Disponíveis
-
-| Serviço | Porta | URL Base | Descrição |
-|---------|-------|----------|-----------|
-| Autoatendimento | 8080 | http://localhost:8080 | Sistema principal |
-| Pagamento | 8081 | http://localhost:8081 | Mock Mercado Pago |
-| MySQL | 3306 | jdbc:mysql://localhost:3306/lanchonete | Banco de dados |
-
-## 🧪 Testando o Fluxo Completo
-
-### Cenário: Pedido Completo até Finalização
-
-Vamos simular um fluxo completo desde o pedido até a finalização na cozinha:
-
-### 1. 📦 Consultar Produtos Disponíveis
+### 2. Build das Imagens
 
 ```bash
-# Listar lanches
-curl -X GET "http://localhost:8080/produtos/categoria/LANCHE"
+# Build das aplicações
+docker-compose build
 
-# Listar bebidas
-curl -X GET "http://localhost:8080/produtos/categoria/BEBIDA"
-
-# Listar acompanhamentos
-curl -X GET "http://localhost:8080/produtos/categoria/ACOMPANHAMENTO"
-
-# Listar sobremesas
-curl -X GET "http://localhost:8080/produtos/categoria/SOBREMESA"
+# Carregar imagens no Minikube
+minikube image load lanchonete-app-autoatendimento:latest
+minikube image load lanchonete-app-pagamento:latest
 ```
 
-**Resposta exemplo:**
-```json
-[
-  {
-    "id": 1,
-    "nome": "X-Burger",
-    "descricao": "Hambúrguer com queijo, alface e tomate",
-    "preco": 18.90,
-    "categoria": "LANCHE"
-  }
-]
-```
-
-### 2. 🛒 Realizar Checkout do Pedido
+### 3. Deploy no Kubernetes
 
 ```bash
-curl -X POST "http://localhost:8080/pedidos/checkout" \
+# Deploy completo (ordem automatizada)
+chmod +x aplicar_manifests.sh
+./aplicar_manifests.sh
+```
+
+**Ou deploy manual por etapas:**
+```bash
+# 1. Configurações
+bash k8s/secrets/create-secrets.sh
+kubectl apply -f k8s/configmaps/
+
+# 2. Storage e MySQL
+kubectl apply -f k8s/storage/
+kubectl apply -f k8s/deployments/mysql-statefulset.yaml
+kubectl apply -f k8s/services/mysql-services.yaml
+
+# 3. Aplicações
+kubectl apply -f k8s/deployments/
+kubectl apply -f k8s/services/app-services.yaml
+
+# 4. Escalabilidade
+kubectl apply -f k8s/hpa/
+```
+
+### 4. Verificar Deploy
+
+```bash
+# Status geral
+kubectl get pods,services,hpa
+
+# Validação completa
+chmod +x validar_deploy_k8s.sh
+./validar_deploy_k8s.sh
+```
+
+### 5. Acessar Aplicações
+
+```bash
+# Obter IP do Minikube
+minikube ip
+```
+
+**URLs de Acesso:**
+- **Autoatendimento:** http://[minikube-ip]:30080
+- **Swagger Autoatendimento:** http://[minikube-ip]:30080/swagger-ui/index.html
+- **Pagamento:** http://[minikube-ip]:30081
+- **Swagger Pagamento:** http://[minikube-ip]:30081/swagger-ui/index.html
+
+### 6. Limpeza (Opcional)
+
+```bash
+# Remover todos os recursos
+chmod +x limpar_k8s.sh
+./limpar_k8s.sh
+```
+
+## Testando o Sistema
+
+### Teste Automatizado Completo
+
+```bash
+# Executar teste completo de todos os endpoints
+chmod +x fluxo_completo.sh
+./fluxo_completo.sh
+```
+
+### Teste Manual Passo a Passo
+
+Obtenha o IP do Minikube:
+```bash
+MINIKUBE_IP=$(minikube ip)
+```
+
+#### **1. Verificar Produtos Disponíveis**
+
+```bash
+# Listar produtos por categoria
+curl "http://$MINIKUBE_IP:30080/produtos/categoria/LANCHE"
+curl "http://$MINIKUBE_IP:30080/produtos/categoria/BEBIDA"
+curl "http://$MINIKUBE_IP:30080/produtos/categoria/ACOMPANHAMENTO"
+curl "http://$MINIKUBE_IP:30080/produtos/categoria/SOBREMESA"
+```
+
+#### **2. Fluxo Completo de Pedido**
+
+**2.1 Checkout do Pedido (capturar ID):**
+```bash
+PEDIDO_RESPONSE=$(curl -s -X POST "http://$MINIKUBE_IP:30080/pedidos/checkout" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "cpfCliente": "12345678901",
+    "itens": [
+      {"produtoId": 1, "quantidade": 2},
+      {"produtoId": 2, "quantidade": 1}
+    ]
+  }')
+
+# Extrair apenas o PRIMEIRO ID (do pedido principal)
+PEDIDO_ID=$(echo $PEDIDO_RESPONSE | grep -o '"id":[0-9]*' | head -n1 | cut -d':' -f2)
+echo "Pedido criado com ID: $PEDIDO_ID"
+echo "Resposta completa: $PEDIDO_RESPONSE"
+```
+
+**2.2 Processar Pagamento (usando ID capturado):**
+```bash
+curl -X POST "http://$MINIKUBE_IP:30081/pagamentos" \
+  -H "Content-Type: application/json" \
+  -d "{\"pedidoId\": \"$PEDIDO_ID\", \"valor\": 35.80}"
+```
+
+**2.3 Aguardar Webhook (5 segundos) e Verificar Status:**
+```bash
+sleep 5
+curl "http://$MINIKUBE_IP:30080/pedidos/$PEDIDO_ID/pagamento/status"
+```
+*Resposta esperada: `"APROVADO"` ou `"REJEITADO"`*
+
+#### **3. Gerenciar Pedidos na Cozinha**
+
+**3.1 Listar Pedidos da Cozinha (inicial):**
+```bash
+curl "http://$MINIKUBE_IP:30080/pedidos/cozinha"
+```
+
+**3.2 Atualizar Status do Pedido (usando ID capturado):**
+```bash
+# RECEBIDO → EM_PREPARACAO
+curl -X PUT "http://$MINIKUBE_IP:30080/pedidos/cozinha/$PEDIDO_ID/status" \
+  -H "Content-Type: application/json" \
+  -d '{"status": "EM_PREPARACAO"}'
+
+# Verificar mudança na cozinha
+curl "http://$MINIKUBE_IP:30080/pedidos/cozinha"
+
+# EM_PREPARACAO → PRONTO  
+curl -X PUT "http://$MINIKUBE_IP:30080/pedidos/cozinha/$PEDIDO_ID/status" \
+  -H "Content-Type: application/json" \
+  -d '{"status": "PRONTO"}'
+
+# Verificar mudança na cozinha (deve aparecer no topo por prioridade)
+curl "http://$MINIKUBE_IP:30080/pedidos/cozinha"
+
+# PRONTO → FINALIZADO
+curl -X PUT "http://$MINIKUBE_IP:30080/pedidos/cozinha/$PEDIDO_ID/status" \
+  -H "Content-Type: application/json" \
+  -d '{"status": "FINALIZADO"}'
+
+# Verificar que removeu da cozinha
+curl "http://$MINIKUBE_IP:30080/pedidos/cozinha"
+```
+
+#### **4. Verificar Pedido Finalizado**
+
+```bash
+# Verificar que não aparece mais na cozinha
+curl "http://$MINIKUBE_IP:30080/pedidos/cozinha"
+
+# Mas ainda aparece na lista geral
+curl "http://$MINIKUBE_IP:30080/pedidos"
+```
+
+#### **5. Testar Cliente Anônimo**
+
+```bash
+# Checkout sem CPF
+PEDIDO_ANONIMO_RESPONSE=$(curl -s -X POST "http://$MINIKUBE_IP:30080/pedidos/checkout" \
   -H "Content-Type: application/json" \
   -d '{
     "cpfCliente": null,
     "itens": [
-      {
-        "produtoId": 1,
-        "quantidade": 2
-      }
+      {"produtoId": 1, "quantidade": 1}
     ]
-  }'
+  }')
+
+PEDIDO_ANONIMO_ID=$(echo $PEDIDO_ANONIMO_RESPONSE | grep -o '"id":[0-9]*' | head -n1 | cut -d':' -f2)
+echo "Pedido anônimo criado com ID: $PEDIDO_ANONIMO_ID"
+
+# Processar pagamento do pedido anônimo
+curl -X POST "http://$MINIKUBE_IP:30081/pagamentos" \
+  -H "Content-Type: application/json" \
+  -d "{\"pedidoId\": \"$PEDIDO_ANONIMO_ID\", \"valor\": 18.90}"
 ```
 
-**Resposta:**
-```json
-{
-  "id": 1,
-  "numeroPedido": "PED000001",
-  "cpfCliente": null,
-  "nomeCliente": null,
-  "itens": [
-    {
-      "id": 1,
-      "produtoId": 1,
-      "nomeProduto": "X-Burger",
-      "quantidade": 2,
-      "valorUnitario": 18.90,
-      "valorTotal": 37.80
-    }
-  ],
-  "status": "RECEBIDO",
-  "statusPagamento": "PENDENTE",
-  "dataCriacao": "2025-07-16T12:00:00",
-  "valorTotal": 37.80
-}
-```
-
-### 3. 💳 Processar Pagamento
+#### **6. Testar CRUD de Produtos**
 
 ```bash
-curl -X POST "http://localhost:8081/pagamentos" \
+# Criar produto
+PRODUTO_RESPONSE=$(curl -s -X POST "http://$MINIKUBE_IP:30080/produtos" \
   -H "Content-Type: application/json" \
   -d '{
-    "pedidoId": "1",
-    "valor": 37.80
-  }'
-```
+    "nome": "Produto Teste", 
+    "descricao": "Produto para teste", 
+    "preco": 15.50, 
+    "categoria": "LANCHE"
+  }')
 
-**Resposta:**
-```json
-{
-  "pedidoId": "1",
-  "status": "PENDENTE"
-}
-```
+PRODUTO_ID=$(echo $PRODUTO_RESPONSE | grep -o '"id":[0-9]*' | head -n1 | cut -d':' -f2)
+echo "Produto criado com ID: $PRODUTO_ID"
 
-⏱️ **Aguarde 3-5 segundos** para o processamento automático.
-
-### 4. ✅ Verificar Status do Pagamento
-
-```bash
-curl -X GET "http://localhost:8080/pedidos/1/pagamento/status"
-```
-
-**Resposta (se aprovado):**
-```json
-{
-  "pedidoId": 1,
-  "statusPagamento": "APROVADO",
-  "mensagem": "Pagamento aprovado com sucesso"
-}
-```
-
-### 5. 👨‍🍳 Cozinha - Visualizar Pedidos
-
-```bash
-curl -X GET "http://localhost:8080/pedidos/cozinha"
-```
-
-**Resposta:**
-```json
-[
-  {
-    "id": 1,
-    "numeroPedido": "PED000001",
-    "status": "RECEBIDO",
-    "statusPagamento": "APROVADO",
-    "dataCriacao": "2025-07-16T12:00:00",
-    "valorTotal": 37.80,
-    "itens": [
-      {
-        "nomeProduto": "X-Burger",
-        "quantidade": 2
-      }
-    ]
-  }
-]
-```
-
-### 6. 🔄 Atualizar Status do Pedido (Cozinha)
-
-#### Iniciar Preparação
-```bash
-curl -X PUT "http://localhost:8080/pedidos/cozinha/1/status" \
+# Editar produto
+curl -X PUT "http://$MINIKUBE_IP:30080/produtos/$PRODUTO_ID" \
   -H "Content-Type: application/json" \
   -d '{
-    "status": "EM_PREPARACAO"
+    "nome": "Produto Teste Editado", 
+    "descricao": "Produto editado", 
+    "preco": 17.90, 
+    "categoria": "LANCHE"
   }'
+
+# Deletar produto
+curl -X DELETE "http://$MINIKUBE_IP:30080/produtos/$PRODUTO_ID"
 ```
 
-**Verificar na lista da cozinha:**
+#### **7. Testar CRUD de Clientes**
+
 ```bash
-curl -X GET "http://localhost:8080/pedidos/cozinha"
-```
-
-**Resposta (status mudou para EM_PREPARACAO):**
-```json
-[
-  {
-    "id": 1,
-    "numeroPedido": "PED000001",
-    "status": "EM_PREPARACAO",
-    "statusPagamento": "APROVADO",
-    "valorTotal": 37.80,
-    "itens": [
-      {
-        "nomeProduto": "X-Burger",
-        "quantidade": 2
-      }
-    ]
-  }
-]
-```
-
-#### Finalizar Preparação
-```bash
-curl -X PUT "http://localhost:8080/pedidos/cozinha/1/status" \
+# Cadastrar cliente
+curl -X POST "http://$MINIKUBE_IP:30080/clientes" \
   -H "Content-Type: application/json" \
   -d '{
-    "status": "PRONTO"
+    "cpf": "98765432100",
+    "nome": "Cliente Teste",
+    "email": "teste@email.com"
   }'
+
+# Buscar cliente por CPF
+curl "http://$MINIKUBE_IP:30080/clientes/cpf/98765432100"
 ```
 
-**Verificar na lista da cozinha:**
-```bash
-curl -X GET "http://localhost:8080/pedidos/cozinha"
-```
 
-**Resposta (status mudou para PRONTO - prioridade máxima):**
-```json
-[
-  {
-    "id": 1,
-    "numeroPedido": "PED000001",
-    "status": "PRONTO",
-    "statusPagamento": "APROVADO",
-    "valorTotal": 37.80,
-    "itens": [
-      {
-        "nomeProduto": "X-Burger",
-        "quantidade": 2
-      }
-    ]
-  }
-]
-```
+## Escalabilidade (HPA)
 
-#### Entregar Pedido
-```bash
-curl -X PUT "http://localhost:8080/pedidos/cozinha/1/status" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "status": "FINALIZADO"
-  }'
-```
+### Configuração Atual
 
-### 7. 📋 Verificar Lista da Cozinha (Pedido Finalizado)
+O sistema está configurado com **Horizontal Pod Autoscaler** para ajustar automaticamente o número de pods baseado na demanda:
+
+**Autoatendimento:**
+- **Mínimo:** 2 pods
+- **Máximo:** 4 pods
+- **Métrica:** CPU 60%
+- **Comportamento:** Scale up em 1 minuto, scale down em 3 minutos
+
+### [📊 Diagrama HPA - A ser adicionado]
+
+### Testar Escalabilidade
+
+#### **Executar Teste de Carga Automatizado**
 
 ```bash
-curl -X GET "http://localhost:8080/pedidos/cozinha"
+# Teste de 5 minutos com escalabilidade automática
+chmod +x teste-carga-hpa.sh
+./teste-carga-hpa.sh
 ```
 
-**Resposta:**
-```json
-[]
-```
+#### **Monitoramento em Tempo Real**
 
-✅ **Pedidos com status `FINALIZADO` não aparecem na lista da cozinha!**
-
-**Observação:** O pedido foi finalizado com sucesso e removido da lista da cozinha. Apenas pedidos com status `RECEBIDO`, `EM_PREPARACAO` ou `PRONTO` aparecem na lista.
-
-## 🔄 Fluxo de Status do Pedido
-
-```
-RECEBIDO → EM_PREPARACAO → PRONTO → FINALIZADO
-```
-
-### Estados do Pedido:
-- **RECEBIDO**: Pedido criado, aguardando pagamento
-- **EM_PREPARACAO**: Cozinha iniciou o preparo
-- **PRONTO**: Pedido pronto para retirada
-- **FINALIZADO**: Pedido entregue (não aparece na cozinha)
-
-### Estados do Pagamento:
-- **PENDENTE**: Aguardando processamento
-- **APROVADO**: Pagamento aprovado
-- **REJEITADO**: Pagamento rejeitado
-
-## 📊 Regras de Ordenação da Cozinha
-
-A lista de pedidos da cozinha é ordenada por:
-1. **Status** (prioridade): PRONTO > EM_PREPARACAO > RECEBIDO
-2. **Data de criação**: Mais antigos primeiro
-
-### 📋 Comportamento da Lista
-
-- **RECEBIDO**: Pedidos que aguardam início do preparo
-- **EM_PREPARACAO**: Pedidos sendo preparados pela cozinha
-- **PRONTO**: Pedidos prontos para retirada (aparecem primeiro na lista)
-- **FINALIZADO**: Pedidos entregues (NÃO aparecem na lista)
-
-### 🔄 Verificação de Status
-
-Para cada mudança de status, consulte a lista da cozinha para verificar:
-- A alteração foi aplicada
-- A nova posição na ordenação
-- Se o pedido ainda aparece na lista (não aparece se FINALIZADO)
-
-## 🛠️ APIs Principais
-
-### Autoatendimento (8080)
-- `GET /produtos/categoria/{categoria}` - Listar produtos
-- `POST /pedidos/checkout` - Realizar pedido
-- `GET /pedidos/{id}/pagamento/status` - Status do pagamento
-- `GET /pedidos/cozinha` - Lista para cozinha
-- `PUT /pedidos/cozinha/{id}/status` - Atualizar status
-
-### Pagamento (8081)
-- `POST /pagamentos` - Processar pagamento
-- `POST /webhook/pagamento` - Webhook (automático)
-
-## 🔧 Desenvolvimento Local
-
-### Executando apenas o Autoatendimento (H2)
+**Em terminal separado, acompanhe a escalabilidade:**
 ```bash
-cd autoatendimento/
-mvn spring-boot:run
+# Monitorar HPA (atualização contínua)
+kubectl get hpa -w
+
+# Monitorar pods (criação/destruição)
+kubectl get pods -l app=autoatendimento -w
+
+# Monitorar métricas de CPU
+watch kubectl top pods -l app=autoatendimento
 ```
 
-### Executando Testes
+### Comportamento Esperado
+
+**Durante Carga Alta:**
+- CPU aumenta de ~6% para 60%+
+- HPA escala de 2 para 3-4 pods em ~1-2 minutos
+- Requisições distribuídas entre pods
+
+**Após Carga:**
+- CPU retorna para ~6%
+- HPA aguarda 3 minutos de estabilização
+- Scale down gradual para 2 pods
+
+**Tempos Típicos:**
+- **Scale Up:** 1-2 minutos
+- **Scale Down:** 3-5 minutos
+- **Estabilização:** 5-10 minutos total
+
+## Limpeza
+
+### Remover Todos os Recursos
+
 ```bash
-cd autoatendimento/
-mvn test
-
-cd pagamento/
-mvn test
-```
-
-## 🐳 Docker Compose
-
-O arquivo `docker-compose.yml` orquestra:
-- MySQL 8.0 com dados iniciais
-- Autoatendimento (com MySQL)
-- Pagamento (mock)
-- Rede isolada para comunicação
-
-### Comandos Úteis:
-```bash
-# Subir serviços
-docker-compose up -d
-
-# Ver logs
-docker-compose logs -f autoatendimento
-docker-compose logs -f pagamento
-
-# Parar serviços
-docker-compose down
-
-# Rebuild
-docker-compose up --build -d
-```
-
-## 🎯 Webhook Automático
-
-O serviço de **Pagamento** simula o comportamento do Mercado Pago:
-
-1. **Processa pagamento** (3-5 segundos)
-2. **Decide resultado** (80% aprovação, 20% rejeição)
-3. **Chama webhook** automaticamente
-4. **Autoatendimento** atualiza status do pedido
-
-### Simulação Realística:
-- ✅ **80% dos pagamentos** são aprovados
-- ❌ **20% dos pagamentos** são rejeitados
-- ⏱️ **Delay de 3-5 segundos** para simular processamento
-
-## 📁 Estrutura do Projeto
-
-```
-lanchonete-app/
-├── autoatendimento/          # Microserviço principal
-│   ├── src/main/java/        # Código fonte
-│   ├── src/test/java/        # Testes
-│   └── Dockerfile            # Container do autoatendimento
-├── pagamento/                # Mock Mercado Pago
-│   ├── src/main/java/        # Código fonte
-│   ├── src/test/java/        # Testes
-│   └── Dockerfile            # Container do pagamento
-├── docker-compose.yml        # Orquestração dos serviços
-└── README.md                 # Este arquivo
-```
-
-## 🎬 Exemplo de Uso Completo
-
-### 1. Subir aplicação
-```bash
-docker-compose up -d
-```
-
-### 2. Fazer pedido
-```bash
-curl -X POST "http://localhost:8080/pedidos/checkout" \
-  -H "Content-Type: application/json" \
-  -d '{"cpfCliente": null, "itens": [{"produtoId": 1, "quantidade": 1}]}'
-```
-
-### 3. Processar pagamento
-```bash
-curl -X POST "http://localhost:8081/pagamentos" \
-  -H "Content-Type: application/json" \
-  -d '{"pedidoId": "1", "valor": 18.90}'
-```
-
-### 4. Aguardar webhook automático (3-5s)
-```bash
-sleep 5
-```
-
-### 5. Verificar aprovação
-```bash
-curl -X GET "http://localhost:8080/pedidos/1/pagamento/status"
-```
-
-### 6. Cozinha - ver pedidos
-```bash
-curl -X GET "http://localhost:8080/pedidos/cozinha"
-```
-
-### 7. Atualizar para EM_PREPARACAO
-```bash
-curl -X PUT "http://localhost:8080/pedidos/cozinha/1/status" \
-  -H "Content-Type: application/json" \
-  -d '{"status": "EM_PREPARACAO"}'
-```
-
-### 7.1. Verificar mudança de status na cozinha
-```bash
-curl -X GET "http://localhost:8080/pedidos/cozinha"
-```
-*Resposta: pedido com status "EM_PREPARACAO"*
-
-### 8. Atualizar para PRONTO
-```bash
-curl -X PUT "http://localhost:8080/pedidos/cozinha/1/status" \
-  -H "Content-Type: application/json" \
-  -d '{"status": "PRONTO"}'
-```
-
-### 8.1. Verificar mudança de status na cozinha
-```bash
-curl -X GET "http://localhost:8080/pedidos/cozinha"
-```
-*Resposta: pedido com status "PRONTO" (prioridade máxima)*
-
-### 9. Finalizar pedido
-```bash
-curl -X PUT "http://localhost:8080/pedidos/cozinha/1/status" \
-  -H "Content-Type: application/json" \
-  -d '{"status": "FINALIZADO"}'
-```
-
-### 10. Verificar que não aparece mais na cozinha
-```bash
-curl -X GET "http://localhost:8080/pedidos/cozinha"
-```
-*Resposta: [] (pedido finalizado não aparece mais)*
-
-## 🏗️ Arquitetura Técnica
-
-### Autoatendimento
-- **Clean Architecture** com DDD
-- **Camadas**: Domínio → Aplicação → Adaptadores → Infraestrutura
-- **Padrões**: Repository, Use Cases, DTOs
-- **Banco**: MySQL (produção), H2 (desenvolvimento)
-
-### Pagamento
-- **Arquitetura Simples** para mock
-- **Simulação realística** do Mercado Pago
-- **Webhook automático** com WebClient
-- **Comportamento probabilístico**
-
-## 🚨 Troubleshooting
-
-### Problema: Containers não sobem
-```bash
-# Verificar ports em uso
-docker-compose down
-docker-compose up -d
-```
-
-### Problema: Webhook não funciona
-```bash
-# Verificar logs
-docker-compose logs pagamento
-docker-compose logs autoatendimento
-```
-
-### Problema: Base de dados
-```bash
-# Recrear volumes
-docker-compose down -v
-docker-compose up -d
+# Remover todos os recursos do projeto
+chmod +x limpar_k8s.sh
+./limpar_k8s.sh
 ```
 
 ---
 
 **Tech Challenge SOAT - Fase 2**  
-**Sistema de Autoatendimento com Integração de Pagamento**
+**Sistema de Autoatendimento com Kubernetes e Escalabilidade Automática**

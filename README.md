@@ -11,37 +11,9 @@ Sistema de autoatendimento para lanchonete implementado com arquitetura de micro
 
 ## Tecnologias Utilizadas
 
-**Backend & Framework:**
-- Java 17
-- Spring Boot 3.4.4
-- Spring Data JDBC
-- SpringDoc OpenAPI (Swagger)
-
-**Banco de Dados:**
-- MySQL 8.0 (produção)
-- H2 Database (desenvolvimento/testes)
-
-**Containerização:**
-- Docker & Docker Compose
-- Kubernetes (Minikube)
-- Container Registry Local
-
-**Orquestração Kubernetes:**
-- Deployments & StatefulSets
-- Services (NodePort, ClusterIP)
-- ConfigMaps & Secrets
-- PersistentVolumes & PersistentVolumeClaims
-- HorizontalPodAutoscaler (HPA)
-
-**Comunicação:**
-- WebClient (comunicação entre microserviços)
-- REST APIs
-- Webhooks automáticos
-
-**Arquitetura:**
-- Clean Architecture
-- Domain-Driven Design (DDD)
-- Microserviços
+- **Backend:** Java 17, Spring Boot 3.4.4, MySQL 8.0
+- **Infraestrutura:** Kubernetes (Minikube), Docker, HPA
+- **Arquitetura:** Clean Architecture, DDD, Microserviços
 
 ## Arquitetura do Sistema
 

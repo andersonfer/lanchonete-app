@@ -9,24 +9,6 @@ Este é um projeto para o Tech Challenge da pós-graduação SOAT - **Fase 2: Ku
 
 Sistema de autoatendimento para lanchonete implementado com arquitetura de microserviços rodando em cluster Kubernetes. O sistema permite pedidos sem interação com atendentes, processamento de pagamentos via mock do Mercado Pago e gerenciamento completo de pedidos na cozinha, com escalabilidade automática baseada em demanda.
 
-## Fluxo de Negócio
-O sistema segue um fluxo dividido em 3 etapas principais:
-
-### 1. Cliente e Checkout
-<img src="diagramas/fluxo-cliente.svg" alt="Fluxo do Cliente" width="100%"/>
-
-### 2. Processamento de Pagamento
-<img src="diagramas/fluxo-pagamento.svg" alt="Fluxo de Pagamento" width="100%"/>
-
-### 3. Operações da Cozinha
-<img src="diagramas/fluxo-cozinha.svg" alt="Fluxo da Cozinha" width="100%"/>
-
-## Tecnologias Utilizadas
-
-- **Backend:** Java 17, Spring Boot 3.4.4, MySQL 8.0
-- **Infraestrutura:** Kubernetes (Minikube), Docker, HPA
-- **Arquitetura:** Clean Architecture, DDD, Microserviços
-
 ## Arquitetura do Sistema
 
 ### Visão Geral
@@ -34,7 +16,10 @@ Sistema distribuído em microserviços rodando em cluster Kubernetes (Minikube) 
 
 ### Estrutura da Arquitetura
 
-#### Organização de Diretórios
+#### Arquitetura Kubernetes
+<img src="diagramas/arquitetura-k8s.svg" alt="Fluxo da Cozinha" width="100%"/>
+
+#### Clean Architecture 
 ```
 lanchonete-app/
 ├── autoatendimento/                 # Microserviço principal
@@ -65,9 +50,7 @@ lanchonete-app/
 └── limpar_k8s.sh                   # Script de limpeza
 ```
 
-#### Kubernetes
-<img src="diagramas/arquitetura-k8s.svg" alt="Fluxo da Cozinha" width="100%"/>
-
+#### Componentes Kubernetes
 
 **APLICAÇÕES:**
 - autoatendimento-deployment (2-4 pods) → lanchonete-app-autoatendimento:latest
@@ -93,7 +76,23 @@ lanchonete-app/
 - Autoatendimento: http://minikube-ip:30080
 - Pagamento: http://minikube-ip:30081
 
+## Tecnologias Utilizadas
 
+- **Backend:** Java 17, Spring Boot 3.4.4, MySQL 8.0
+- **Infraestrutura:** Kubernetes (Minikube), Docker, HPA
+- **Arquitetura:** Clean Architecture, DDD, Microserviços
+
+## Fluxos de Negócio
+O sistema segue um fluxo dividido em 3 etapas principais:
+
+### 1. Cliente e Checkout
+<img src="diagramas/fluxo-cliente.svg" alt="Fluxo do Cliente" width="100%"/>
+
+### 2. Processamento de Pagamento
+<img src="diagramas/fluxo-pagamento.svg" alt="Fluxo de Pagamento" width="100%"/>
+
+### 3. Operações da Cozinha
+<img src="diagramas/fluxo-cozinha.svg" alt="Fluxo da Cozinha" width="100%"/>
 
 ## Como Executar
 
@@ -169,15 +168,9 @@ chmod +x validar_deploy_k8s.sh
 ### 5. Acessar Aplicações
 
 ```bash
-# Obter IP do Minikube
-minikube ip
+echo "Autoatendimento: http://$(minikube ip):30080/swagger-ui/index.html"
+echo "Pagamento: http://$(minikube ip):30081/swagger-ui/index.html"
 ```
-
-**URLs de Acesso:**
-- **Autoatendimento:** http://[minikube-ip]:30080
-- **Swagger Autoatendimento:** http://[minikube-ip]:30080/swagger-ui/index.html
-- **Pagamento:** http://[minikube-ip]:30081
-- **Swagger Pagamento:** http://[minikube-ip]:30081/swagger-ui/index.html
 
 ### 6. Limpeza (Opcional)
 
@@ -197,9 +190,9 @@ chmod +x fluxo_completo.sh
 ./fluxo_completo.sh
 ```
 
-## APIs Disponíveis e Roteiro de Testes
+### APIs Disponíveis e Roteiro de Testes
 
-### **Produtos**
+#### **Produtos**
 - `GET /produtos/categoria/{categoria}` - Buscar produtos por categoria
     - Categorias: `LANCHE`, `BEBIDA`, `ACOMPANHAMENTO`, `SOBREMESA`
 
@@ -229,7 +222,7 @@ curl "http://$(minikube ip):30080/produtos/categoria/ACOMPANHAMENTO"
 curl "http://$(minikube ip):30080/produtos/categoria/SOBREMESA"
 ```
 
-### **Pedidos**
+#### **Pedidos**
 - `POST /pedidos/checkout` - Realizar checkout de pedido
 
 **2.1 Checkout do Pedido (captura o ID do pagamento):**
@@ -249,7 +242,7 @@ PEDIDO_ID=$(echo $PEDIDO_RESPONSE | grep -o '"id":[0-9]*' | head -n1 | cut -d':'
 echo "Pedido criado com ID: $PEDIDO_ID"
 ```
 
-### **Pagamentos**
+#### **Pagamentos**
 - `POST /pagamentos` - Processar pagamento (Mock Mercado Pago) *(Serviço Pagamento)*
 
 **2.2 Processar Pagamento (usando ID capturado):**
@@ -259,7 +252,7 @@ curl -X POST "http://$(minikube ip):30081/pagamentos" \
   -d "{\"pedidoId\": \"$PEDIDO_ID\", \"valor\": 35.80}"
 ```
 
-### **Status de Pagamento**
+#### **Status de Pagamento**
 - `GET /pedidos/{id}/pagamento/status` - Consultar status de pagamento
 
 **2.3 Aguardar Webhook e Verificar Status:**
@@ -268,7 +261,7 @@ curl "http://$(minikube ip):30080/pedidos/$PEDIDO_ID/pagamento/status"
 ```
 *Resposta esperada: `"APROVADO"` ou `"REJEITADO"`*
 
-### **Cozinha**
+#### **Cozinha**
 - `GET /pedidos/cozinha` - Listar pedidos da cozinha (ordenados por prioridade)
 
 **3.1 Listar Pedidos da Cozinha (inicial):**
@@ -304,7 +297,7 @@ curl -X PUT "http://$(minikube ip):30080/pedidos/cozinha/$PEDIDO_ID/status" \
   -d '{"status": "FINALIZADO"}'
 ```
 
-### **Gerenciamento de Pedidos**
+#### **Gerenciamento de Pedidos**
 - `GET /pedidos` - Listar todos os pedidos
 
 **3.5 Verificar que removeu da cozinha:**
@@ -319,7 +312,7 @@ curl "http://$(minikube ip):30080/pedidos/cozinha"
 curl "http://$(minikube ip):30080/pedidos"
 ```
 
-### **CRUD de Produtos**
+#### **CRUD de Produtos**
 - `POST /produtos` - Criar produto
 
 **4.1 Criar produto:**

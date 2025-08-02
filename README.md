@@ -45,10 +45,10 @@ lanchonete-app/
 │   │   │   └── enums/               # StatusPedido, Categoria
 │   │   ├── aplicacao/               # Camada de Aplicação
 │   │   │   ├── casosdeuso/          # Use Cases por contexto
-│   │   │   └── portas/              # Interfaces para gateways
+│   │   │   └── gateways/            # Interfaces para gateways
 │   │   ├── adaptadores/             # Camada de Adaptadores
 │   │   │   ├── rest/                # Controllers e Services
-│   │   │   └── gateways/            # Implementação de portas
+│   │   │   └── persistencia/        # Implementação de gateways
 │   │   └── infra/                   # Camada de Infraestrutura
 │   └── Dockerfile
 ├── pagamento/                       # Mock Mercado Pago

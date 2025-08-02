@@ -99,37 +99,221 @@ lanchonete-app/
 
 ## APIs Disponíveis
 
-### 🍔 **Serviço Autoatendimento** (minikube-ip:30080)
+### 🍔 **Serviço Autoatendimento** ($(minikube ip):30080)
 
 #### **Clientes**
-- `POST /clientes` - Cadastrar cliente
-- `GET /clientes/cpf/{cpf}` - Buscar cliente por CPF
+
+##### **POST /clientes** - Cadastrar cliente
+```bash
+curl -X POST "http://$(minikube ip):30080/clientes" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nome": "João Silva",
+    "cpf": "12345678901",
+    "email": "joao.silva@email.com"
+  }'
+```
+
+##### **GET /clientes/cpf/{cpf}** - Buscar cliente por CPF
+```bash
+curl -X GET "http://$(minikube ip):30080/clientes/cpf/12345678901"
+```
 
 #### **Produtos**
-- `GET /produtos/categoria/{categoria}` - Buscar produtos por categoria
-   - Categorias: `LANCHE`, `BEBIDA`, `ACOMPANHAMENTO`, `SOBREMESA`
-- `POST /produtos` - Criar produto
-- `PUT /produtos/{id}` - Editar produto
-- `DELETE /produtos/{id}` - Remover produto
+
+##### **GET /produtos/categoria/{categoria}** - Buscar produtos por categoria
+
+**1. Lanches:**
+```bash
+curl -X GET "http://$(minikube ip):30080/produtos/categoria/LANCHE"
+```
+
+---
+
+**2. Bebidas:**
+```bash
+curl -X GET "http://$(minikube ip):30080/produtos/categoria/BEBIDA"
+```
+
+---
+
+**3. Acompanhamentos:**
+```bash
+curl -X GET "http://$(minikube ip):30080/produtos/categoria/ACOMPANHAMENTO"
+```
+
+---
+
+**4. Sobremesas:**
+```bash
+curl -X GET "http://$(minikube ip):30080/produtos/categoria/SOBREMESA"
+```
 
 #### **Pedidos**
-- `POST /pedidos/checkout` - Realizar checkout de pedido
-- `GET /pedidos` - Listar todos os pedidos
-- `GET /pedidos/{id}/pagamento/status` - Consultar status de pagamento
+
+##### **POST /pedidos/checkout** - Realizar checkout de pedido
+
+**1. Pedido com cliente identificado:**
+```bash
+curl -X POST "http://$(minikube ip):30080/pedidos/checkout" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "cpfCliente": "12345678901",
+    "itens": [
+      {
+        "produtoId": 1,
+        "quantidade": 2
+      },
+      {
+        "produtoId": 3,
+        "quantidade": 1
+      }
+    ]
+  }'
+```
+
+---
+
+**2. Pedido sem identificação do cliente:**
+```bash
+curl -X POST "http://$(minikube ip):30080/pedidos/checkout" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "cpfCliente": null,
+    "itens": [
+      {
+        "produtoId": 1,
+        "quantidade": 1
+      }
+    ]
+  }'
+```
+
+##### **GET /pedidos** - Listar todos os pedidos
+```bash
+curl -X GET "http://$(minikube ip):30080/pedidos"
+```
+
+##### **GET /pedidos/{id}/pagamento/status** - Consultar status de pagamento
+```bash
+curl -X GET "http://$(minikube ip):30080/pedidos/1/pagamento/status"
+```
 
 #### **Cozinha**
-- `GET /pedidos/cozinha` - Listar pedidos da cozinha (ordenados por prioridade)
-- `PUT /pedidos/cozinha/{id}/status` - Atualizar status de pedidos
-   - Status: `RECEBIDO`, `EM_PREPARACAO`, `PRONTO`, `FINALIZADO`
 
-#### **Webhooks**
-- `POST /webhook/pagamento` - Receber notificações de pagamento (interno)
+##### **GET /pedidos/cozinha** - Listar pedidos da cozinha (ordenados por prioridade)
+```bash
+curl -X GET "http://$(minikube ip):30080/pedidos/cozinha"
+```
 
-### 💳 **Serviço Pagamento** (minikube-ip:30081)
+##### **PUT /pedidos/cozinha/{id}/status** - Atualizar status de pedidos
+
+**1. Marcar pedido como em preparação:**
+```bash
+curl -X PUT "http://$(minikube ip):30080/pedidos/cozinha/1/status" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "novoStatus": "EM_PREPARACAO"
+  }'
+```
+
+---
+
+**2. Marcar pedido como pronto:**
+```bash
+curl -X PUT "http://$(minikube ip):30080/pedidos/cozinha/1/status" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "novoStatus": "PRONTO"
+  }'
+```
+
+---
+
+**3. Finalizar pedido:**
+```bash
+curl -X PUT "http://$(minikube ip):30080/pedidos/cozinha/1/status" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "novoStatus": "FINALIZADO"
+  }'
+```
+
+**Status disponíveis:** `RECEBIDO`, `EM_PREPARACAO`, `PRONTO`, `FINALIZADO`
+
+##### **POST /produtos** - Criar produto
+```bash
+curl -X POST "http://$(minikube ip):30080/produtos" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nome": "Novo Lanche",
+    "descricao": "Descrição do novo lanche",
+    "preco": 22.90,
+    "categoria": "LANCHE"
+  }'
+```
+
+##### **PUT /produtos/{id}** - Editar produto
+```bash
+curl -X PUT "http://$(minikube ip):30080/produtos/5" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nome": "Lanche Editado",
+    "descricao": "Nova descrição do lanche",
+    "preco": 25.90,
+    "categoria": "LANCHE"
+  }'
+```
+
+##### **DELETE /produtos/{id}** - Remover produto
+```bash
+curl -X DELETE "http://$(minikube ip):30080/produtos/5"
+```
+
+### 💳 **Serviço Pagamento** ($(minikube ip):30081)
 
 #### **Pagamentos**
-- `POST /pagamentos` - Processar pagamento (Mock Mercado Pago)
 
+##### **POST /pagamentos** - Processar pagamento (Mock Mercado Pago)
+```bash
+curl -X POST "http://$(minikube ip):30081/pagamentos" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "pedidoId": "1",
+    "valor": 46.70
+  }'
+```
+
+### 📖 **Documentação**
+- **Autoatendimento:** http://$(minikube ip):30080/swagger-ui/index.html
+- **Pagamento:** http://$(minikube ip):30081/swagger-ui/index.html
+
+### 📝 **Notas sobre as APIs**
+
+#### **Categorias de Produtos:**
+- `LANCHE` - Hambúrgueres, sanduíches, etc.
+- `BEBIDA` - Refrigerantes, sucos, água, etc.
+- `ACOMPANHAMENTO` - Batata frita, onion rings, etc.
+- `SOBREMESA` - Sorvetes, tortas, etc.
+
+#### **Status de Pedidos:**
+- `RECEBIDO` - Pedido recebido, aguardando pagamento
+- `EM_PREPARACAO` - Pedido em preparação na cozinha
+- `PRONTO` - Pedido pronto para retirada
+- `FINALIZADO` - Pedido entregue ao cliente
+
+#### **Status de Pagamento:**
+- `PENDENTE` - Pagamento pendente de processamento
+- `APROVADO` - Pagamento aprovado com sucesso
+- `REJEITADO` - Pagamento rejeitado
+
+#### **Códigos de Resposta HTTP:**
+- `200` - Sucesso (operações de consulta e atualização)
+- `201` - Criado (operações de criação)
+- `204` - Sem conteúdo (operações de exclusão)
+- `400` - Dados inválidos
+- `404` - Recurso não encontrado
+- `500` - Erro interno do servidor
 ### 📖 **Documentação**
 - **Autoatendimento:** http://minikube-ip:30080/swagger-ui/index.html
 - **Pagamento:** http://minikube-ip:30081/swagger-ui/index.html

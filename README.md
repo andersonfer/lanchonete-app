@@ -65,7 +65,10 @@ lanchonete-app/
 └── limpar_k8s.sh                   # Script de limpeza
 ```
 
-#### Kubernetes (Orquestração)
+#### Kubernetes
+<img src="diagramas/arquitetura-k8s.svg" alt="Fluxo da Cozinha" width="100%"/>
+
+
 **APLICAÇÕES:**
 - autoatendimento-deployment (2-4 pods) → lanchonete-app-autoatendimento:latest
 - pagamento-deployment (2-4 pods) → lanchonete-app-pagamento:latest
@@ -90,8 +93,6 @@ lanchonete-app/
 - Autoatendimento: http://minikube-ip:30080
 - Pagamento: http://minikube-ip:30081
 
-
-### [📊 Diagrama HPA - A ser adicionado]
 
 
 

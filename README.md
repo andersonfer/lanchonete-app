@@ -99,194 +99,258 @@ lanchonete-app/
 
 ## APIs Disponíveis
 
-### 🍔 **Serviço Autoatendimento** ($(minikube ip):30080)
-
-#### **Clientes**
-
-##### **POST /clientes** - Cadastrar cliente
-```bash
-curl -X POST "http://$(minikube ip):30080/clientes" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nome": "João Silva",
-    "cpf": "12345678901",
-    "email": "joao.silva@email.com"
-  }'
-```
-
-##### **GET /clientes/cpf/{cpf}** - Buscar cliente por CPF
-```bash
-curl -X GET "http://$(minikube ip):30080/clientes/cpf/12345678901"
-```
+### 🍔 **Serviço Autoatendimento** (minikube-ip:30080)
 
 #### **Produtos**
+- `GET /produtos/categoria/{categoria}` - Buscar produtos por categoria
+    - Categorias: `LANCHE`, `BEBIDA`, `ACOMPANHAMENTO`, `SOBREMESA`
 
-##### **GET /produtos/categoria/{categoria}** - Buscar produtos por categoria
-
-**1. Lanches:**
+**1.1 Listar lanches:**
 ```bash
-curl -X GET "http://$(minikube ip):30080/produtos/categoria/LANCHE"
+curl "http://$(minikube ip):30080/produtos/categoria/LANCHE"
 ```
 
 ---
 
-**2. Bebidas:**
+**1.2 Listar bebidas:**
 ```bash
-curl -X GET "http://$(minikube ip):30080/produtos/categoria/BEBIDA"
+curl "http://$(minikube ip):30080/produtos/categoria/BEBIDA"
 ```
 
 ---
 
-**3. Acompanhamentos:**
+**1.3 Listar acompanhamentos:**
 ```bash
-curl -X GET "http://$(minikube ip):30080/produtos/categoria/ACOMPANHAMENTO"
+curl "http://$(minikube ip):30080/produtos/categoria/ACOMPANHAMENTO"
 ```
 
 ---
 
-**4. Sobremesas:**
+**1.4 Listar sobremesas:**
 ```bash
-curl -X GET "http://$(minikube ip):30080/produtos/categoria/SOBREMESA"
+curl "http://$(minikube ip):30080/produtos/categoria/SOBREMESA"
 ```
 
 #### **Pedidos**
+- `POST /pedidos/checkout` - Realizar checkout de pedido
 
-##### **POST /pedidos/checkout** - Realizar checkout de pedido
-
-**1. Pedido com cliente identificado:**
+**2.1 Checkout do Pedido (captura o ID do pagamento):**
 ```bash
-curl -X POST "http://$(minikube ip):30080/pedidos/checkout" \
+PEDIDO_RESPONSE=$(curl -s -X POST "http://$(minikube ip):30080/pedidos/checkout" \
   -H "Content-Type: application/json" \
   -d '{
     "cpfCliente": "12345678901",
     "itens": [
-      {
-        "produtoId": 1,
-        "quantidade": 2
-      },
-      {
-        "produtoId": 3,
-        "quantidade": 1
-      }
+      {"produtoId": 1, "quantidade": 2},
+      {"produtoId": 2, "quantidade": 1}
     ]
-  }'
+  }')
+
+# Extrair apenas o PRIMEIRO ID (do pedido principal)
+PEDIDO_ID=$(echo $PEDIDO_RESPONSE | grep -o '"id":[0-9]*' | head -n1 | cut -d':' -f2)
+echo "Pedido criado com ID: $PEDIDO_ID"
+```
+
+#### **Pagamentos**
+- `POST /pagamentos` - Processar pagamento (Mock Mercado Pago) *(Serviço Pagamento)*
+
+**2.2 Processar Pagamento (usando ID capturado):**
+```bash
+curl -X POST "http://$(minikube ip):30081/pagamentos" \
+  -H "Content-Type: application/json" \
+  -d "{\"pedidoId\": \"$PEDIDO_ID\", \"valor\": 35.80}"
+```
+
+#### **Status de Pagamento**
+- `GET /pedidos/{id}/pagamento/status` - Consultar status de pagamento
+
+**2.3 Aguardar Webhook e Verificar Status:**
+```bash
+curl "http://$(minikube ip):30080/pedidos/$PEDIDO_ID/pagamento/status"
+```
+*Resposta esperada: `"APROVADO"` ou `"REJEITADO"`*
+
+#### **Cozinha**
+- `GET /pedidos/cozinha` - Listar pedidos da cozinha (ordenados por prioridade)
+
+**3.1 Listar Pedidos da Cozinha (inicial):**
+```bash
+curl "http://$(minikube ip):30080/pedidos/cozinha"
+```
+
+- `PUT /pedidos/cozinha/{id}/status` - Atualizar status de pedidos
+    - Status: `RECEBIDO`, `EM_PREPARACAO`, `PRONTO`, `FINALIZADO`
+
+**3.2 Atualizar Status: RECEBIDO → EM_PREPARACAO:**
+```bash
+curl -X PUT "http://$(minikube ip):30080/pedidos/cozinha/$PEDIDO_ID/status" \
+  -H "Content-Type: application/json" \
+  -d '{"status": "EM_PREPARACAO"}'
 ```
 
 ---
 
-**2. Pedido sem identificação do cliente:**
+**3.3 Atualizar Status: EM_PREPARACAO → PRONTO:**
 ```bash
-curl -X POST "http://$(minikube ip):30080/pedidos/checkout" \
+curl -X PUT "http://$(minikube ip):30080/pedidos/cozinha/$PEDIDO_ID/status" \
+  -H "Content-Type: application/json" \
+  -d '{"status": "PRONTO"}'
+```
+
+---
+
+**3.4 Atualizar Status: PRONTO → FINALIZADO:**
+```bash
+curl -X PUT "http://$(minikube ip):30080/pedidos/cozinha/$PEDIDO_ID/status" \
+  -H "Content-Type: application/json" \
+  -d '{"status": "FINALIZADO"}'
+```
+
+#### **Gerenciamento de Pedidos**
+- `GET /pedidos` - Listar todos os pedidos
+
+**3.5 Verificar que removeu da cozinha:**
+```bash
+curl "http://$(minikube ip):30080/pedidos/cozinha"
+```
+
+---
+
+**3.6 Verificar lista geral de pedidos:**
+```bash
+curl "http://$(minikube ip):30080/pedidos"
+```
+
+#### **Cliente Anônimo**
+- `POST /pedidos/checkout` - Checkout sem CPF
+
+**4.1 Checkout sem CPF:**
+```bash
+PEDIDO_ANONIMO_RESPONSE=$(curl -s -X POST "http://$(minikube ip):30080/pedidos/checkout" \
   -H "Content-Type: application/json" \
   -d '{
     "cpfCliente": null,
     "itens": [
-      {
-        "produtoId": 1,
-        "quantidade": 1
-      }
+      {"produtoId": 1, "quantidade": 1}
     ]
-  }'
-```
+  }')
 
-##### **GET /pedidos** - Listar todos os pedidos
-```bash
-curl -X GET "http://$(minikube ip):30080/pedidos"
-```
-
-##### **GET /pedidos/{id}/pagamento/status** - Consultar status de pagamento
-```bash
-curl -X GET "http://$(minikube ip):30080/pedidos/1/pagamento/status"
-```
-
-#### **Cozinha**
-
-##### **GET /pedidos/cozinha** - Listar pedidos da cozinha (ordenados por prioridade)
-```bash
-curl -X GET "http://$(minikube ip):30080/pedidos/cozinha"
-```
-
-##### **PUT /pedidos/cozinha/{id}/status** - Atualizar status de pedidos
-
-**1. Marcar pedido como em preparação:**
-```bash
-curl -X PUT "http://$(minikube ip):30080/pedidos/cozinha/1/status" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "status": "EM_PREPARACAO"
-  }'
+PEDIDO_ANONIMO_ID=$(echo $PEDIDO_ANONIMO_RESPONSE | grep -o '"id":[0-9]*' | head -n1 | cut -d':' -f2)
+echo "Pedido anônimo criado com ID: $PEDIDO_ANONIMO_ID"
 ```
 
 ---
 
-**2. Marcar pedido como pronto:**
-```bash
-curl -X PUT "http://$(minikube ip):30080/pedidos/cozinha/1/status" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "status": "PRONTO"
-  }'
-```
-
----
-
-**3. Finalizar pedido:**
-```bash
-curl -X PUT "http://$(minikube ip):30080/pedidos/cozinha/1/status" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "status": "FINALIZADO"
-  }'
-```
-
-**Status disponíveis:** `RECEBIDO`, `EM_PREPARACAO`, `PRONTO`, `FINALIZADO`
-
-##### **POST /produtos** - Criar produto
-```bash
-curl -X POST "http://$(minikube ip):30080/produtos" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nome": "Novo Lanche",
-    "descricao": "Descrição do novo lanche",
-    "preco": 22.90,
-    "categoria": "LANCHE"
-  }'
-```
-
-##### **PUT /produtos/{id}** - Editar produto
-```bash
-curl -X PUT "http://$(minikube ip):30080/produtos/5" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nome": "Lanche Editado",
-    "descricao": "Nova descrição do lanche",
-    "preco": 25.90,
-    "categoria": "LANCHE"
-  }'
-```
-
-##### **DELETE /produtos/{id}** - Remover produto
-```bash
-curl -X DELETE "http://$(minikube ip):30080/produtos/5"
-```
-
-### 💳 **Serviço Pagamento** ($(minikube ip):30081)
-
-#### **Pagamentos**
-
-##### **POST /pagamentos** - Processar pagamento (Mock Mercado Pago)
+**4.2 Processar pagamento do pedido anônimo:**
 ```bash
 curl -X POST "http://$(minikube ip):30081/pagamentos" \
   -H "Content-Type: application/json" \
+  -d "{\"pedidoId\": \"$PEDIDO_ANONIMO_ID\", \"valor\": 18.90}"
+```
+
+#### **CRUD de Produtos**
+- `POST /produtos` - Criar produto
+
+**5.1 Criar produto:**
+```bash
+PRODUTO_RESPONSE=$(curl -s -X POST "http://$(minikube ip):30080/produtos" \
+  -H "Content-Type: application/json" \
   -d '{
-    "pedidoId": "1",
-    "valor": 46.70
+    "nome": "Produto Teste", 
+    "descricao": "Produto para teste", 
+    "preco": 15.50, 
+    "categoria": "LANCHE"
+  }')
+
+PRODUTO_ID=$(echo $PRODUTO_RESPONSE | grep -o '"id":[0-9]*' | head -n1 | cut -d':' -f2)
+echo "Produto criado com ID: $PRODUTO_ID"
+```
+
+- `PUT /produtos/{id}` - Editar produto
+
+**5.2 Editar produto:**
+```bash
+curl -X PUT "http://$(minikube ip):30080/produtos/$PRODUTO_ID" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nome": "Produto Teste Editado", 
+    "descricao": "Produto editado", 
+    "preco": 17.90, 
+    "categoria": "LANCHE"
   }'
 ```
 
+- `DELETE /produtos/{id}` - Remover produto
+
+**5.3 Deletar produto:**
+```bash
+curl -X DELETE "http://$(minikube ip):30080/produtos/$PRODUTO_ID"
+```
+
+#### **Clientes**
+- `POST /clientes` - Cadastrar cliente
+
+**6.1 Cadastrar novo cliente:**
+```bash
+CLIENTE_RESPONSE=$(curl -s -X POST "http://$(minikube ip):30080/clientes" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nome": "Cliente Teste",
+    "cpf": "98765432100", 
+    "email": "teste@lanchonete.com"
+  }')
+
+echo "Cliente cadastrado: $CLIENTE_RESPONSE"
+```
+
+- `GET /clientes/cpf/{cpf}` - Buscar cliente por CPF
+
+**6.2 Buscar cliente por CPF:**
+```bash
+curl "http://$(minikube ip):30080/clientes/cpf/98765432100"
+```
+
+#### **Webhooks**
+- `POST /webhook/pagamento` - Receber notificações de pagamento (interno)
+
+**Aprovar pagamento:**
+```bash
+curl -X POST "http://$(minikube ip):30080/webhook/pagamento" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "pedidoId": 1,
+    "statusPagamento": "APROVADO"
+  }'
+```
+
+**Rejeitar pagamento:**
+```bash
+curl -X POST "http://$(minikube ip):30080/webhook/pagamento" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "pedidoId": 1,
+    "statusPagamento": "REJEITADO"
+  }'
+```
+
+### 💳 **Serviço Pagamento** (minikube-ip:30081)
+
+#### **Pagamentos**
+- `POST /pagamentos` - Processar pagamento (Mock Mercado Pago)
+
+```bash
+curl -X POST "http://$(minikube ip):30081/pagamentos" \
+  -H "Content-Type: application/json" \
+  -d '{"pedidoId": "1", "valor": 18.90}'
+```
+
 ### 📖 **Documentação**
-- **Autoatendimento:** http://$(minikube ip):30080/swagger-ui/index.html
-- **Pagamento:** http://$(minikube ip):30081/swagger-ui/index.html
+
+**7. Acessar documentação swagger:**
+```bash
+echo "Autoatendimento: http://$(minikube ip):30080/swagger-ui/index.html"
+echo "Pagamento: http://$(minikube ip):30081/swagger-ui/index.html"
+```
 
 ## Como Executar
 

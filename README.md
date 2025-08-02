@@ -433,9 +433,8 @@ curl -X POST "http://$MINIKUBE_IP:30081/pagamentos" \
   -d "{\"pedidoId\": \"$PEDIDO_ID\", \"valor\": 35.80}"
 ```
 
-**2.3 Aguardar Webhook (5 segundos) e Verificar Status:**
+**2.3 Verificar Status:**
 ```bash
-sleep 5
 curl "http://$MINIKUBE_IP:30080/pedidos/$PEDIDO_ID/pagamento/status"
 ```
 *Resposta esperada: `"APROVADO"` ou `"REJEITADO"`*

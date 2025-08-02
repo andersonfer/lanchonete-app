@@ -288,36 +288,6 @@ curl -X POST "http://$(minikube ip):30081/pagamentos" \
 - **Autoatendimento:** http://$(minikube ip):30080/swagger-ui/index.html
 - **Pagamento:** http://$(minikube ip):30081/swagger-ui/index.html
 
-### 📝 **Notas sobre as APIs**
-
-#### **Categorias de Produtos:**
-- `LANCHE` - Hambúrgueres, sanduíches, etc.
-- `BEBIDA` - Refrigerantes, sucos, água, etc.
-- `ACOMPANHAMENTO` - Batata frita, onion rings, etc.
-- `SOBREMESA` - Sorvetes, tortas, etc.
-
-#### **Status de Pedidos:**
-- `RECEBIDO` - Pedido recebido, aguardando pagamento
-- `EM_PREPARACAO` - Pedido em preparação na cozinha
-- `PRONTO` - Pedido pronto para retirada
-- `FINALIZADO` - Pedido entregue ao cliente
-
-#### **Status de Pagamento:**
-- `PENDENTE` - Pagamento pendente de processamento
-- `APROVADO` - Pagamento aprovado com sucesso
-- `REJEITADO` - Pagamento rejeitado
-
-#### **Códigos de Resposta HTTP:**
-- `200` - Sucesso (operações de consulta e atualização)
-- `201` - Criado (operações de criação)
-- `204` - Sem conteúdo (operações de exclusão)
-- `400` - Dados inválidos
-- `404` - Recurso não encontrado
-- `500` - Erro interno do servidor
-### 📖 **Documentação**
-- **Autoatendimento:** http://minikube-ip:30080/swagger-ui/index.html
-- **Pagamento:** http://minikube-ip:30081/swagger-ui/index.html
-
 ## Como Executar
 
 ### Pré-requisitos

@@ -213,7 +213,7 @@ curl -X GET "http://$(minikube ip):30080/pedidos/cozinha"
 curl -X PUT "http://$(minikube ip):30080/pedidos/cozinha/1/status" \
   -H "Content-Type: application/json" \
   -d '{
-    "novoStatus": "EM_PREPARACAO"
+    "status": "EM_PREPARACAO"
   }'
 ```
 
@@ -224,7 +224,7 @@ curl -X PUT "http://$(minikube ip):30080/pedidos/cozinha/1/status" \
 curl -X PUT "http://$(minikube ip):30080/pedidos/cozinha/1/status" \
   -H "Content-Type: application/json" \
   -d '{
-    "novoStatus": "PRONTO"
+    "status": "PRONTO"
   }'
 ```
 
@@ -235,7 +235,7 @@ curl -X PUT "http://$(minikube ip):30080/pedidos/cozinha/1/status" \
 curl -X PUT "http://$(minikube ip):30080/pedidos/cozinha/1/status" \
   -H "Content-Type: application/json" \
   -d '{
-    "novoStatus": "FINALIZADO"
+    "status": "FINALIZADO"
   }'
 ```
 

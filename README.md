@@ -270,7 +270,6 @@ PEDIDO_RESPONSE=$(curl -s -X POST "http://$MINIKUBE_IP:30080/pedidos/checkout" \
 # Extrair apenas o PRIMEIRO ID (do pedido principal)
 PEDIDO_ID=$(echo $PEDIDO_RESPONSE | grep -o '"id":[0-9]*' | head -n1 | cut -d':' -f2)
 echo "Pedido criado com ID: $PEDIDO_ID"
-echo "Resposta completa: $PEDIDO_RESPONSE"
 ```
 
 **2.2 Processar Pagamento (usando ID capturado):**
@@ -411,8 +410,6 @@ O sistema está configurado com **Horizontal Pod Autoscaler** para ajustar autom
 - **Máximo:** 4 pods
 - **Métrica:** CPU 60%
 - **Comportamento:** Scale up em 1 minuto, scale down em 3 minutos
-
-### [📊 Diagrama HPA - A ser adicionado]
 
 ### Testar Escalabilidade
 

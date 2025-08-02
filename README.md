@@ -9,9 +9,16 @@ Este é um projeto para o Tech Challenge da pós-graduação SOAT - **Fase 2: Ku
 
 Sistema de autoatendimento para lanchonete implementado com arquitetura de microserviços rodando em cluster Kubernetes. O sistema permite pedidos sem interação com atendentes, processamento de pagamentos via mock do Mercado Pago e gerenciamento completo de pedidos na cozinha, com escalabilidade automática baseada em demanda.
 
-## Fluxo de Negócio
-<img src="diagramas/fluxo-de-negocio.svg" alt="Fluxo de Negócio" width="600"/>
+## Fluxos de Negócio
 
+### Cliente e checkout
+<img src="diagramas/fluxo-cliente.svg" alt="Fluxo do Cliente" width="100%"/>
+
+### Pagamento (Mock Mercado Pago)
+<img src="diagramas/fluxo-pagamento.svg" alt="Fluxo de Pagamento" width="100%"/>
+
+### Cozinha
+<img src="diagramas/fluxo-cozinha.svg" alt="Fluxo da Cozinha" width="100%"/>
 
 ## Tecnologias Utilizadas
 

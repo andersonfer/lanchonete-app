@@ -4,9 +4,9 @@ import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.ItemPedidoRequestD
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.PedidoRequestDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.PedidoResponseDTO;
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.ProdutoRequestDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteGateway;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.PedidoGateway;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoGateway;
+import br.com.lanchonete.autoatendimento.aplicacao.gateways.ClienteGateway;
+import br.com.lanchonete.autoatendimento.aplicacao.gateways.PedidoGateway;
+import br.com.lanchonete.autoatendimento.aplicacao.gateways.ProdutoGateway;
 import br.com.lanchonete.autoatendimento.dominio.modelo.cliente.Cliente;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.ItemPedido;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.Pedido;

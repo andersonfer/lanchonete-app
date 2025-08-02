@@ -1,9 +1,9 @@
 package br.com.lanchonete.autoatendimento.e2e;
 
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.WebhookPagamentoRequestDTO;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteGateway;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.PedidoGateway;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoGateway;
+import br.com.lanchonete.autoatendimento.aplicacao.gateways.ClienteGateway;
+import br.com.lanchonete.autoatendimento.aplicacao.gateways.PedidoGateway;
+import br.com.lanchonete.autoatendimento.aplicacao.gateways.ProdutoGateway;
 import br.com.lanchonete.autoatendimento.dominio.modelo.cliente.Cliente;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.ItemPedido;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.Pedido;

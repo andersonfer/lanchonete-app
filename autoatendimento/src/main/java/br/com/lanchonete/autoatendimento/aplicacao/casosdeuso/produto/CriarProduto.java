@@ -1,7 +1,7 @@
 package br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.produto;
 
 import br.com.lanchonete.autoatendimento.dominio.excecoes.ValidacaoException;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoGateway;
+import br.com.lanchonete.autoatendimento.aplicacao.gateways.ProdutoGateway;
 import br.com.lanchonete.autoatendimento.dominio.modelo.produto.Produto;
 import br.com.lanchonete.autoatendimento.dominio.modelo.produto.Categoria;
 import java.math.BigDecimal;

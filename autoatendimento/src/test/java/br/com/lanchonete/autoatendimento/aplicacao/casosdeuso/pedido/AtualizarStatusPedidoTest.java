@@ -1,13 +1,12 @@
 package br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido;
 
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.PedidoGateway;
+import br.com.lanchonete.autoatendimento.aplicacao.gateways.PedidoGateway;
 import br.com.lanchonete.autoatendimento.dominio.excecoes.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.dominio.excecoes.ValidacaoException;
 import br.com.lanchonete.autoatendimento.dominio.modelo.cliente.Cliente;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.ItemPedido;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.Pedido;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.StatusPedido;
-import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.StatusPagamento;
 import br.com.lanchonete.autoatendimento.dominio.modelo.produto.Categoria;
 import br.com.lanchonete.autoatendimento.dominio.modelo.produto.Produto;
 import org.junit.jupiter.api.BeforeEach;

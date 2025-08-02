@@ -1,7 +1,7 @@
 package br.com.lanchonete.autoatendimento.e2e;
 
 import br.com.lanchonete.autoatendimento.adaptadores.rest.dto.*;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoGateway;
+import br.com.lanchonete.autoatendimento.aplicacao.gateways.ProdutoGateway;
 import br.com.lanchonete.autoatendimento.dominio.modelo.produto.Categoria;
 import br.com.lanchonete.autoatendimento.dominio.modelo.produto.Produto;
 import com.fasterxml.jackson.databind.ObjectMapper;

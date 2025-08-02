@@ -1,8 +1,8 @@
 package br.com.lanchonete.autoatendimento.infra;
 
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteGateway;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.PedidoGateway;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ProdutoGateway;
+import br.com.lanchonete.autoatendimento.aplicacao.gateways.ClienteGateway;
+import br.com.lanchonete.autoatendimento.aplicacao.gateways.PedidoGateway;
+import br.com.lanchonete.autoatendimento.aplicacao.gateways.ProdutoGateway;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -1,6 +1,6 @@
 package br.com.lanchonete.autoatendimento.adaptadores.persistencia;
 
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteGateway;
+import br.com.lanchonete.autoatendimento.aplicacao.gateways.ClienteGateway;
 import br.com.lanchonete.autoatendimento.dominio.modelo.cliente.Cliente;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;

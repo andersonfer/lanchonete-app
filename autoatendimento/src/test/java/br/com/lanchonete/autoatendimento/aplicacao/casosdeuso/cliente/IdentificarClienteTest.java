@@ -2,7 +2,7 @@ package br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.cliente;
 
 import br.com.lanchonete.autoatendimento.dominio.excecoes.RecursoNaoEncontradoException;
 import br.com.lanchonete.autoatendimento.dominio.excecoes.ValidacaoException;
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.ClienteGateway;
+import br.com.lanchonete.autoatendimento.aplicacao.gateways.ClienteGateway;
 import br.com.lanchonete.autoatendimento.dominio.modelo.cliente.Cliente;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

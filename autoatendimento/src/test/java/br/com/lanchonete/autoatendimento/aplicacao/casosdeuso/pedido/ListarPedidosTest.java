@@ -1,6 +1,6 @@
 package br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.pedido;
 
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.PedidoGateway;
+import br.com.lanchonete.autoatendimento.aplicacao.gateways.PedidoGateway;
 import br.com.lanchonete.autoatendimento.dominio.modelo.cliente.Cliente;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.ItemPedido;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.Pedido;

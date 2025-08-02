@@ -1,6 +1,6 @@
 package br.com.lanchonete.autoatendimento.aplicacao.casosdeuso.webhook;
 
-import br.com.lanchonete.autoatendimento.aplicacao.portas.saida.PedidoGateway;
+import br.com.lanchonete.autoatendimento.aplicacao.gateways.PedidoGateway;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.Pedido;
 import br.com.lanchonete.autoatendimento.dominio.modelo.pedido.StatusPagamento;
 import br.com.lanchonete.autoatendimento.dominio.excecoes.ValidacaoException;

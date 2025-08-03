@@ -39,3 +39,16 @@ build/
 app.log
 application.log
 *.log
+
+# Arquivos com senhas e secrets
+k8s/secrets/create_secrets.sh
+*.env
+.env.*
+!.env.example
+secrets/
+secret-*
+*-secrets.sh
+*-secrets.yaml
+
+# Backups de secrets
+backup-secrets/

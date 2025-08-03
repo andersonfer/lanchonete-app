@@ -168,8 +168,8 @@ chmod +x validar_deploy_k8s.sh
 ### 5. Acessar Aplicações
 
 ```bash
-echo "Autoatendimento: http://$(minikube ip):30080/swagger-ui/index.html"
-echo "Pagamento: http://$(minikube ip):30081/swagger-ui/index.html"
+echo "Autoatendimento: http://$(minikube ip):30080/swagger-ui.html"
+echo "Pagamento: http://$(minikube ip):30081/swagger-ui.html"
 ```
 
 ### 6. Limpeza (Opcional)
@@ -378,8 +378,8 @@ curl "http://$(minikube ip):30080/clientes/cpf/98765432100"
 
 **6. Acessar documentação swagger:**
 ```bash
-echo "Autoatendimento: http://$(minikube ip):30080/swagger-ui/index.html"
-echo "Pagamento: http://$(minikube ip):30081/swagger-ui/index.html"
+echo "Autoatendimento: http://$(minikube ip):30080/swagger-ui.html"
+echo "Pagamento: http://$(minikube ip):30081/swagger-ui.html"
 ```
 
 ### 📋 **Resumo dos Testes**

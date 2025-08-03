@@ -3,7 +3,7 @@
 Este é um projeto para o Tech Challenge da pós-graduação SOAT - **Fase 2: Kubernetes**.
 
 **Aluno:** Anderson Fér - rm363691  
-**Vídeo de demonstração:** [A ser adicionado]
+**Vídeo de demonstração:** https://youtu.be/XnkhaoebPZI
 
 ## Descrição do Projeto
 

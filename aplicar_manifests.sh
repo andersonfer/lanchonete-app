@@ -1,82 +1,36 @@
 #!/bin/bash
 
-# Script para aplicar todos os manifests do Tech Challenge Fase 2
-# Ordem correta de aplicação para evitar dependências quebradas
+# Script automatizado para deploy do Tech Challenge Fase 2 no Kubernetes
+# Atualizado para suportar secrets baseados em variáveis de ambiente
 
 set -e
 
-echo "🚀 INICIANDO DEPLOY DO TECH CHALLENGE FASE 2"
-echo "============================================="
-echo ""
+# Cores para output
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+BLUE='\033[0;34m'
+NC='\033[0m'
 
-# Verificar se kubectl está funcionando
-if ! kubectl get nodes >/dev/null 2>&1; then
-    echo "❌ kubectl não está funcionando ou cluster não está acessível"
-    echo "💡 Certifique-se de que minikube/kind está rodando e kubectl configurado"
-    exit 1
-fi
-
-echo "✅ kubectl funcionando!"
-echo ""
-
-# Verificar se metrics server está instalado (necessário para HPA)
-echo "🔍 Verificando Metrics Server..."
-if ! kubectl get deployment metrics-server -n kube-system >/dev/null 2>&1; then
-    echo "⚠️  Metrics Server não encontrado!"
-    echo "💡 Instalando Metrics Server (necessário para HPA)..."
-    kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
-    
-    # Patch para funcionar no minikube
-    kubectl patch deployment metrics-server -n kube-system --type='json' \
-        -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--kubelet-insecure-tls"}]'
-    
-    echo "⏳ Aguardando Metrics Server ficar pronto..."
-    kubectl wait --for=condition=available --timeout=300s deployment/metrics-server -n kube-system
-fi
-
-echo "✅ Metrics Server disponível!"
-echo ""
-
-# Verificar se as imagens Docker existem localmente
-echo "🔍 Verificando imagens Docker..."
-MISSING_IMAGES=""
-
-# CORRIGIDO: Nomes corretos das imagens com hífen
-if ! docker image inspect lanchonete-app-autoatendimento:latest >/dev/null 2>&1; then
-    MISSING_IMAGES="$MISSING_IMAGES lanchonete-app-autoatendimento:latest"
-fi
-
-if ! docker image inspect lanchonete-app-pagamento:latest >/dev/null 2>&1; then
-    MISSING_IMAGES="$MISSING_IMAGES lanchonete-app-pagamento:latest"
-fi
-
-if [ ! -z "$MISSING_IMAGES" ]; then
-    echo "⚠️  Imagens Docker não encontradas:$MISSING_IMAGES"
-    echo "💡 Execute primeiro: docker-compose build"
-    echo ""
-    read -p "Deseja continuar mesmo assim? (y/N): " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        exit 1
-    fi
-else
-    echo "✅ Imagens Docker encontradas!"
-fi
-echo ""
+# Funções de log
+log_info() { echo -e "${BLUE}ℹ️  $1${NC}"; }
+log_success() { echo -e "${GREEN}✅ $1${NC}"; }
+log_warning() { echo -e "${YELLOW}⚠️  $1${NC}"; }
+log_error() { echo -e "${RED}❌ $1${NC}"; }
 
 # Função para aguardar pods ficarem prontos
 wait_for_pods() {
     local app_name=$1
     local timeout=${2:-300}
     
-    echo "⏳ Aguardando pods do $app_name ficarem prontos..."
+    log_info "Aguardando pods do $app_name ficarem prontos..."
     
-    # Verificar se já existem pods prontos
-    local ready_pods=$(kubectl get pods -l app=$app_name --field-selector=status.phase=Running -o jsonpath='{.items[*].status.containerStatuses[*].ready}' 2>/dev/null | grep -o true | wc -l)
-    local total_pods=$(kubectl get pods -l app=$app_name --field-selector=status.phase=Running -o jsonpath='{.items[*].metadata.name}' 2>/dev/null | wc -w)
+    # Verificação rápida inicial
+    ready_pods=$(kubectl get pods -l app=$app_name --field-selector=status.phase=Running -o jsonpath='{.items[*].status.containerStatuses[*].ready}' 2>/dev/null | grep -o true | wc -l)
+    total_pods=$(kubectl get pods -l app=$app_name --field-selector=status.phase=Running -o jsonpath='{.items[*].metadata.name}' 2>/dev/null | wc -w)
     
-    if [ "$ready_pods" -gt 0 ] && [ "$ready_pods" -eq "$total_pods" ]; then
-        echo "✅ Pods do $app_name já estão prontos! ($ready_pods/$total_pods)"
+    if [ "$total_pods" -gt 0 ] && [ "$ready_pods" -eq "$total_pods" ]; then
+        log_success "Pods do $app_name já estão prontos! ($ready_pods/$total_pods)"
         return 0
     fi
     
@@ -89,7 +43,7 @@ wait_for_pods() {
         total_pods=$(kubectl get pods -l app=$app_name --field-selector=status.phase=Running -o jsonpath='{.items[*].metadata.name}' 2>/dev/null | wc -w)
         
         if [ "$total_pods" -gt 0 ] && [ "$ready_pods" -eq "$total_pods" ]; then
-            echo "✅ Pods do $app_name prontos! ($ready_pods/$total_pods)"
+            log_success "Pods do $app_name prontos! ($ready_pods/$total_pods)"
             return 0
         fi
         
@@ -99,17 +53,17 @@ wait_for_pods() {
     done
     
     # Timeout - mostrar status atual
-    echo "⚠️  Timeout aguardando pods do $app_name. Status atual:"
+    log_warning "Timeout aguardando pods do $app_name. Status atual:"
     kubectl get pods -l app=$app_name
     
     # Tentar kubectl wait como fallback (pode funcionar mesmo com timeout)
-    echo "🔄 Tentando kubectl wait como fallback..."
+    log_info "Tentando kubectl wait como fallback..."
     if kubectl wait --for=condition=ready pod -l app=$app_name --timeout=30s >/dev/null 2>&1; then
-        echo "✅ Pods do $app_name prontos via kubectl wait!"
+        log_success "Pods do $app_name prontos via kubectl wait!"
         return 0
     fi
     
-    echo "❌ Pods do $app_name não ficaram prontos no tempo esperado"
+    log_error "Pods do $app_name não ficaram prontos no tempo esperado"
     return 1
 }
 
@@ -119,34 +73,93 @@ test_service() {
     local port=$2
     local path=${3:-/actuator/health}
     
-    echo "🔍 Testando $service_name..."
+    log_info "Testando $service_name..."
     kubectl run test-pod --image=curlimages/curl:latest --rm -i --restart=Never \
         -- curl -f "http://$service_name:$port$path" >/dev/null 2>&1 && \
-        echo "✅ $service_name respondendo!" || \
-        echo "⚠️  $service_name não está respondendo (normal se ainda iniciando)"
+        log_success "$service_name respondendo!" || \
+        log_warning "$service_name não está respondendo (normal se ainda iniciando)"
 }
 
-echo "📋 FASE 1: CONFIGURAÇÕES E SECRETS"
+# Função para verificar variáveis de ambiente necessárias
+check_environment_variables() {
+    log_info "Verificando variáveis de ambiente para secrets..."
+    
+    local missing_vars=()
+    
+    if [ -z "$MYSQL_ROOT_PASSWORD" ]; then
+        missing_vars+=("MYSQL_ROOT_PASSWORD")
+    fi
+    
+    if [ -z "$MYSQL_USER_PASSWORD" ]; then
+        missing_vars+=("MYSQL_USER_PASSWORD")
+    fi
+    
+    if [ ${#missing_vars[@]} -gt 0 ]; then
+        log_error "Variáveis de ambiente obrigatórias não estão definidas:"
+        for var in "${missing_vars[@]}"; do
+            echo "  - $var"
+        done
+        echo ""
+        log_warning "Para resolver:"
+        echo "1. Configure as variáveis:"
+        echo "   export MYSQL_ROOT_PASSWORD=\"sua_senha_root\""
+        echo "   export MYSQL_USER_PASSWORD=\"sua_senha_user\""
+        echo ""
+        echo "2. OU use o arquivo .env:"
+        echo "   cp .env.example .env"
+        echo "   # Edite o .env com as senhas reais"
+        echo "   export \$(cat .env | grep -v '^#' | xargs)"
+        echo ""
+        echo "3. OU execute o setup completo:"
+        echo "   Siga: docs/setup-secrets.md"
+        echo ""
+        return 1
+    fi
+    
+    log_success "Variáveis de ambiente configuradas!"
+    return 0
+}
+
+echo ""
+log_info "🚀 INICIANDO DEPLOY DO TECH CHALLENGE FASE 2"
+echo "============================================="
+echo ""
+
+# Verificar pré-requisitos
+if ! kubectl get nodes >/dev/null 2>&1; then
+    log_error "kubectl não está funcionando ou cluster não está acessível"
+    exit 1
+fi
+
+log_success "kubectl funcionando!"
+
+echo ""
+log_info "📋 FASE 1: CONFIGURAÇÕES E SECRETS"
 echo "=================================="
 
+# Verificar variáveis de ambiente antes de tentar criar secrets
+if ! check_environment_variables; then
+    exit 1
+fi
+
 # 1. Criar Secrets primeiro (dependência de tudo)
-echo "🔐 Criando Secrets..."
-bash k8s/secrets/create-secrets.sh
+log_info "Criando Secrets..."
+bash k8s/secrets/create_secrets.sh
 
 # 2. Aplicar ConfigMaps
-echo "⚙️ Aplicando ConfigMaps..."
+log_info "Aplicando ConfigMaps..."
 kubectl apply -f k8s/configmaps/
 
 echo ""
-echo "📋 FASE 2: STORAGE E BANCO DE DADOS"
+log_info "📋 FASE 2: STORAGE E BANCO DE DADOS"
 echo "==================================="
 
 # 3. Aplicar Storage (PVC deve vir antes do StatefulSet)
-echo "💾 Configurando storage persistente..."
+log_info "Configurando storage persistente..."
 kubectl apply -f k8s/storage/
 
 # 4. Aplicar MySQL StatefulSet e Services
-echo "🐬 Deployando MySQL..."
+log_info "Deployando MySQL..."
 kubectl apply -f k8s/deployments/mysql-statefulset.yaml
 kubectl apply -f k8s/services/mysql-services.yaml
 
@@ -154,18 +167,18 @@ kubectl apply -f k8s/services/mysql-services.yaml
 wait_for_pods "mysql" 600
 
 echo ""
-echo "📋 FASE 3: APLICAÇÕES"
+log_info "📋 FASE 3: APLICAÇÕES"
 echo "===================="
 
 # 5. Aplicar Deployments das aplicações
-echo "🍔 Deployando Autoatendimento..."
+log_info "Deployando Autoatendimento..."
 kubectl apply -f k8s/deployments/autoatendimento-deployment.yaml
 
-echo "💳 Deployando Pagamento..."
+log_info "Deployando Pagamento..."
 kubectl apply -f k8s/deployments/pagamento-deployment.yaml
 
 # 6. Aplicar Services das aplicações
-echo "🌐 Configurando Services..."
+log_info "Configurando Services..."
 kubectl apply -f k8s/services/app-services.yaml
 
 # Aguardar aplicações ficarem prontas
@@ -173,23 +186,23 @@ wait_for_pods "autoatendimento" 300
 wait_for_pods "pagamento" 300
 
 echo ""
-echo "📋 FASE 4: ESCALABILIDADE"
+log_info "📋 FASE 4: ESCALABILIDADE"
 echo "========================"
 
 # 7. Aplicar HPA (só depois que as aplicações estão rodando)
-echo "📈 Configurando escalabilidade automática..."
+log_info "Configurando escalabilidade automática..."
 kubectl apply -f k8s/hpa/
 
 echo ""
-echo "📋 VERIFICAÇÕES FINAIS"
+log_info "📋 VERIFICAÇÕES FINAIS"
 echo "====================="
 
 # Verificar status geral
-echo "📊 Status dos recursos:"
+log_info "Status dos recursos:"
 kubectl get pods,services,hpa
 
 echo ""
-echo "🔍 Testando conectividade dos serviços..."
+log_info "Testando conectividade dos serviços..."
 
 # Aguardar um pouco mais para serviços estabilizarem
 sleep 30
@@ -199,7 +212,7 @@ test_service "pagamento-service" "8081"
 test_service "mysql-service" "3306" ""
 
 echo ""
-echo "🎯 URLs DE ACESSO (se usando minikube):"
+log_info "🎯 URLs DE ACESSO (se usando minikube):"
 echo "======================================="
 
 if command -v minikube >/dev/null 2>&1 && minikube status >/dev/null 2>&1; then
@@ -215,14 +228,14 @@ else
 fi
 
 echo ""
-echo "🎉 DEPLOY CONCLUÍDO COM SUCESSO!"
+log_success "🎉 DEPLOY CONCLUÍDO COM SUCESSO!"
 echo "================================"
 echo ""
-echo "📋 PRÓXIMOS PASSOS:"
+log_info "📋 PRÓXIMOS PASSOS:"
 echo "• Teste os endpoints via Swagger"
 echo "• Execute o teste de carga para verificar HPA:"
 echo "  kubectl run -i --tty load-generator --rm --image=busybox --restart=Never -- /bin/sh"
 echo "  while true; do wget -q -O- http://autoatendimento-service:8080/produtos/categoria/LANCHE; done"
 echo "• Monitore a escalabilidade: kubectl get hpa -w"
 echo ""
-echo "🚀 Tech Challenge Fase 2 deployado com sucesso!"
+log_success "🚀 Tech Challenge Fase 2 deployado com sucesso!"

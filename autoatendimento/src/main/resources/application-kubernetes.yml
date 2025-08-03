@@ -1,10 +1,10 @@
-# Profile Kubernetes com Actuator TOTALMENTE configurado
+# Profile Kubernetes com Actuator CONFIGURADO COM SEGURANÇA
 spring:
   datasource:
     url: jdbc:mysql://${DB_HOST:mysql-service}:${DB_PORT:3306}/${DB_NAME:lanchonete}?useSSL=false&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
     driverClassName: com.mysql.cj.jdbc.Driver
     username: ${DB_USERNAME:lanchonete}
-    password: ${DB_PASSWORD:lanchonete123}
+    password: ${DB_PASSWORD}  # ✅ SEM VALOR PADRÃO - força uso de Secret
 
   h2:
     console:
@@ -12,7 +12,7 @@ spring:
 
   sql:
     init:
-      mode: always
+      mode: embedded  # ✅ SEGURO - só executa se banco embedded
       platform: mysql
       schema-locations: classpath:schema-mysql.sql
       data-locations: classpath:data-mysql.sql
@@ -32,12 +32,12 @@ server:
   port: ${SERVER_PORT:8080}
   shutdown: graceful
 
-# CONFIGURAÇÃO COMPLETA DO ACTUATOR
+# CONFIGURAÇÃO SEGURA DO ACTUATOR
 management:
   endpoints:
     web:
       exposure:
-        include: "*"
+        include: "health,metrics,info"  # ✅ APENAS ENDPOINTS ESSENCIAIS
       base-path: /actuator
   endpoint:
     health:
@@ -47,15 +47,15 @@ management:
         enabled: true
   health:
     readinessstate:
-      enabled: true                     # Habilitar /health/readiness
+      enabled: true
     livenessstate:
-      enabled: true                     # Habilitar /health/liveness
+      enabled: true
     db:
-      enabled: true                     # Health check do banco
+      enabled: true
     diskspace:
-      enabled: true                     # Health check de disco
+      enabled: true
   server:
-    port: ${SERVER_PORT:8080}           # Actuator na mesma porta da app
+    port: ${SERVER_PORT:8080}
 
 # CONFIGURAÇÃO DO SWAGGER PARA KUBERNETES
 springdoc:

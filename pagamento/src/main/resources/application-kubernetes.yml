@@ -1,4 +1,4 @@
-# Profile Kubernetes Pagamento com Actuator TOTALMENTE configurado
+# Profile Kubernetes Pagamento com Actuator CONFIGURADO COM SEGURANÇA
 server:
   port: ${SERVER_PORT:8081}
   shutdown: graceful
@@ -18,28 +18,28 @@ mock:
   aprovacao:
     percentual: ${MOCK_APPROVAL_RATE:80}
 
-# CONFIGURAÇÃO COMPLETA DO ACTUATOR
+# CONFIGURAÇÃO SEGURA DO ACTUATOR
 management:
   endpoints:
     web:
       exposure:
-        include: "*"                    # Expor TODOS os endpoints
+        include: "health,metrics,info"  # ✅ APENAS ENDPOINTS ESSENCIAIS
       base-path: /actuator
   endpoint:
     health:
       show-details: always
       show-components: always
       probes:
-        enabled: true                   # CRITICAL: Habilitar probes
+        enabled: true
   health:
     readinessstate:
-      enabled: true                     # Habilitar /health/readiness
+      enabled: true
     livenessstate:
-      enabled: true                     # Habilitar /health/liveness
+      enabled: true
     diskspace:
-      enabled: true                     # Health check de disco
+      enabled: true
   server:
-    port: ${SERVER_PORT:8081}           # Actuator na mesma porta da app
+    port: ${SERVER_PORT:8081}
 
 # Configuração do Swagger
 springdoc:

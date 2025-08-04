@@ -4,6 +4,7 @@ services:
     build:
       context: ./autoatendimento
       dockerfile: Dockerfile
+    image: lanchonete-app-autoatendimento:latest
     container_name: lanchonete-autoatendimento
     ports:
       - "8080:8080"
@@ -36,6 +37,7 @@ services:
     build:
       context: ./pagamento
       dockerfile: Dockerfile
+    image: lanchonete-app-pagamento:latest
     container_name: lanchonete-pagamento
     ports:
       - "8081:8081"

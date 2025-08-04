@@ -238,14 +238,14 @@ PEDIDO_RESPONSE=$(curl -s -X POST "http://$(minikube ip):30080/pedidos/checkout"
   }')
 
 if [ -z "$PEDIDO_RESPONSE" ]; then
-    echo "❌ ERRO: Não foi possível obter resposta da API"
+    echo "ERRO: Não foi possível obter resposta da API"
     exit 1
 fi
 
 PEDIDO_ID=$(echo "$PEDIDO_RESPONSE" | jq -r '.id')
 
 if [ -z "$PEDIDO_ID" ] || [ "$PEDIDO_ID" = "null" ]; then
-    echo "❌ ERRO: Não foi possível extrair o ID do pedido"
+    echo "ERRO: Não foi possível extrair o ID do pedido"
     echo "Resposta: $PEDIDO_RESPONSE"
     exit 1
 fi

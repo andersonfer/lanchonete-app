@@ -1,14 +1,8 @@
-# ===== SECRETS ESPECÍFICOS =====
-# Apenas o script com senhas reais (não o diretório todo)
-k8s/secrets/create_secrets.sh
-
 # Arquivos de ambiente com senhas
 *.env
 .env.*
 !.env.example
 
-# Backups de secrets
-backup-secrets/
 
 # ===== ARQUIVOS TEMPORÁRIOS =====
 *.log

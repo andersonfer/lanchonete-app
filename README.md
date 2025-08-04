@@ -230,15 +230,26 @@ curl "http://$(minikube ip):30080/produtos/categoria/SOBREMESA"
 PEDIDO_RESPONSE=$(curl -s -X POST "http://$(minikube ip):30080/pedidos/checkout" \
   -H "Content-Type: application/json" \
   -d '{
-    "cpfCliente": "12345678901",
+    "cpfCliente": null,
     "itens": [
       {"produtoId": 1, "quantidade": 2},
       {"produtoId": 2, "quantidade": 1}
     ]
   }')
 
-# Extrair apenas o PRIMEIRO ID (do pedido principal)
-PEDIDO_ID=$(echo $PEDIDO_RESPONSE | grep -o '"id":[0-9]*' | head -n1 | cut -d':' -f2)
+if [ -z "$PEDIDO_RESPONSE" ]; then
+    echo "❌ ERRO: Não foi possível obter resposta da API"
+    exit 1
+fi
+
+PEDIDO_ID=$(echo "$PEDIDO_RESPONSE" | jq -r '.id')
+
+if [ -z "$PEDIDO_ID" ] || [ "$PEDIDO_ID" = "null" ]; then
+    echo "❌ ERRO: Não foi possível extrair o ID do pedido"
+    echo "Resposta: $PEDIDO_RESPONSE"
+    exit 1
+fi
+
 echo "Pedido criado com ID: $PEDIDO_ID"
 ```
 

@@ -89,12 +89,7 @@ make_request() {
 # Função para extrair ID de resposta JSON
 extract_id() {
     local response=$1
-    if command -v jq >/dev/null 2>&1; then
-        echo "$response" | jq -r '.id'
-    else
-        # Fallback sem jq
-        echo "$response" | grep -o '"id":[0-9]*' | cut -d':' -f2
-    fi
+    echo "$response" | jq -r '.id'
 }
 
 # =============================================================================
@@ -333,7 +328,7 @@ echo -e "${NC}"
 # PASSO 11: Checkout sem cliente (anônimo)
 # =============================================================================
 
-PEDIDO_ANONIMO_JSON='{"clienteId": null, "itens": [{"produtoId": 2, "quantidade": 1}, {"produtoId": 14, "quantidade": 2}]}'
+PEDIDO_ANONIMO_JSON='{"clienteId": null, "itens": [{"produtoId": 2, "quantidade": 1}, {"produtoId": 9, "quantidade": 2}]}'
 
 print_step "PASSO 11: Checkout anônimo (sem cliente)"
 response=$(curl -s -w "\n%{http_code}" -X "POST" "$AUTOATENDIMENTO_URL/pedidos/checkout" \
@@ -354,7 +349,7 @@ if [[ $http_code -ge 200 && $http_code -lt 300 ]]; then
     if command -v jq >/dev/null 2>&1; then
         VALOR_PEDIDO_2=$(echo "$body" | jq -r '.valorTotal')
     else
-        VALOR_PEDIDO_2="28.70"  # fallback (1 x 10.90 + 2 x 8.90)
+        VALOR_PEDIDO_2="32.70"  # (1 x 10.90 + 2 x 10.90)
     fi
     echo "💰 Valor total: $VALOR_PEDIDO_2"
 else
@@ -405,7 +400,7 @@ fi
 # PASSO 16: Criar mais um pedido para garantir aprovação
 # =============================================================================
 
-PEDIDO_EXTRA_JSON='{"clienteId": null, "itens": [{"produtoId": 17, "quantidade": 1}]}'
+PEDIDO_EXTRA_JSON='{"clienteId": null, "itens": [{"produtoId": 10, "quantidade": 1}]}'
 
 print_step "PASSO 16: Criar pedido extra (tentativa de aprovação)"
 response=$(curl -s -w "\n%{http_code}" -X "POST" "$AUTOATENDIMENTO_URL/pedidos/checkout" \
@@ -425,7 +420,7 @@ if [[ $http_code -ge 200 && $http_code -lt 300 ]]; then
     if command -v jq >/dev/null 2>&1; then
         VALOR_PEDIDO_3=$(echo "$body" | jq -r '.valorTotal')
     else
-        VALOR_PEDIDO_3="10.90"  # fallback
+        VALOR_PEDIDO_3="14.90"  # (1 x 14.90)
     fi
     echo "💰 Valor total: $VALOR_PEDIDO_3"
     

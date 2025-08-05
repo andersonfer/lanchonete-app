@@ -577,5 +577,5 @@ print_success "✅ Pedidos finalizados removidos da cozinha"
 print_success "✅ Todas as operações da cozinha validadas"
 
 echo
-echo -e "${YELLOW}🎯 GRUPO 4 CONCLUÍDO! Pronto para GRUPO 5 (Casos Especiais).${NC}"
+echo -e "${YELLOW}🎯 GRUPO 4 CONCLUÍDO!${NC}"
 echo

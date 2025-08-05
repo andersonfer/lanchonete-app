@@ -101,17 +101,9 @@ check_environment_variables() {
         done
         echo ""
         log_warning "Para resolver:"
-        echo "1. Configure as variáveis:"
-        echo "   export MYSQL_ROOT_PASSWORD=\"sua_senha_root\""
-        echo "   export MYSQL_USER_PASSWORD=\"sua_senha_user\""
-        echo ""
-        echo "2. OU use o arquivo .env:"
+        echo "Use o arquivo .env:"
         echo "   cp .env.example .env"
-        echo "   # Edite o .env com as senhas reais"
         echo "   export \$(cat .env | grep -v '^#' | xargs)"
-        echo ""
-        echo "3. OU execute o setup completo:"
-        echo "   Siga: docs/setup-secrets.md"
         echo ""
         return 1
     fi

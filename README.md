@@ -130,6 +130,10 @@ minikube image load lanchonete-app-pagamento:latest
 ### 3. Deploy no Kubernetes
 
 ```bash
+# Exportar as variáveis de ambiente
+cp .env.example .env
+export $(cat .env | grep -v '^#' | xargs)
+
 # Deploy completo (ordem automatizada)
 chmod +x aplicar_manifests.sh
 ./aplicar_manifests.sh
@@ -137,6 +141,10 @@ chmod +x aplicar_manifests.sh
 
 **Ou deploy manual por etapas:**
 ```bash
+# Exportar as variáveis de ambiente
+cp .env.example .env
+export $(cat .env | grep -v '^#' | xargs)
+
 # 1. Configurações
 bash k8s/secrets/create-secrets.sh
 kubectl apply -f k8s/configmaps/

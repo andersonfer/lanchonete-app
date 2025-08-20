@@ -33,7 +33,38 @@ target/
 *.jar
 *.war
 *.ear
+dependency-reduced-pom.xml
 
 # Build artifacts
 build/
 dist/
+
+# ===== TERRAFORM =====
+# Terraform state files (contém informações sensíveis)
+*.tfstate
+*.tfstate.backup
+*.tfstate.lock.info
+
+# Terraform plan files
+*.tfplan
+
+# Terraform directories
+.terraform/
+.terraform.lock.hcl
+
+# Terraform variable files com valores sensíveis
+terraform.tfvars
+*.auto.tfvars
+
+# ===== AWS =====
+# AWS credentials
+.aws/
+aws-credentials.json
+
+# Lambda deployment packages
+*.zip
+lambda-deployment-*.zip
+
+# ===== CONFIGURAÇÕES ESPECÍFICAS =====
+# Arquivos de status locais
+STATUS_ATUAL.txt

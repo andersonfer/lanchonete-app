@@ -609,9 +609,196 @@ output "academy_info" {
 }
 ```
 
-## 🧪 Estratégia de Testes
+## 🧪 Metodologia de Teste
 
-### Testes de Cada Fase
+### **⚠️ IMPORTANTE - DIVISÃO DE RESPONSABILIDADES**
+- **Claude Code:** Desenvolve código e configura infraestrutura (Terraform)
+- **Usuário:** Executa build, deploy e todos os testes de endpoints
+- **Claude Code:** Fornece comandos exatos de build, deploy e teste
+- **Usuário:** Executa comandos e reporta resultados para Claude Code continuar
+
+### **🎯 Fluxo de Trabalho**
+1. **Claude Code** desenvolve código e configura infraestrutura
+2. **Claude Code** fornece comandos específicos de build e deploy
+3. **Usuário** executa build e deploy dos recursos AWS
+4. **Claude Code** fornece comandos de teste específicos
+5. **Usuário** executa os testes de endpoints e reporta resultados
+6. **Claude Code** analisa resultados e ajusta código se necessário
+7. **Repetir** até todos os testes passarem
+
+### **📋 Comandos Por Fase**
+
+#### **FASE 1 - Autenticação CPF**
+
+**📦 Comandos de Build e Deploy (Claude Code fornece):**
+```bash
+# 1. Build da aplicação Maven
+mvn clean package
+
+# 2. Navegar para Terraform
+cd terraform
+
+# 3. Inicializar Terraform (se necessário)
+terraform init
+
+# 4. Planejar deploy
+terraform plan
+
+# 5. Aplicar recursos
+terraform apply -auto-approve
+
+# 6. Verificar outputs
+terraform output
+```
+
+**🧪 Comandos de Teste (Claude Code fornece):**
+```bash
+# Pegar URL da API
+API_URL=$(terraform output -raw api_gateway_url)
+echo "API URL: $API_URL"
+
+# Teste 1: Cliente Anônimo (CPF vazio)
+curl -X POST "$API_URL" -H "Content-Type: application/json" -d '{"cpf": ""}'
+
+# Teste 2: Cliente Anônimo (CPF null) 
+curl -X POST "$API_URL" -H "Content-Type: application/json" -d '{"cpf": null}'
+
+# Teste 3: Cliente Identificado
+curl -X POST "$API_URL" -H "Content-Type: application/json" -d '{"cpf": "12345678901"}'
+
+# Teste 4: Request inválido (sem CPF)
+curl -X POST "$API_URL" -H "Content-Type: application/json" -d '{}'
+
+# Teste 5: CPF não encontrado
+curl -X POST "$API_URL" -H "Content-Type: application/json" -d '{"cpf": "99999999999"}'
+
+# Teste 6: CPF formato inválido
+curl -X POST "$API_URL" -H "Content-Type: application/json" -d '{"cpf": "123"}'
+```
+
+**Usuário executa e reporta:** ✅/❌ + output para cada teste
+
+#### **FASE 2 - CRUD Produtos**  
+
+**📦 Comandos de Build e Deploy (Claude Code fornece):**
+```bash
+# 1. Build da aplicação Maven
+mvn clean package
+
+# 2. Deploy Terraform
+cd terraform
+terraform plan
+terraform apply -auto-approve
+terraform output
+```
+
+**🧪 Comandos de Teste (Claude Code fornece):**
+```bash
+# Pegar URL da API
+API_URL=$(terraform output -raw api_gateway_url)
+
+# Teste 1: Listar todos os produtos
+curl -X GET "$API_URL/produtos"
+
+# Teste 2: Listar produtos por categoria
+curl -X GET "$API_URL/produtos/categoria/LANCHE"
+curl -X GET "$API_URL/produtos/categoria/BEBIDA"
+
+# Teste 3: Buscar produto específico
+curl -X GET "$API_URL/produtos/1"
+
+# Teste 4: Produto não encontrado
+curl -X GET "$API_URL/produtos/999"
+```
+
+**Usuário executa e reporta:** ✅/❌ + output para cada teste
+
+#### **FASE 3 - RDS Setup**
+
+**📦 Comandos de Build e Deploy (Claude Code fornece):**
+```bash
+# 1. Deploy RDS com Terraform  
+cd terraform
+terraform plan
+terraform apply -auto-approve
+terraform output
+```
+
+**🧪 Comandos de Teste (Claude Code fornece):**
+```bash
+# Verificar RDS criada
+aws rds describe-db-instances --query 'DBInstances[?contains(DBInstanceIdentifier, `lanchonete`)].{ID:DBInstanceIdentifier,Status:DBInstanceStatus,Endpoint:Endpoint.Address}'
+
+# Testar conexão (se necessário)
+mysql -h [ENDPOINT] -u admin -p -e "SHOW DATABASES;"
+```
+
+**Usuário executa e reporta:** ✅/❌ + output
+
+### **🔍 Validações Específicas**
+
+#### **JWT Token Validation**
+**Claude Code fornece:**
+```bash
+# Pegar um token válido do teste anterior e decodificar
+echo "[TOKEN_PAYLOAD]" | base64 -d
+```
+
+**Usuário executa e valida:**
+- Claims corretos (tipo, clienteId, cpf, nome, etc.)
+- Expiração configurada (3600 segundos)
+- Diferenças entre token anônimo vs identificado
+
+#### **Logs e Monitoramento**
+**Claude Code fornece:**
+```bash
+# Ver logs da Lambda em tempo real
+LAMBDA_NAME=$(terraform output -raw lambda_function_name)
+aws logs tail "/aws/lambda/$LAMBDA_NAME" --follow
+
+# Verificar métricas
+aws cloudwatch get-metric-statistics \
+  --namespace AWS/Lambda \
+  --metric-name Invocations \
+  --dimensions Name=FunctionName,Value=$LAMBDA_NAME \
+  --start-time 2024-08-20T10:00:00Z \
+  --end-time 2024-08-20T11:00:00Z \
+  --period 300 \
+  --statistics Sum
+```
+
+**Usuário executa e reporta:** Logs de erro, latência, execuções
+
+### **🚨 Troubleshooting**
+**Se usuário reportar erro, Claude Code investiga:**
+1. **Status HTTP diferente do esperado** → Verificar logs Lambda
+2. **Response JSON malformado** → Verificar serialização 
+3. **Timeout** → Verificar configuração memory/timeout
+4. **Permissões** → Verificar IAM roles e policies
+5. **Conectividade** → Verificar API Gateway integration
+
+### **📊 Template de Report do Usuário**
+
+**Para Build e Deploy:**
+```
+ETAPA: [Build/Deploy/Teste]
+COMANDO: [Comando executado]
+STATUS: ✅ SUCESSO / ❌ FALHA
+OUTPUT: [Output completo ou resumo se muito longo]
+OBSERVAÇÕES: [Qualquer erro, warning ou observação relevante]
+```
+
+**Para Testes de Endpoint:**
+```
+TESTE: [Nome do teste específico]
+COMANDO: [Comando curl executado]
+STATUS: ✅ SUCESSO / ❌ FALHA
+STATUS_HTTP: [200, 400, 500, etc.]
+RESPONSE: [JSON response completo]
+OBSERVAÇÕES: [Tempo de resposta, erros, etc.]
+```
+
+### Estratégia de Testes Original
 ```bash
 # Verificar ambiente Academy
 aws sts get-caller-identity
@@ -728,8 +915,16 @@ Estrutura sugerida para serverless:
 
 ## 🚀 Próximos Passos
 
+### **🎯 Fluxo de Desenvolvimento**
+1. **Claude Code** implementa a fase (código + infraestrutura)
+2. **Claude Code** fornece comandos de build e deploy
+3. **Usuário** executa build e deploy na AWS
+4. **Claude Code** fornece comandos de teste para o usuário
+5. **Usuário** executa os testes e reporta resultados
+6. **Claude Code** corrige problemas (se houver) e prossegue
+
 ### Para Começar (FASE 1) - AWS Academy
-1. **Configurar ambiente Academy**
+1. **Configurar ambiente Academy** (Usuário)
    ```bash
    # Iniciar lab e configurar credenciais
    aws configure set aws_access_key_id AKIA...

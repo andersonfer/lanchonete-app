@@ -66,5 +66,5 @@ aws-credentials.json
 lambda-deployment-*.zip
 
 # ===== CONFIGURAÇÕES ESPECÍFICAS =====
-# Arquivos de status locais
-STATUS_ATUAL.txt
+# Arquivos de configuração local (não commitados)
+local-config.json

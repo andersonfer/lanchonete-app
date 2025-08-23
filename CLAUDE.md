@@ -1,5 +1,52 @@
 # 🚀 Plano de Migração Serverless - Lanchonete Autoatendimento
 
+## 🇧🇷 IDIOMA E CONVENÇÕES DE CÓDIGO
+
+**IMPORTANTE:** 
+- ✅ **Toda comunicação** deve ser feita em **português brasileiro**
+- ✅ **Código em português brasileiro** sempre que possível (nomes de classes, métodos, variáveis)
+- ✅ **Manter em inglês apenas** termos técnicos universais (handler, request, response, exception, gateway, service)
+- ✅ **Comentários de código** sempre em português brasileiro
+- ✅ **Documentação** sempre em português brasileiro
+- ✅ **Mensagens de erro** sempre em português brasileiro
+
+## 🔄 REGRA DE REUSO DE CÓDIGO
+
+**PRIORIDADE MÁXIMA: Copiar código existente sempre que possível**
+- ✅ **SEMPRE copiar** entities, enums, exceptions, DTOs, mappers do projeto atual
+- ✅ **SEMPRE copiar** casos de uso existentes sem alterar lógica de negócio
+- ✅ **APENAS adaptar** imports e nomes de pacotes para português brasileiro
+- ✅ **MANTER** estrutura de dados, validações e comportamentos idênticos
+- ✅ **EVITAR** reimplementar funcionalidades que já existem e funcionam
+
+**Benefícios:**
+- ✅ Consistência entre APIs REST e Serverless
+- ✅ Reutilização de código validado e testado  
+- ✅ Aceleração do desenvolvimento
+- ✅ Menor probabilidade de bugs
+- ✅ Facilita manutenção futura
+
+### Exemplos de Nomenclatura:
+```java
+// ✅ CORRETO - Português brasileiro + termos técnicos
+public class AutenticacaoCpfHandler {
+    private final IdentificarClienteUseCase identificarCliente;
+    
+    public ResponseAuth autenticarPorCpf(RequestAuth request) {
+        // Processar autenticação do cliente
+    }
+}
+
+// ❌ EVITAR - Totalmente em inglês
+public class AuthCpfHandler {
+    private final IdentifyClientUseCase identifyClient;
+    
+    public AuthResponse authenticateByCpf(AuthRequest request) {
+        // Process client authentication
+    }
+}
+```
+
 ## 📋 Contexto do Projeto
 
 **Aplicação atual:** Sistema de autoatendimento para lanchonete rodando em Kubernetes com Spring Boot + MySQL
@@ -136,16 +183,16 @@ lambda-auth-cpf/
 │   ├── main/
 │   │   └── java/
 │   │       └── br/com/lanchonete/auth/
-│   │           ├── AuthCpfHandler.java          # Handler principal
+│   │           ├── AutenticacaoCpfHandler.java          # Handler principal
 │   │           ├── domain/
 │   │           │   ├── entities/Cliente.java
-│   │           │   ├── valueobjects/CPF.java
-│   │           │   └── services/AuthService.java
+│   │           │   ├── valueobjects/Cpf.java
+│   │           │   └── services/ServicoAutenticacao.java
 │   │           ├── application/
-│   │           │   ├── usecases/AutenticarCliente.java
+│   │           │   ├── usecases/IdentificarCliente.java
 │   │           │   └── gateways/ClienteGateway.java
 │   │           └── adapters/
-│   │               ├── jwt/JwtService.java
+│   │               ├── jwt/ServicoJwt.java
 │   │               └── mock/ClienteMockGateway.java
 │   └── test/
 ├── pom.xml
@@ -190,7 +237,7 @@ POST /auth/cpf
 
 #### Dados Mock Iniciais
 ```java
-// Clientes hardcoded para teste
+// Clientes pré-cadastrados para teste
 private static final List<Cliente> CLIENTES_MOCK = Arrays.asList(
     new Cliente(1L, "12345678901", "João Silva", "joao@email.com"),
     new Cliente(2L, "11144477735", "Maria Santos", "maria@email.com"),
@@ -213,56 +260,56 @@ data "aws_iam_role" "lab_role" {
   name = "LabRole"
 }
 
-resource "aws_lambda_function" "auth_cpf" {
+resource "aws_lambda_function" "autenticacao_cpf" {
   filename         = "../target/lambda-auth-cpf-1.0.0.jar"
-  function_name    = "${var.project_name}-auth-cpf"
+  function_name    = "${var.nome_projeto}-autenticacao-cpf"
   role            = data.aws_iam_role.lab_role.arn  # Usar LabRole!
-  handler         = "br.com.lanchonete.auth.AuthCpfHandler::handleRequest"
+  handler         = "br.com.lanchonete.auth.AutenticacaoCpfHandler::processarRequisicao"
   runtime         = "java17"
   timeout         = 30  # Dentro dos limites do Academy
   memory_size     = 512 # Conservador para Academy
   
   environment {
     variables = {
-      ENVIRONMENT = var.environment
+      AMBIENTE = var.ambiente
       JWT_SECRET  = var.jwt_secret
     }
   }
 }
 ```
 
-#### Variables específicas para Academy
+#### Variáveis específicas para Academy
 ```hcl
 # terraform/variables.tf
-variable "aws_region" {
+variable "regiao_aws" {
   description = "Região AWS (limitada no Academy)"
   type        = string
   default     = "us-east-1"
   
   validation {
-    condition = contains(["us-east-1", "us-west-2"], var.aws_region)
+    condition = contains(["us-east-1", "us-west-2"], var.regiao_aws)
     error_message = "Academy normalmente disponibiliza apenas us-east-1 ou us-west-2."
   }
 }
 
-variable "lambda_memory" {
+variable "memoria_lambda" {
   description = "Memória da Lambda (limitada no Academy)"
   type        = number
   default     = 512
   
   validation {
-    condition     = var.lambda_memory >= 128 && var.lambda_memory <= 1024
+    condition     = var.memoria_lambda >= 128 && var.memoria_lambda <= 1024
     error_message = "No Academy, use memória entre 128MB e 1GB."
   }
 }
 
-variable "lambda_timeout" {
+variable "timeout_lambda" {
   description = "Timeout da Lambda (limitado no Academy)"
   type        = number
   default     = 30
   
   validation {
-    condition     = var.lambda_timeout >= 3 && var.lambda_timeout <= 60
+    condition     = var.timeout_lambda >= 3 && var.timeout_lambda <= 60
     error_message = "No Academy, timeout máximo é 60 segundos."
   }
 }
@@ -279,8 +326,8 @@ lambda-produtos/
 │   ├── ProdutosHandler.java
 │   ├── domain/
 │   │   ├── entities/Produto.java
-│   │   ├── enums/Categoria.java
-│   │   └── services/ProdutoService.java
+│   │   ├── enums/CategoriaProduto.java
+│   │   └── services/ServicoProduto.java
 │   ├── application/
 │   │   ├── usecases/
 │   │   │   ├── CriarProduto.java
@@ -295,21 +342,21 @@ lambda-produtos/
 
 #### APIs
 ```
-GET    /produtos              # Listar todos
-GET    /produtos/{id}         # Buscar por ID
-GET    /produtos/categoria/{categoria}  # Por categoria
-POST   /produtos              # Criar produto
-PUT    /produtos/{id}         # Atualizar produto
-DELETE /produtos/{id}         # Remover produto
+GET    /produtos                           # Listar todos
+GET    /produtos/{id}                      # Buscar por ID
+GET    /produtos/categoria/{categoria}     # Por categoria
+POST   /produtos                           # Criar produto
+PUT    /produtos/{id}                      # Atualizar produto
+DELETE /produtos/{id}                      # Remover produto
 ```
 
 #### Mock de Produtos
 ```java
-// Produtos hardcoded para teste
+// Produtos pré-cadastrados para teste
 PRODUTOS_MOCK = Arrays.asList(
-    new Produto(1L, "Big Mac", Categoria.LANCHE, new BigDecimal("25.90"), "Hambúrguer clássico"),
-    new Produto(2L, "Batata Frita", Categoria.ACOMPANHAMENTO, new BigDecimal("12.50"), "Batata crocante"),
-    new Produto(3L, "Coca-Cola", Categoria.BEBIDA, new BigDecimal("8.90"), "Refrigerante 350ml")
+    new Produto(1L, "Big Mac", CategoriaProduto.LANCHE, new BigDecimal("25.90"), "Hambúrguer clássico"),
+    new Produto(2L, "Batata Frita", CategoriaProduto.ACOMPANHAMENTO, new BigDecimal("12.50"), "Batata crocante"),
+    new Produto(3L, "Coca-Cola", CategoriaProduto.BEBIDA, new BigDecimal("8.90"), "Refrigerante 350ml")
 );
 ```
 
@@ -385,13 +432,13 @@ resource "aws_security_group" "rds" {
 
 #### Scripts de Migração
 ```sql
--- migration/001_create_tables.sql
+-- migration/001_criar_tabelas.sql
 CREATE TABLE clientes (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     cpf VARCHAR(11) NOT NULL UNIQUE,
     nome VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE produtos (
@@ -401,7 +448,7 @@ CREATE TABLE produtos (
     preco DECIMAL(10,2) NOT NULL,
     descricao TEXT,
     ativo BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Inserir dados iniciais
@@ -432,7 +479,7 @@ lambda-pedidos/
 │   │   ├── enums/
 │   │   │   ├── StatusPedido.java
 │   │   │   └── StatusPagamento.java
-│   │   └── services/PedidoService.java
+│   │   └── services/ServicoPedido.java
 │   ├── application/
 │   │   ├── usecases/
 │   │   │   ├── RealizarPedido.java
@@ -445,11 +492,11 @@ lambda-pedidos/
 
 #### APIs
 ```
-POST   /pedidos              # Criar pedido
-GET    /pedidos              # Listar pedidos
-GET    /pedidos/{id}         # Buscar pedido
-PUT    /pedidos/{id}/status  # Atualizar status
-GET    /pedidos/cozinha      # Pedidos para cozinha
+POST   /pedidos                    # Criar pedido
+GET    /pedidos                    # Listar pedidos
+GET    /pedidos/{id}               # Buscar pedido
+PUT    /pedidos/{id}/status        # Atualizar status
+GET    /pedidos/cozinha            # Pedidos para cozinha
 ```
 
 ### **FASE 5: Sistema de Pagamento (Manter Integração)**
@@ -465,14 +512,14 @@ lambda-pagamento/
 │   ├── WebhookHandler.java
 │   ├── domain/
 │   │   ├── entities/Pagamento.java
-│   │   └── services/PagamentoService.java
+│   │   └── services/ServicoPagamento.java
 │   ├── application/
 │   │   ├── usecases/
 │   │   │   ├── ProcessarPagamento.java
 │   │   │   └── ProcessarWebhook.java
 │   │   └── gateways/PagamentoGateway.java
 │   └── adapters/
-│       ├── mercadopago/MercadoPagoAdapter.java
+│       ├── mercadopago/AdapterMercadoPago.java
 │       └── rds/PagamentoRdsGateway.java
 ```
 

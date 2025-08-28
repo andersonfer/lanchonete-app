@@ -9,7 +9,7 @@ echo "🔍 VALIDANDO DATABASE RDS"
 echo "========================="
 
 # Obter outputs do Terraform
-cd terraform/database
+cd "$(dirname "$0")/../terraform/database"
 
 if [ ! -f terraform.tfstate ]; then
     echo "❌ Terraform state não encontrado. Execute terraform apply primeiro."
@@ -42,11 +42,12 @@ if command -v mysql &> /dev/null; then
     DB_USER="lanchonete_admin"
     DB_PASS="LanchoneteDB123!"
     
-    if mysql -h "$RDS_ENDPOINT" -u "$DB_USER" -p"$DB_PASS" -D "$DB_NAME" -e "SELECT 1;" > /dev/null 2>&1; then
+    RDS_HOST=$(echo "$RDS_ENDPOINT" | cut -d: -f1)
+    if mysql -h "$RDS_HOST" -u "$DB_USER" -p"$DB_PASS" -D "$DB_NAME" -e "SELECT 1;" > /dev/null 2>&1; then
         echo "✅ Conexão MySQL funcionando"
         
         # Testar se tabelas existem
-        TABLES=$(mysql -h "$RDS_ENDPOINT" -u "$DB_USER" -p"$DB_PASS" -D "$DB_NAME" -e "SHOW TABLES;" 2>/dev/null | wc -l)
+        TABLES=$(mysql -h "$RDS_HOST" -u "$DB_USER" -p"$DB_PASS" -D "$DB_NAME" -e "SHOW TABLES;" 2>/dev/null | wc -l)
         if [ $TABLES -gt 4 ]; then
             echo "✅ Tabelas criadas: $((TABLES-1))"
         else
@@ -54,7 +55,7 @@ if command -v mysql &> /dev/null; then
         fi
         
         # Testar se dados existem
-        PRODUTOS=$(mysql -h "$RDS_ENDPOINT" -u "$DB_USER" -p"$DB_PASS" -D "$DB_NAME" -e "SELECT COUNT(*) FROM produto;" 2>/dev/null | tail -n1)
+        PRODUTOS=$(mysql -h "$RDS_HOST" -u "$DB_USER" -p"$DB_PASS" -D "$DB_NAME" -e "SELECT COUNT(*) FROM produto;" 2>/dev/null | tail -n1)
         if [ "$PRODUTOS" -gt 0 ]; then
             echo "✅ Produtos inseridos: $PRODUTOS"
         else

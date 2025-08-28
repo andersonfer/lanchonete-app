@@ -43,7 +43,7 @@ AUTOMAÇÃO DE STATUS:
 ```
 📅 CRONOGRAMA DE ETAPAS
 
-🏗️ ETAPA 1: Setup Base + Database           [ ] TODO / [ ] DOING / [ ] DONE
+🏗️ ETAPA 1: Setup Base + Database           [ ] TODO / [ ] DOING / [X] DONE
 ⚡ ETAPA 2: Lambda de Autenticação            [ ] TODO / [ ] DOING / [ ] DONE  
 🌐 ETAPA 3: API Gateway + JWT Authorizer     [ ] TODO / [ ] DOING / [ ] DONE
 ☸️ ETAPA 4: EKS Cluster                      [ ] TODO / [ ] DOING / [ ] DONE

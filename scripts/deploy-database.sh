@@ -52,12 +52,13 @@ echo "📊 3/4 - EXECUTANDO MIGRATIONS..."
 if command -v mysql &> /dev/null; then
     DB_USER="lanchonete_admin"
     DB_PASS="LanchoneteDB123!"
+    RDS_HOST=$(echo "$RDS_ENDPOINT" | cut -d: -f1)
     
     echo "📋 Criando schema..."
-    mysql -h "$RDS_ENDPOINT" -u "$DB_USER" -p"$DB_PASS" -D "$DB_NAME" < terraform/database/migrations/001_create_schema.sql
+    mysql -h "$RDS_HOST" -u "$DB_USER" -p"$DB_PASS" -D "$DB_NAME" < terraform/database/migrations/001_create_schema.sql
     
     echo "📋 Inserindo dados iniciais..."
-    mysql -h "$RDS_ENDPOINT" -u "$DB_USER" -p"$DB_PASS" -D "$DB_NAME" < terraform/database/migrations/002_seed_data.sql
+    mysql -h "$RDS_HOST" -u "$DB_USER" -p"$DB_PASS" -D "$DB_NAME" < terraform/database/migrations/002_seed_data.sql
     
     echo "✅ Migrations executadas com sucesso!"
 else
@@ -76,6 +77,4 @@ echo "📡 RDS Endpoint: $RDS_ENDPOINT"
 echo "🗄️  Database: $DB_NAME"
 echo "🔑 Credenciais: lanchonete_admin / LanchoneteDB123!"
 echo ""
-echo "💡 PRÓXIMOS PASSOS:"
-echo "   - Marque como concluída: 'ETAPA 1 concluída'"
-echo "   - Continue para ETAPA 2: Lambda de Autenticação"
+echo "💡 Database pronto para uso!"

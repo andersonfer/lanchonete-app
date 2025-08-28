@@ -3,6 +3,14 @@
 .env.*
 !.env.example
 
+# Terraform - valores sensíveis
+*.tfvars
+!terraform.tfvars.example
+terraform.tfstate
+terraform.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
 
 # ===== ARQUIVOS TEMPORÁRIOS =====
 *.log

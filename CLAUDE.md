@@ -318,6 +318,7 @@ variable "timeout_lambda" {
 ### **FASE 2: CRUD Produtos**
 **Duração estimada:** 2-3 dias
 **Objetivo:** Validar padrões de desenvolvimento serverless
+**Status:** ✅ CONCLUÍDA (com dados mock)
 
 #### Estrutura
 ```
@@ -364,6 +365,7 @@ PRODUTOS_MOCK = Arrays.asList(
 **Duração estimada:** 1 dia
 **Objetivo:** Atender requisito de "banco de dados gerenciável" do PDF
 **Base:** Item 5 do PDF - "banco de dados gerenciáveis (RDS)"
+**Status:** ✅ CONCLUÍDA (RDS MySQL funcionando)
 
 #### Infraestrutura RDS para AWS Academy
 ```hcl
@@ -461,6 +463,41 @@ INSERT INTO produtos (nome, categoria, preco, descricao) VALUES
 ('Batata Frita', 'ACOMPANHAMENTO', 12.50, 'Batata crocante'),
 ('Coca-Cola', 'BEBIDA', 8.90, 'Refrigerante 350ml');
 ```
+
+### **FASE 3.1: Integração Lambda-RDS (Substituir Mocks)**
+**Duração estimada:** 1-2 dias
+**Objetivo:** Conectar Lambdas existentes ao RDS MySQL
+**Base:** Manter funcionalidades atuais, trocar dados mock por dados reais
+
+#### Subetapas:
+- ✅ **lambda-auth-cpf → RDS:** Substituir ClienteMockGateway por ClienteRdsGateway (só leitura)
+- 🔄 **lambda-produtos → RDS:** Substituir ProdutoMockGateway por ProdutoRdsGateway (CRUD completo)
+
+#### Limitações identificadas:
+⚠️ **PENDÊNCIA CRÍTICA:** Lambda-auth-cpf só implementa `buscarPorCpf`. Os métodos `salvar()` e `buscarPorId()` retornam `UnsupportedOperationException` pois não são usados na autenticação.
+
+**SOLUÇÃO FUTURA:** Criar **FASE 3.2: Lambda CRUD Clientes** para implementar cadastro, edição e busca de clientes com CRUD completo.
+
+### **FASE 3.2: Lambda CRUD Clientes (PENDENTE)**
+**Duração estimada:** 2-3 dias  
+**Objetivo:** Implementar CRUD completo de clientes
+**Justificativa:** Atualmente lambda-auth-cpf só faz leitura. Sistema precisa de endpoints para cadastrar/editar clientes.
+
+#### Estrutura planejada:
+```
+lambda-clientes/
+├── POST /clientes         # Cadastrar cliente  
+├── GET /clientes/{id}     # Buscar por ID
+├── PUT /clientes/{id}     # Atualizar cliente
+├── DELETE /clientes/{id}  # Remover cliente
+└── GET /clientes/cpf/{cpf} # Buscar por CPF
+```
+
+#### Implementação pendente:
+- ClienteRdsGateway com todos os métodos (salvar, buscar, atualizar, remover)
+- Use cases: CriarCliente, EditarCliente, RemoverCliente, BuscarCliente
+- Service layer + Handler + API Gateway
+- Testes unitários e integração
 
 ### **FASE 4: Gestão de Pedidos (Core Business)**
 **Duração estimada:** 3-4 dias
@@ -1048,3 +1085,6 @@ EOF
 **📄 Referência:** Todas as decisões devem estar alinhadas com as especificações detalhadas no PDF do Tech Challenge Fase 3.
 
 **📧 Entrega:** Seguir exatamente os critérios de entrega especificados no PDF para aprovação no Tech Challenge.
+
+- nao precisa de comentarios explicativos nas classes
+- depois de toda sessao eu uso terraform destroy, entao sempre precisarei de instrucoes precisas para deployar tudo

@@ -1,7 +1,8 @@
 package br.com.lanchonete.auth;
 
 import br.com.lanchonete.auth.adapters.jwt.JwtService;
-import br.com.lanchonete.auth.adapters.mock.ClienteMockGateway;
+import br.com.lanchonete.auth.adaptadores.rds.ClienteRdsGateway;
+import br.com.lanchonete.auth.adaptadores.rds.DataSourceConfig;
 import br.com.lanchonete.auth.application.gateways.ClienteGateway;
 import br.com.lanchonete.auth.application.services.AuthService;
 import br.com.lanchonete.auth.application.usecases.IdentificarCliente;
@@ -23,7 +24,7 @@ public class AuthCpfHandler implements RequestHandler<APIGatewayProxyRequestEven
     
     public AuthCpfHandler() {
         // Configurar dependências (DI manual para Lambda)
-        ClienteGateway clienteGateway = new ClienteMockGateway();
+        ClienteGateway clienteGateway = new ClienteRdsGateway(DataSourceConfig.getDataSource());
         IdentificarCliente identificarCliente = new IdentificarCliente(clienteGateway);
         JwtService jwtService = new JwtService();
         this.authService = new AuthService(identificarCliente, jwtService);

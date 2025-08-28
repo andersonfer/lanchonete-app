@@ -1,3 +1,20 @@
+-- =============================================================================
+-- Tech Challenge Fase 3 - Dados iniciais para RDS MySQL
+-- Script: 002_insert_data.sql
+-- =============================================================================
+
+-- CLIENTES DE TESTE (para lambda-auth-cpf)
+INSERT INTO cliente (cpf, nome, email) VALUES
+('12345678901', 'Maria Oliveira', 'maria.oliveira@email.com'),
+('11144477735', 'João Silva', 'joao.silva@email.com'),
+('98765432100', 'Pedro Costa', 'pedro.costa@email.com'),
+('11111111111', 'Ana Santos', 'ana.santos@email.com'),
+('22222222222', 'Carlos Ferreira', 'carlos.ferreira@email.com')
+ON DUPLICATE KEY UPDATE
+    nome = VALUES(nome),
+    email = VALUES(email);
+
+-- PRODUTOS (para lambda-produtos)
 -- Inserir ou atualizar produtos (upsert baseado no nome único)
 -- Usando sintaxe moderna do MySQL 8.0+ com alias
 

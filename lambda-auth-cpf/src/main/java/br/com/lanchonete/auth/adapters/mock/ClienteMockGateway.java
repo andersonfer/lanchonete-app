@@ -18,22 +18,9 @@ public class ClienteMockGateway implements ClienteGateway {
     );
 
     @Override
-    public Cliente salvar(Cliente cliente) {
-        // Mock implementation - não implementado para este caso de uso
-        throw new UnsupportedOperationException("Operação não implementada no mock");
-    }
-
-    @Override
     public Optional<Cliente> buscarPorCpf(String cpf) {
         return CLIENTES_MOCK.stream()
                 .filter(cliente -> cliente.getCpf().getValor().equals(cpf))
-                .findFirst();
-    }
-
-    @Override
-    public Optional<Cliente> buscarPorId(Long id) {
-        return CLIENTES_MOCK.stream()
-                .filter(cliente -> cliente.getId().equals(id))
                 .findFirst();
     }
 }

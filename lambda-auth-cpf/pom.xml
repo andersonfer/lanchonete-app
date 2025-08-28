@@ -22,6 +22,8 @@
         <aws.lambda.version>1.2.3</aws.lambda.version>
         <aws.lambda.events.version>3.11.4</aws.lambda.events.version>
         <jjwt.version>0.12.3</jjwt.version>
+        <mysql.version>8.0.33</mysql.version>
+        <hikaricp.version>5.0.1</hikaricp.version>
     </properties>
     
     <dependencies>
@@ -63,6 +65,18 @@
             <artifactId>jjwt-jackson</artifactId>
             <version>${jjwt.version}</version>
             <scope>runtime</scope>
+        </dependency>
+        
+        <!-- Database -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>${mysql.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>${hikaricp.version}</version>
         </dependency>
         
         <!-- Test Dependencies -->

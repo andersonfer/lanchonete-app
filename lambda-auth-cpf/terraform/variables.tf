@@ -35,3 +35,32 @@ variable "jwt_secret" {
   default     = "lanchonete-auth-secret-academy"
   sensitive   = true
 }
+
+variable "db_host" {
+  description = "Hostname do RDS MySQL"
+  type        = string
+}
+
+variable "db_port" {
+  description = "Porta do RDS MySQL"
+  type        = string
+  default     = "3306"
+}
+
+variable "db_name" {
+  description = "Nome do banco de dados"
+  type        = string
+  default     = "lanchonete"
+}
+
+variable "db_username" {
+  description = "Usuário do banco de dados"
+  type        = string
+  default     = "admin"
+}
+
+variable "db_password" {
+  description = "Senha do banco de dados"
+  type        = string
+  sensitive   = true
+}

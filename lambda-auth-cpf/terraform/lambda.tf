@@ -13,6 +13,11 @@ resource "aws_lambda_function" "auth_cpf" {
   environment {
     variables = {
       ENVIRONMENT = var.environment
+      DB_HOST     = var.db_host
+      DB_PORT     = var.db_port
+      DB_NAME     = var.db_name
+      DB_USERNAME = var.db_username
+      DB_PASSWORD = var.db_password
     }
   }
 }

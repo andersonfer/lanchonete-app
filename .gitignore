@@ -37,3 +37,40 @@ target/
 # Build artifacts
 build/
 dist/
+
+# Terraform state files
+*.tfstate
+*.tfstate.backup
+
+# Crash log files
+crash.log
+
+# Terraform plan output
+*.tfplan
+
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
+
+# Ignore directories created by Terraform
+.terraform/
+
+# Override files (often local)
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Sensitive variables
+*.tfvars
+*.tfvars.json
+
+# Backup files
+*.bak
+*.backup
+
+# IDE/editor files (opcional, dependendo do editor)
+.vscode/
+.idea/
+*.swp
+*.swo

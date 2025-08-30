@@ -33,16 +33,43 @@ public class ConnectivityTestHandler implements RequestHandler<Map<String, Objec
             try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password)) {
                 context.getLogger().log("Conexão estabelecida com sucesso!");
                 
-                // Testar uma query simples
-                try (Statement stmt = connection.createStatement()) {
-                    ResultSet rs = stmt.executeQuery("SELECT COUNT(*) as total FROM clientes");
-                    if (rs.next()) {
-                        int totalClientes = rs.getInt("total");
-                        context.getLogger().log("Total de clientes encontrados: " + totalClientes);
+                // Verificar se é uma ação customizada
+                String action = (String) input.get("action");
+                String customSql = (String) input.get("sql");
+                
+                if ("execute-sql".equals(action) && customSql != null) {
+                    // Executar SQL customizado
+                    context.getLogger().log("Executando SQL customizado: " + customSql);
+                    try (Statement stmt = connection.createStatement()) {
+                        stmt.execute(customSql);
+                        response.put("status", "success");
+                        response.put("message", "SQL executado com sucesso");
+                        context.getLogger().log("SQL customizado executado com sucesso");
+                    }
+                    
+                } else {
+                    // Comportamento padrão - contar registros
+                    try (Statement stmt = connection.createStatement()) {
+                        // Count clientes
+                        ResultSet rs = stmt.executeQuery("SELECT COUNT(*) as total FROM clientes");
+                        int totalClientes = 0;
+                        if (rs.next()) {
+                            totalClientes = rs.getInt("total");
+                            context.getLogger().log("Total de clientes encontrados: " + totalClientes);
+                        }
+                        
+                        // Count produtos
+                        rs = stmt.executeQuery("SELECT COUNT(*) as total FROM produtos");
+                        int totalProdutos = 0;
+                        if (rs.next()) {
+                            totalProdutos = rs.getInt("total");
+                            context.getLogger().log("Total de produtos encontrados: " + totalProdutos);
+                        }
                         
                         response.put("status", "success");
                         response.put("message", "Conectividade OK");
                         response.put("totalClientes", totalClientes);
+                        response.put("totalProdutos", totalProdutos);
                     }
                 }
             }

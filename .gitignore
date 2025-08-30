@@ -13,6 +13,10 @@ secret-*
 *-secrets.yaml
 temp-secrets*
 
+# Arquivos de resposta de testes
+response.json
+*response*.json
+
 # ===== IDEs =====
 .vscode/
 .idea/
@@ -74,3 +78,7 @@ override.tf.json
 .idea/
 *.swp
 *.swo
+
+# ===== DIRETÓRIOS DE ARQUIVO =====
+# Diretório para arquivos históricos/experimentais
+_archive/

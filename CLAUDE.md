@@ -43,7 +43,7 @@ AUTOMAÇÃO DE STATUS:
 ```
 📅 CRONOGRAMA DE ETAPAS
 
-🏗️ ETAPA 1: RDS + Lambda Connectivity Test   [ ] TODO / [ ] DOING / [ ] DONE
+🏗️ ETAPA 1: RDS + Lambda Connectivity Test   [ ] TODO / [ ] DOING / [X] DONE
 ⚡ ETAPA 2: Lambda de Autenticação Completa   [ ] TODO / [ ] DOING / [ ] DONE  
 🌐 ETAPA 3: API Gateway + JWT Authorizer     [ ] TODO / [ ] DOING / [ ] DONE
 ☸️ ETAPA 4: EKS Cluster                      [ ] TODO / [ ] DOING / [ ] DONE
@@ -993,7 +993,7 @@ curl -X GET "$API_BASE/pedidos/cozinha" \
 ```
 Data       | Etapa | Status Anterior | Status Novo | Usuário
 -----------|-------|-----------------|-------------|--------
-(Aguardando primeira atualização automática)
+2025-08-30 | ETAPA 1 | [ ] TODO      | [X] DONE   | Usuario
 ```
 
 ### Histórico de Commits

@@ -13,9 +13,22 @@ secret-*
 *-secrets.yaml
 temp-secrets*
 
-# Arquivos de resposta de testes
+# ===== ARQUIVOS JSON TEMPORÁRIOS DE TESTES =====
+# Arquivos de resposta de Lambda/API testes
 response.json
 *response*.json
+validation.json
+*validation*.json
+payload.json
+debug_*.json
+test_*.json
+final_*.json
+migration_*.json
+auth_*.json
+
+# Arquivos JSON temporários gerais
+temp.json
+tmp*.json
 
 # ===== IDEs =====
 .vscode/

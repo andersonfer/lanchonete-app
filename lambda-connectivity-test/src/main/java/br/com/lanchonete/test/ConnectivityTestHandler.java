@@ -51,19 +51,21 @@ public class ConnectivityTestHandler implements RequestHandler<Map<String, Objec
                     // Comportamento padrão - contar registros
                     try (Statement stmt = connection.createStatement()) {
                         // Count clientes
-                        ResultSet rs = stmt.executeQuery("SELECT COUNT(*) as total FROM clientes");
                         int totalClientes = 0;
-                        if (rs.next()) {
-                            totalClientes = rs.getInt("total");
-                            context.getLogger().log("Total de clientes encontrados: " + totalClientes);
+                        try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) as total FROM clientes")) {
+                            if (rs.next()) {
+                                totalClientes = rs.getInt("total");
+                                context.getLogger().log("Total de clientes encontrados: " + totalClientes);
+                            }
                         }
                         
                         // Count produtos
-                        rs = stmt.executeQuery("SELECT COUNT(*) as total FROM produtos");
                         int totalProdutos = 0;
-                        if (rs.next()) {
-                            totalProdutos = rs.getInt("total");
-                            context.getLogger().log("Total de produtos encontrados: " + totalProdutos);
+                        try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) as total FROM produtos")) {
+                            if (rs.next()) {
+                                totalProdutos = rs.getInt("total");
+                                context.getLogger().log("Total de produtos encontrados: " + totalProdutos);
+                            }
                         }
                         
                         response.put("status", "success");

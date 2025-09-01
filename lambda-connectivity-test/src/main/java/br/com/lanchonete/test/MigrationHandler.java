@@ -77,8 +77,8 @@ public class MigrationHandler implements RequestHandler<Map<String, Object>, Map
     }
     
     private void executeSqlStatements(Connection connection, String sql, Context context) throws Exception {
-        // Remover comentários
-        String cleanSql = sql.replaceAll("--.*?\n", "").trim();
+        // Remover apenas comentários de linha inteira
+        String cleanSql = sql.replaceAll("(?m)^\\s*--.*$", "").trim();
         
         // Dividir por ; mas preservar statements completos
         String[] statements = cleanSql.split(";");
@@ -87,9 +87,9 @@ public class MigrationHandler implements RequestHandler<Map<String, Object>, Map
             for (String statement : statements) {
                 String cleanStatement = statement.trim();
                 if (!cleanStatement.isEmpty()) {
-                    context.getLogger().log("Executando: " + cleanStatement.substring(0, Math.min(80, cleanStatement.length())).replaceAll("\\s+", " ") + "...");
+                    context.getLogger().log("Executando: " + cleanStatement.substring(0, Math.min(100, cleanStatement.length())).replaceAll("\\s+", " ") + "...");
                     stmt.execute(cleanStatement);
-                    context.getLogger().log("Statement executado com sucesso!");
+                    context.getLogger().log("✅ Statement executado com sucesso!");
                 }
             }
         }

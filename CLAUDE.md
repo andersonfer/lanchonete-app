@@ -1649,3 +1649,7 @@ echo "🎓 Academy budget preservado"
 ✅ Context injection funcionando (headers X-*)
 ✅ CRUD produtos com autenticação
 ✅ Checkout
+- comandos de destroy só podem ser executados pelo usuário
+- a cada nova sessão, acesse a aws para saber se tem algum recurso rodando e avise o usuário
+- nenhum comando com -auto-approve
+- a cada inicio de sessao, verifique se há recursos órfãos na aws que podem ser deletados

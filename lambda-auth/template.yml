@@ -1,0 +1,68 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'Lambda de Autenticação - Tech Challenge Fase 3'
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Runtime: java17
+
+Parameters:
+  DatabaseUrl:
+    Type: String
+    Description: URL de conexão do banco de dados
+  
+  DBUsername:
+    Type: String
+    Description: Username do banco de dados
+  
+  DBPassword:
+    Type: String
+    NoEcho: true
+    Description: Password do banco de dados
+  
+  JwtSecret:
+    Type: String
+    NoEcho: true
+    Description: Chave secreta para assinar JWTs
+
+Resources:
+  LanchoneteAuthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: lanchonete-auth
+      CodeUri: target/lambda-auth-1.0-SNAPSHOT.jar
+      Handler: br.com.lanchonete.auth.AuthHandler::handleRequest
+      Environment:
+        Variables:
+          DATABASE_URL: !Ref DatabaseUrl
+          DB_USERNAME: !Ref DBUsername
+          DB_PASSWORD: !Ref DBPassword
+          JWT_SECRET: !Ref JwtSecret
+      Events:
+        AuthApi:
+          Type: Api
+          Properties:
+            Path: /auth
+            Method: POST
+            RestApiId: !Ref LanchoneteApi
+
+  LanchoneteApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: lanchonete-api
+      StageName: prod
+      Cors:
+        AllowMethods: "'POST,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowOrigin: "'*'"
+
+Outputs:
+  LanchoneteApiUrl:
+    Description: 'URL da API de Autenticação'
+    Value: !Sub 'https://${LanchoneteApi}.execute-api.${AWS::Region}.amazonaws.com/prod/'
+  
+  AuthFunctionArn:
+    Description: 'ARN da Lambda de Autenticação'
+    Value: !GetAtt LanchoneteAuthFunction.Arn

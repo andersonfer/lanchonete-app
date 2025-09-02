@@ -1653,3 +1653,4 @@ echo "🎓 Academy budget preservado"
 - a cada nova sessão, acesse a aws para saber se tem algum recurso rodando e avise o usuário
 - nenhum comando com -auto-approve
 - a cada inicio de sessao, verifique se há recursos órfãos na aws que podem ser deletados
+- all messages in brazilian portuguese

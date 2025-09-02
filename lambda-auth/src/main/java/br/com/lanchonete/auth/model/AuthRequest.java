@@ -7,7 +7,7 @@ public class AuthRequest {
     @JsonProperty("cpf")
     private String cpf;
 
-    @JsonProperty("authType")
+    @JsonProperty("tipoAuth")
     private String tipoAuth;
 
     public AuthRequest() {
@@ -34,10 +34,12 @@ public class AuthRequest {
         this.tipoAuth = tipoAuth;
     }
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public boolean isAuthCliente() {
         return "cliente".equals(tipoAuth);
     }
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public boolean isAuthAnonimo() {
         return "anonimo".equals(tipoAuth);
     }

@@ -4,6 +4,8 @@ import br.com.lanchonete.auth.model.Cliente;
 import br.com.lanchonete.auth.gateway.ClienteGateway;
 import br.com.lanchonete.auth.util.CpfValidator;
 import br.com.lanchonete.auth.exception.CpfInvalidoException;
+import br.com.lanchonete.auth.exception.ClienteNaoEncontradoException;
+import java.util.Optional;
 
 public class AutenticarCliente {
     
@@ -20,6 +22,7 @@ public class AutenticarCliente {
             throw new CpfInvalidoException(cpf);
         }
         
-        return clienteGateway.buscarPorCpfObrigatorio(cpf);
+        Optional<Cliente> clienteOpt = clienteGateway.buscarPorCpf(cpf);
+        return clienteOpt.orElseThrow(() -> new ClienteNaoEncontradoException(cpf));
     }
 }

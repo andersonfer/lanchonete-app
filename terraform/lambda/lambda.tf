@@ -1,27 +1,10 @@
-resource "aws_security_group" "lambda_sg" {
-  name_prefix = "lanchonete-lambda-auth-"
-  description = "Security group for Lambda Auth function"
-  vpc_id      = data.aws_vpc.default.id
-
-  egress {
-    from_port   = 3306
-    to_port     = 3306
-    protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/8"]
-    description = "MySQL access to RDS"
+# Usar security group criado pelo módulo database
+data "aws_security_group" "lambda_sg" {
+  filter {
+    name   = "tag:Name"
+    values = ["lanchonete-lambda-sg"]
   }
-
-  egress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "HTTPS for CloudWatch logs"
-  }
-
-  tags = {
-    Name = "lanchonete-lambda-auth-sg"
-  }
+  vpc_id = data.aws_vpc.default.id
 }
 
 resource "aws_lambda_function" "auth_lambda" {
@@ -35,7 +18,7 @@ resource "aws_lambda_function" "auth_lambda" {
 
   vpc_config {
     subnet_ids         = data.aws_subnets.default.ids
-    security_group_ids = [aws_security_group.lambda_sg.id]
+    security_group_ids = [data.aws_security_group.lambda_sg.id]
   }
 
   environment {
@@ -46,8 +29,6 @@ resource "aws_lambda_function" "auth_lambda" {
       JWT_SECRET   = var.jwt_secret
     }
   }
-
-  depends_on = [aws_security_group.lambda_sg]
 
   tags = {
     Name = "lanchonete-auth"

@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autoatendimento-test
+  labels:
+    app: autoatendimento-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: autoatendimento-test
+  template:
+    metadata:
+      labels:
+        app: autoatendimento-test
+    spec:
+      containers:
+      - name: autoatendimento
+        image: lanchonete/autoatendimento:latest
+        imagePullPolicy: Never  # Usar imagem local
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "kubernetes"
+        - name: DB_HOST
+          value: "lanchonete-mysql.c5h3y7avs68k.us-east-1.rds.amazonaws.com"
+        - name: DB_PORT
+          value: "3306"
+        - name: DB_NAME
+          value: "lanchonete"
+        - name: DB_USERNAME
+          value: "lanchonete"
+        - name: DB_PASSWORD
+          value: "LanchoneteDB123!"
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: autoatendimento-test-service
+spec:
+  selector:
+    app: autoatendimento-test
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: ClusterIP

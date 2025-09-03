@@ -1,0 +1,22 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: pagamento-service
+
+# Configuração do mock
+mock:
+  webhook:
+    url: http://localhost:8080/webhook/pagamento
+  processamento:
+    delay: 3000 # 3 segundos em milissegundos
+  aprovacao:
+    percentual: 80 # 80% de aprovação
+
+# Configuração do Swagger
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html

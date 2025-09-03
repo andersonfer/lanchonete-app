@@ -1,0 +1,4 @@
+# Configurações específicas para o ambiente de desenvolvimento
+spring:
+  profiles:
+    active: dev

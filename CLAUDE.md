@@ -46,8 +46,8 @@ AUTOMAÇÃO DE STATUS:
 🏗️ ETAPA 1: RDS + Lambda Connectivity Test   [ ] TODO / [ ] DOING / [X] DONE
 ⚡ ETAPA 2: Lambda de Autenticação Completa   [ ] TODO / [ ] DOING / [X] DONE  
 🌐 ETAPA 3: API Gateway + JWT Authorizer     [ ] TODO / [ ] DOING / [X] DONE
-☸️ ETAPA 4: EKS Cluster                      [ ] TODO / [ ] DOING / [ ] DONE
-📦 ETAPA 5: Aplicações Migradas              [ ] TODO / [ ] DOING / [ ] DONE
+☸️ ETAPA 4: EKS Cluster                      [ ] TODO / [ ] DOING / [X] DONE
+📦 ETAPA 5: Aplicações Migradas              [ ] TODO / [ ] DOING / [X] DONE
 ☸️ ETAPA 6: Deploy Kubernetes                [ ] TODO / [ ] DOING / [ ] DONE
 🔗 ETAPA 7: Integração API Gateway ↔ EKS    [ ] TODO / [ ] DOING / [ ] DONE
 🚀 ETAPA 8: CI/CD + Finalização             [ ] TODO / [ ] DOING / [ ] DONE

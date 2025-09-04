@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pagamento-deployment
+  labels:
+    app: pagamento
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: pagamento
+  template:
+    metadata:
+      labels:
+        app: pagamento
+    spec:
+      containers:
+        - name: app
+          image: {{ECR_URI_PAGAMENTO}}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8081
+              name: http
+
+          # Configurações via ConfigMap
+          envFrom:
+            - configMapRef:
+                name: pagamento-config
+
+          # RESOURCE LIMITS AJUSTADOS para HPA MENOS SENSÍVEL
+          resources:
+            requests:
+              memory: "256Mi"                # AUMENTADO: 200Mi → 256Mi
+              cpu: "150m"                    # AUMENTADO: 50m → 150m (crítico!)
+            limits:
+              memory: "512Mi"                # AUMENTADO: 400Mi → 512Mi
+              cpu: "500m"                    # AUMENTADO: 300m → 500m
+
+          # Health checks otimizados (mais tolerantes)
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8081
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 15
+            successThreshold: 1
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8081
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 5
+            successThreshold: 1
+
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8081
+              scheme: HTTP
+            initialDelaySeconds: 120
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
+            successThreshold: 1

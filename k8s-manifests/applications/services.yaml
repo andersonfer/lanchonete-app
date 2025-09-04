@@ -1,0 +1,38 @@
+# Service NodePort para Autoatendimento
+apiVersion: v1
+kind: Service
+metadata:
+  name: autoatendimento-service
+  labels:
+    app: autoatendimento
+    component: service
+spec:
+  type: NodePort                    # Tipo NodePort para acesso externo
+  selector:
+    app: autoatendimento            # Conecta com Pods que têm label app=autoatendimento
+  ports:
+    - name: http
+      port: 8080                      # Porta interna do Service
+      targetPort: 8080                # Porta do container
+      nodePort: 30080                 # Porta externa (mesmo que estava funcionando)
+      protocol: TCP
+
+---
+# Service NodePort para Pagamento
+apiVersion: v1
+kind: Service
+metadata:
+  name: pagamento-service
+  labels:
+    app: pagamento
+    component: service
+spec:
+  type: NodePort                    # Tipo NodePort para acesso externo
+  selector:
+    app: pagamento                  # Conecta com Pods que têm label app=pagamento
+  ports:
+    - name: http
+      port: 8081                      # Porta interna do Service
+      targetPort: 8081                # Porta do container
+      nodePort: 30081                 # Porta externa (mesmo que estava funcionando)
+      protocol: TCP

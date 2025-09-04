@@ -1,0 +1,56 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: lanchonete-alb
+  labels:
+    app: lanchonete
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internal
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+    alb.ingress.kubernetes.io/healthcheck-path: /actuator/health
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: '30'
+    alb.ingress.kubernetes.io/healthy-threshold-count: '2'
+    alb.ingress.kubernetes.io/unhealthy-threshold-count: '3'
+spec:
+  rules:
+    - http:
+        paths:
+          # Autoatendimento routes
+          - path: /produtos
+            pathType: Prefix
+            backend:
+              service:
+                name: autoatendimento-service
+                port:
+                  number: 80
+          - path: /pedidos
+            pathType: Prefix
+            backend:
+              service:
+                name: autoatendimento-service
+                port:
+                  number: 80
+          - path: /clientes
+            pathType: Prefix
+            backend:
+              service:
+                name: autoatendimento-service
+                port:
+                  number: 80
+          - path: /webhook/pagamento
+            pathType: Prefix
+            backend:
+              service:
+                name: autoatendimento-service
+                port:
+                  number: 80
+          # Pagamento routes  
+          - path: /pagamentos
+            pathType: Prefix
+            backend:
+              service:
+                name: pagamento-service
+                port:
+                  number: 80

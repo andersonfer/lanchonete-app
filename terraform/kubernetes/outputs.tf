@@ -57,3 +57,19 @@ output "vpc_link_id" {
   description = "ID do VPC Link para API Gateway"
   value       = aws_api_gateway_vpc_link.eks_vpc_link.id
 }
+
+# ECR Outputs
+output "ecr_autoatendimento_url" {
+  description = "URL do repositório ECR para autoatendimento"
+  value       = aws_ecr_repository.autoatendimento.repository_url
+}
+
+output "ecr_pagamento_url" {
+  description = "URL do repositório ECR para pagamento"
+  value       = aws_ecr_repository.pagamento.repository_url
+}
+
+output "account_id" {
+  description = "AWS Account ID"
+  value       = data.aws_caller_identity.current.account_id
+}

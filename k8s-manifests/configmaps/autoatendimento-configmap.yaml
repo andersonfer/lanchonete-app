@@ -1,0 +1,39 @@
+# ConfigMap Autoatendimento OTIMIZADO para Startup Rápido
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: autoatendimento-config
+  labels:
+    app: autoatendimento
+    component: config
+data:
+  # Configurações do servidor
+  SERVER_PORT: "8080"
+  SPRING_PROFILES_ACTIVE: "kubernetes"
+  
+  # Configurações do banco de dados RDS (será preenchido dinamicamente)
+  DB_HOST: "{{RDS_ENDPOINT}}"
+  DB_PORT: "3306"
+  DB_NAME: "lanchonete"
+  
+  # Configurações de inicialização do banco
+  SPRING_SQL_INIT_PLATFORM: "mysql"
+  SPRING_SQL_INIT_MODE: "embedded"  # MUDANÇA: always → embedded (mais seguro no RDS)
+  
+  # Configurações de logging (menos verboso = startup mais rápido)
+  LOG_LEVEL: "WARN"                    # REDUZIDO: INFO → WARN
+  
+  # OTIMIZAÇÃO PRINCIPAL: JAVA_OPTS para startup RÁPIDO (COMPATÍVEL)
+  JAVA_OPTS: >-
+    -Xms200m
+    -Xmx300m
+    -XX:+UseContainerSupport
+    -XX:MaxRAMPercentage=75.0
+    -XX:+UseG1GC
+    -XX:MaxGCPauseMillis=200
+    -Djava.security.egd=file:/dev/./urandom
+    -Dspring.backgroundpreinitializer.ignore=true
+    -Dspring.jmx.enabled=false
+    -Dspring.main.lazy-initialization=true
+    -XX:+TieredCompilation
+    -XX:TieredStopAtLevel=1

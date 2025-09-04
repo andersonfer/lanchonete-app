@@ -38,19 +38,19 @@ output "node_group_status" {
   value       = aws_eks_node_group.lanchonete_nodes.status
 }
 
-output "alb_arn" {
-  description = "ARN do Application Load Balancer"
-  value       = aws_lb.lanchonete_alb.arn
+output "nlb_arn" {
+  description = "ARN do Network Load Balancer"
+  value       = aws_lb.lanchonete_nlb.arn
 }
 
-output "alb_dns_name" {
-  description = "DNS name do Application Load Balancer"
-  value       = aws_lb.lanchonete_alb.dns_name
+output "nlb_dns_name" {
+  description = "DNS name do Network Load Balancer"
+  value       = aws_lb.lanchonete_nlb.dns_name
 }
 
-output "alb_zone_id" {
-  description = "Zone ID do Application Load Balancer"
-  value       = aws_lb.lanchonete_alb.zone_id
+output "nlb_zone_id" {
+  description = "Zone ID do Network Load Balancer"
+  value       = aws_lb.lanchonete_nlb.zone_id
 }
 
 output "vpc_link_id" {

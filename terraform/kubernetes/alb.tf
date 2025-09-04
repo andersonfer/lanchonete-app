@@ -34,7 +34,7 @@ resource "aws_security_group" "alb" {
 }
 
 # Network Load Balancer (necessário para VPC Link)
-resource "aws_lb" "lanchonete_alb" {
+resource "aws_lb" "lanchonete_nlb" {
   name               = "lanchonete-nlb"
   internal           = true
   load_balancer_type = "network"
@@ -71,7 +71,7 @@ resource "aws_lb_target_group" "default" {
 
 # Listener padrão para o NLB
 resource "aws_lb_listener" "default" {
-  load_balancer_arn = aws_lb.lanchonete_alb.arn
+  load_balancer_arn = aws_lb.lanchonete_nlb.arn
   port              = "80"
   protocol          = "TCP"
 

@@ -39,6 +39,13 @@ resource "aws_api_gateway_resource" "pedidos" {
   path_part   = "pedidos"
 }
 
+# /pagamentos
+resource "aws_api_gateway_resource" "pagamentos" {
+  rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
+  parent_id   = aws_api_gateway_rest_api.lanchonete_api.root_resource_id
+  path_part   = "pagamentos"
+}
+
 # ============================================
 # MÉTODOS COM JWT AUTHORIZER
 # ============================================
@@ -91,47 +98,58 @@ resource "aws_api_gateway_method" "pedidos_post" {
   api_key_required = false
 }
 
-# ============================================
-# INTEGRAÇÕES MOCK (para testar context injection)
-# ============================================
+# POST /pagamentos (processar pagamento)
+resource "aws_api_gateway_method" "pagamentos_post" {
+  rest_api_id      = aws_api_gateway_rest_api.lanchonete_api.id
+  resource_id      = aws_api_gateway_resource.pagamentos.id
+  http_method      = "POST"
+  authorization    = "CUSTOM"
+  authorizer_id    = aws_api_gateway_authorizer.jwt_authorizer.id
+  api_key_required = false
+}
 
-# Mock integration para produtos
-resource "aws_api_gateway_integration" "produtos_categoria_mock" {
-  rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
-  resource_id = aws_api_gateway_resource.produtos_categoria_param.id
-  http_method = aws_api_gateway_method.produtos_categoria_get.http_method
-  type        = "MOCK"
+# GET /pagamentos (consultar status pagamento - via query param)
+resource "aws_api_gateway_method" "pagamentos_get" {
+  rest_api_id      = aws_api_gateway_rest_api.lanchonete_api.id
+  resource_id      = aws_api_gateway_resource.pagamentos.id
+  http_method      = "GET"
+  authorization    = "CUSTOM"
+  authorizer_id    = aws_api_gateway_authorizer.jwt_authorizer.id
+  api_key_required = false
 
-  request_templates = {
-    "application/json" = jsonencode({
-      statusCode = 200
-    })
+  request_parameters = {
+    "method.request.querystring.pedidoId" = false
   }
 }
 
-# Mock integration response para produtos
-resource "aws_api_gateway_integration_response" "produtos_categoria_mock_response" {
+# ============================================
+# INTEGRAÇÕES HTTP_PROXY PARA EKS VIA NLB
+# ============================================
+
+# HTTP_PROXY integration para produtos (autoatendimento via NLB)
+resource "aws_api_gateway_integration" "produtos_categoria_integration" {
   rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
   resource_id = aws_api_gateway_resource.produtos_categoria_param.id
   http_method = aws_api_gateway_method.produtos_categoria_get.http_method
-  status_code = "200"
+  type        = "HTTP_PROXY"
 
-  response_templates = {
-    "application/json" = jsonencode({
-      message = "Context injection test - EKS não implementado ainda"
-      categoria = "$input.params('categoria')"
-      headers = {
-        clienteId = "$context.authorizer.clienteId"
-        cpf = "$context.authorizer.cpf"
-        nome = "$context.authorizer.nome"
-        authType = "$context.authorizer.authType"
-        sessionId = "$context.authorizer.sessionId"
-      }
-    })
+  integration_http_method = "GET"
+  uri = "http://${data.aws_lb.nlb.dns_name}:30080/produtos/categoria/{categoria}"
+  
+  connection_type = "VPC_LINK"
+  connection_id   = data.aws_api_gateway_vpc_link.eks_vpc_link.id
+
+  request_parameters = {
+    "integration.request.path.categoria" = "method.request.path.categoria"
+    # CONTEXT INJECTION - Headers injetados para aplicação
+    "integration.request.header.X-Cliente-ID"   = "context.authorizer.clienteId"
+    "integration.request.header.X-Cliente-CPF"  = "context.authorizer.cpf"
+    "integration.request.header.X-Cliente-Nome" = "context.authorizer.nome"
+    "integration.request.header.X-Auth-Type"    = "context.authorizer.authType"
+    "integration.request.header.X-Session-ID"   = "context.authorizer.sessionId"
   }
-
-  depends_on = [aws_api_gateway_integration.produtos_categoria_mock]
 }
+
 
 # Method response para produtos
 resource "aws_api_gateway_method_response" "produtos_categoria_200" {
@@ -149,42 +167,31 @@ resource "aws_api_gateway_method_response" "produtos_categoria_200" {
   }
 }
 
-# Mock integration para clientes
-resource "aws_api_gateway_integration" "clientes_mock" {
+# HTTP_PROXY integration para clientes (autoatendimento via NLB)
+resource "aws_api_gateway_integration" "clientes_integration" {
   rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
   resource_id = aws_api_gateway_resource.clientes.id
   http_method = aws_api_gateway_method.clientes_get.http_method
-  type        = "MOCK"
+  type        = "HTTP_PROXY"
 
-  request_templates = {
-    "application/json" = jsonencode({
-      statusCode = 200
-    })
+  integration_http_method = "GET"
+  uri = "http://${data.aws_lb.nlb.dns_name}:30080/clientes"
+  
+  connection_type = "VPC_LINK"
+  connection_id   = data.aws_api_gateway_vpc_link.eks_vpc_link.id
+
+  request_parameters = {
+    # Query parameters passthrough
+    "integration.request.querystring.cpf" = "method.request.querystring.cpf"
+    # CONTEXT INJECTION - Headers injetados para aplicação
+    "integration.request.header.X-Cliente-ID"   = "context.authorizer.clienteId"
+    "integration.request.header.X-Cliente-CPF"  = "context.authorizer.cpf"
+    "integration.request.header.X-Cliente-Nome" = "context.authorizer.nome"
+    "integration.request.header.X-Auth-Type"    = "context.authorizer.authType"
+    "integration.request.header.X-Session-ID"   = "context.authorizer.sessionId"
   }
 }
 
-# Mock integration response para clientes  
-resource "aws_api_gateway_integration_response" "clientes_mock_response" {
-  rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
-  resource_id = aws_api_gateway_resource.clientes.id
-  http_method = aws_api_gateway_method.clientes_get.http_method
-  status_code = "200"
-
-  response_templates = {
-    "application/json" = jsonencode({
-      message = "Context injection test - EKS não implementado ainda"
-      headers = {
-        clienteId = "$context.authorizer.clienteId"
-        cpf = "$context.authorizer.cpf"
-        nome = "$context.authorizer.nome"
-        authType = "$context.authorizer.authType"
-        sessionId = "$context.authorizer.sessionId"
-      }
-    })
-  }
-
-  depends_on = [aws_api_gateway_integration.clientes_mock]
-}
 
 # Method response para clientes
 resource "aws_api_gateway_method_response" "clientes_200" {
@@ -202,42 +209,29 @@ resource "aws_api_gateway_method_response" "clientes_200" {
   }
 }
 
-# Mock integration para pedidos GET
-resource "aws_api_gateway_integration" "pedidos_get_mock" {
+# HTTP_PROXY integration para pedidos GET (autoatendimento via NLB)
+resource "aws_api_gateway_integration" "pedidos_get_integration" {
   rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
   resource_id = aws_api_gateway_resource.pedidos.id
   http_method = aws_api_gateway_method.pedidos_get.http_method
-  type        = "MOCK"
+  type        = "HTTP_PROXY"
 
-  request_templates = {
-    "application/json" = jsonencode({
-      statusCode = 200
-    })
+  integration_http_method = "GET"
+  uri = "http://${data.aws_lb.nlb.dns_name}:30080/pedidos"
+  
+  connection_type = "VPC_LINK"
+  connection_id   = data.aws_api_gateway_vpc_link.eks_vpc_link.id
+
+  request_parameters = {
+    # CONTEXT INJECTION - Headers injetados para aplicação
+    "integration.request.header.X-Cliente-ID"   = "context.authorizer.clienteId"
+    "integration.request.header.X-Cliente-CPF"  = "context.authorizer.cpf"
+    "integration.request.header.X-Cliente-Nome" = "context.authorizer.nome"
+    "integration.request.header.X-Auth-Type"    = "context.authorizer.authType"
+    "integration.request.header.X-Session-ID"   = "context.authorizer.sessionId"
   }
 }
 
-# Mock integration response para pedidos GET
-resource "aws_api_gateway_integration_response" "pedidos_get_mock_response" {
-  rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
-  resource_id = aws_api_gateway_resource.pedidos.id
-  http_method = aws_api_gateway_method.pedidos_get.http_method
-  status_code = "200"
-
-  response_templates = {
-    "application/json" = jsonencode({
-      message = "Context injection test - EKS não implementado ainda"
-      headers = {
-        clienteId = "$context.authorizer.clienteId"
-        cpf = "$context.authorizer.cpf"
-        nome = "$context.authorizer.nome"
-        authType = "$context.authorizer.authType"
-        sessionId = "$context.authorizer.sessionId"
-      }
-    })
-  }
-
-  depends_on = [aws_api_gateway_integration.pedidos_get_mock]
-}
 
 # Method response para pedidos GET
 resource "aws_api_gateway_method_response" "pedidos_get_200" {
@@ -255,42 +249,29 @@ resource "aws_api_gateway_method_response" "pedidos_get_200" {
   }
 }
 
-# Mock integration para pedidos POST
-resource "aws_api_gateway_integration" "pedidos_post_mock" {
+# HTTP_PROXY integration para pedidos POST (autoatendimento via NLB)
+resource "aws_api_gateway_integration" "pedidos_post_integration" {
   rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
   resource_id = aws_api_gateway_resource.pedidos.id
   http_method = aws_api_gateway_method.pedidos_post.http_method
-  type        = "MOCK"
+  type        = "HTTP_PROXY"
 
-  request_templates = {
-    "application/json" = jsonencode({
-      statusCode = 201
-    })
+  integration_http_method = "POST"
+  uri = "http://${data.aws_lb.nlb.dns_name}:30080/pedidos"
+  
+  connection_type = "VPC_LINK"
+  connection_id   = data.aws_api_gateway_vpc_link.eks_vpc_link.id
+
+  request_parameters = {
+    # CONTEXT INJECTION - Headers injetados para aplicação
+    "integration.request.header.X-Cliente-ID"   = "context.authorizer.clienteId"
+    "integration.request.header.X-Cliente-CPF"  = "context.authorizer.cpf"
+    "integration.request.header.X-Cliente-Nome" = "context.authorizer.nome"
+    "integration.request.header.X-Auth-Type"    = "context.authorizer.authType"
+    "integration.request.header.X-Session-ID"   = "context.authorizer.sessionId"
   }
 }
 
-# Mock integration response para pedidos POST
-resource "aws_api_gateway_integration_response" "pedidos_post_mock_response" {
-  rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
-  resource_id = aws_api_gateway_resource.pedidos.id
-  http_method = aws_api_gateway_method.pedidos_post.http_method
-  status_code = "201"
-
-  response_templates = {
-    "application/json" = jsonencode({
-      message = "Context injection test - EKS não implementado ainda"
-      headers = {
-        clienteId = "$context.authorizer.clienteId"
-        cpf = "$context.authorizer.cpf"
-        nome = "$context.authorizer.nome"
-        authType = "$context.authorizer.authType"
-        sessionId = "$context.authorizer.sessionId"
-      }
-    })
-  }
-
-  depends_on = [aws_api_gateway_integration.pedidos_post_mock]
-}
 
 # Method response para pedidos POST
 resource "aws_api_gateway_method_response" "pedidos_post_201" {
@@ -305,5 +286,57 @@ resource "aws_api_gateway_method_response" "pedidos_post_201" {
 
   response_parameters = {
     "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+# ============================================
+# INTEGRAÇÕES HTTP_PROXY PAGAMENTOS (porta 30081)
+# ============================================
+
+# HTTP_PROXY integration para pagamentos POST (pagamento via NLB)
+resource "aws_api_gateway_integration" "pagamentos_post_integration" {
+  rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
+  resource_id = aws_api_gateway_resource.pagamentos.id
+  http_method = aws_api_gateway_method.pagamentos_post.http_method
+  type        = "HTTP_PROXY"
+
+  integration_http_method = "POST"
+  uri = "http://${data.aws_lb.nlb.dns_name}:30081/pagamentos"
+  
+  connection_type = "VPC_LINK"
+  connection_id   = data.aws_api_gateway_vpc_link.eks_vpc_link.id
+
+  request_parameters = {
+    # CONTEXT INJECTION - Headers injetados para aplicação
+    "integration.request.header.X-Cliente-ID"   = "context.authorizer.clienteId"
+    "integration.request.header.X-Cliente-CPF"  = "context.authorizer.cpf"
+    "integration.request.header.X-Cliente-Nome" = "context.authorizer.nome"
+    "integration.request.header.X-Auth-Type"    = "context.authorizer.authType"
+    "integration.request.header.X-Session-ID"   = "context.authorizer.sessionId"
+  }
+}
+
+# HTTP_PROXY integration para pagamentos GET (consultar status via NLB)
+resource "aws_api_gateway_integration" "pagamentos_get_integration" {
+  rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
+  resource_id = aws_api_gateway_resource.pagamentos.id
+  http_method = aws_api_gateway_method.pagamentos_get.http_method
+  type        = "HTTP_PROXY"
+
+  integration_http_method = "GET"
+  uri = "http://${data.aws_lb.nlb.dns_name}:30081/pagamentos"
+  
+  connection_type = "VPC_LINK"
+  connection_id   = data.aws_api_gateway_vpc_link.eks_vpc_link.id
+
+  request_parameters = {
+    # Query parameters passthrough
+    "integration.request.querystring.pedidoId" = "method.request.querystring.pedidoId"
+    # CONTEXT INJECTION - Headers injetados para aplicação
+    "integration.request.header.X-Cliente-ID"   = "context.authorizer.clienteId"
+    "integration.request.header.X-Cliente-CPF"  = "context.authorizer.cpf"
+    "integration.request.header.X-Cliente-Nome" = "context.authorizer.nome"
+    "integration.request.header.X-Auth-Type"    = "context.authorizer.authType"
+    "integration.request.header.X-Session-ID"   = "context.authorizer.sessionId"
   }
 }

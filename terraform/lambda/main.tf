@@ -31,3 +31,13 @@ data "aws_subnets" "default" {
 data "aws_db_instance" "mysql" {
   db_instance_identifier = "lanchonete-mysql"
 }
+
+# Data source para obter o NLB criado no módulo kubernetes
+data "aws_lb" "nlb" {
+  name = "lanchonete-nlb"
+}
+
+# Data source para obter o VPC Link criado no módulo kubernetes
+data "aws_api_gateway_vpc_link" "eks_vpc_link" {
+  name = "lanchonete-eks-vpc-link"
+}

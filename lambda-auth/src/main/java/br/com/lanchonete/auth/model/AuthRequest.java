@@ -7,7 +7,7 @@ public class AuthRequest {
     @JsonProperty("cpf")
     private String cpf;
 
-    @JsonProperty("tipoAuth")
+    @JsonProperty("authType")
     private String tipoAuth;
 
     public AuthRequest() {

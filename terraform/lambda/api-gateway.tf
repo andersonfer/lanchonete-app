@@ -97,10 +97,12 @@ resource "aws_api_gateway_deployment" "api_deployment" {
   depends_on = [
     aws_api_gateway_integration.auth_integration,
     aws_api_gateway_integration.auth_options_integration,
-    aws_api_gateway_integration.produtos_categoria_mock,
-    aws_api_gateway_integration.clientes_mock,
-    aws_api_gateway_integration.pedidos_get_mock,
-    aws_api_gateway_integration.pedidos_post_mock
+    aws_api_gateway_integration.produtos_categoria_integration,
+    aws_api_gateway_integration.clientes_integration,
+    aws_api_gateway_integration.pedidos_get_integration,
+    aws_api_gateway_integration.pedidos_post_integration,
+    aws_api_gateway_integration.pagamentos_post_integration,
+    aws_api_gateway_integration.pagamentos_get_integration
   ]
   
   rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
@@ -110,10 +112,13 @@ resource "aws_api_gateway_deployment" "api_deployment" {
       aws_api_gateway_resource.produtos.id,
       aws_api_gateway_resource.clientes.id,
       aws_api_gateway_resource.pedidos.id,
+      aws_api_gateway_resource.pagamentos.id,
       aws_api_gateway_method.produtos_categoria_get.id,
       aws_api_gateway_method.clientes_get.id,
       aws_api_gateway_method.pedidos_get.id,
       aws_api_gateway_method.pedidos_post.id,
+      aws_api_gateway_method.pagamentos_get.id,
+      aws_api_gateway_method.pagamentos_post.id,
     ]))
   }
   

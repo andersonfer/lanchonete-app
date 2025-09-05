@@ -143,8 +143,8 @@ resource "aws_api_gateway_integration" "produtos_categoria_integration" {
     "integration.request.path.categoria" = "method.request.path.categoria"
     # CONTEXT INJECTION - Headers injetados para aplicação
     "integration.request.header.X-Cliente-ID"   = "context.authorizer.clienteId"
-    "integration.request.header.X-Cliente-CPF"  = "context.authorizer.cpf"
-    "integration.request.header.X-Cliente-Nome" = "context.authorizer.nome"
+    "integration.request.header.X-CPF"          = "context.authorizer.cpf"
+    "integration.request.header.X-Nome"         = "context.authorizer.nome"
     "integration.request.header.X-Auth-Type"    = "context.authorizer.authType"
     "integration.request.header.X-Session-ID"   = "context.authorizer.sessionId"
   }
@@ -185,8 +185,8 @@ resource "aws_api_gateway_integration" "clientes_integration" {
     "integration.request.querystring.cpf" = "method.request.querystring.cpf"
     # CONTEXT INJECTION - Headers injetados para aplicação
     "integration.request.header.X-Cliente-ID"   = "context.authorizer.clienteId"
-    "integration.request.header.X-Cliente-CPF"  = "context.authorizer.cpf"
-    "integration.request.header.X-Cliente-Nome" = "context.authorizer.nome"
+    "integration.request.header.X-CPF"          = "context.authorizer.cpf"
+    "integration.request.header.X-Nome"         = "context.authorizer.nome"
     "integration.request.header.X-Auth-Type"    = "context.authorizer.authType"
     "integration.request.header.X-Session-ID"   = "context.authorizer.sessionId"
   }
@@ -225,8 +225,8 @@ resource "aws_api_gateway_integration" "pedidos_get_integration" {
   request_parameters = {
     # CONTEXT INJECTION - Headers injetados para aplicação
     "integration.request.header.X-Cliente-ID"   = "context.authorizer.clienteId"
-    "integration.request.header.X-Cliente-CPF"  = "context.authorizer.cpf"
-    "integration.request.header.X-Cliente-Nome" = "context.authorizer.nome"
+    "integration.request.header.X-CPF"          = "context.authorizer.cpf"
+    "integration.request.header.X-Nome"         = "context.authorizer.nome"
     "integration.request.header.X-Auth-Type"    = "context.authorizer.authType"
     "integration.request.header.X-Session-ID"   = "context.authorizer.sessionId"
   }
@@ -265,8 +265,8 @@ resource "aws_api_gateway_integration" "pedidos_post_integration" {
   request_parameters = {
     # CONTEXT INJECTION - Headers injetados para aplicação
     "integration.request.header.X-Cliente-ID"   = "context.authorizer.clienteId"
-    "integration.request.header.X-Cliente-CPF"  = "context.authorizer.cpf"
-    "integration.request.header.X-Cliente-Nome" = "context.authorizer.nome"
+    "integration.request.header.X-CPF"          = "context.authorizer.cpf"
+    "integration.request.header.X-Nome"         = "context.authorizer.nome"
     "integration.request.header.X-Auth-Type"    = "context.authorizer.authType"
     "integration.request.header.X-Session-ID"   = "context.authorizer.sessionId"
   }
@@ -309,8 +309,8 @@ resource "aws_api_gateway_integration" "pagamentos_post_integration" {
   request_parameters = {
     # CONTEXT INJECTION - Headers injetados para aplicação
     "integration.request.header.X-Cliente-ID"   = "context.authorizer.clienteId"
-    "integration.request.header.X-Cliente-CPF"  = "context.authorizer.cpf"
-    "integration.request.header.X-Cliente-Nome" = "context.authorizer.nome"
+    "integration.request.header.X-CPF"          = "context.authorizer.cpf"
+    "integration.request.header.X-Nome"         = "context.authorizer.nome"
     "integration.request.header.X-Auth-Type"    = "context.authorizer.authType"
     "integration.request.header.X-Session-ID"   = "context.authorizer.sessionId"
   }
@@ -334,8 +334,8 @@ resource "aws_api_gateway_integration" "pagamentos_get_integration" {
     "integration.request.querystring.pedidoId" = "method.request.querystring.pedidoId"
     # CONTEXT INJECTION - Headers injetados para aplicação
     "integration.request.header.X-Cliente-ID"   = "context.authorizer.clienteId"
-    "integration.request.header.X-Cliente-CPF"  = "context.authorizer.cpf"
-    "integration.request.header.X-Cliente-Nome" = "context.authorizer.nome"
+    "integration.request.header.X-CPF"          = "context.authorizer.cpf"
+    "integration.request.header.X-Nome"         = "context.authorizer.nome"
     "integration.request.header.X-Auth-Type"    = "context.authorizer.authType"
     "integration.request.header.X-Session-ID"   = "context.authorizer.sessionId"
   }

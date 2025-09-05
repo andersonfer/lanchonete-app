@@ -23,6 +23,7 @@ public class AuthHandler implements RequestHandler<APIGatewayProxyRequestEvent, 
     private final JwtService jwtService;
     
     public AuthHandler() {
+        System.out.println("DEBUG: Iniciando AuthHandler");
         this.objectMapper = new ObjectMapper();
         
         String databaseUrl = System.getenv("DATABASE_URL");
@@ -30,37 +31,64 @@ public class AuthHandler implements RequestHandler<APIGatewayProxyRequestEvent, 
         String dbPassword = System.getenv("DB_PASSWORD");
         String jwtSecret = System.getenv("JWT_SECRET");
         
-        ClienteGateway clienteGateway = new ClienteGatewayJdbc(databaseUrl, dbUsername, dbPassword);
-        CpfValidator cpfValidator = new CpfValidator();
+        System.out.println("DEBUG: Variáveis ambiente - URL: " + databaseUrl + ", User: " + dbUsername + ", JWT: " + (jwtSecret != null ? "OK" : "NULL"));
         
-        this.autenticarCliente = new AutenticarCliente(clienteGateway, cpfValidator);
-        this.jwtService = new JwtService(jwtSecret);
+        try {
+            ClienteGateway clienteGateway = new ClienteGatewayJdbc(databaseUrl, dbUsername, dbPassword);
+            System.out.println("DEBUG: ClienteGateway criado com sucesso");
+            
+            CpfValidator cpfValidator = new CpfValidator();
+            System.out.println("DEBUG: CpfValidator criado");
+            
+            this.autenticarCliente = new AutenticarCliente(clienteGateway, cpfValidator);
+            this.jwtService = new JwtService(jwtSecret);
+            System.out.println("DEBUG: AuthHandler inicializado com sucesso");
+        } catch (Exception e) {
+            System.err.println("ERRO: Falha na inicialização do AuthHandler: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
     
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+        System.out.println("DEBUG: Iniciando handleRequest - RequestId: " + context.getAwsRequestId());
+        
         try {
+            System.out.println("DEBUG: Body recebido: " + input.getBody());
+            
             AuthRequest request = objectMapper.readValue(input.getBody(), AuthRequest.class);
+            System.out.println("DEBUG: AuthRequest parseado - AuthType: " + request.getTipoAuth());
+            
             AuthResponse response;
             
             if (request.isAuthCliente()) {
+                System.out.println("DEBUG: Processando autenticação de cliente - CPF: " + request.getCpf());
                 Cliente cliente = autenticarCliente.executar(request.getCpf());
                 ClienteDto clienteDto = converterParaDto(cliente);
                 String token = jwtService.gerarTokenCliente(cliente);
                 response = AuthResponse.criarRespostaCliente(token, clienteDto, 3600L);
+                System.out.println("DEBUG: Token cliente gerado com sucesso");
             } else {
+                System.out.println("DEBUG: Processando autenticação anônima");
                 String sessionId = UUID.randomUUID().toString();
                 String token = jwtService.gerarTokenAnonimo(sessionId);
                 response = AuthResponse.criarRespostaAnonima(token, sessionId, 3600L);
+                System.out.println("DEBUG: Token anônimo gerado - SessionId: " + sessionId);
             }
             
+            System.out.println("DEBUG: Criando resposta de sucesso");
             return criarRespostaSucesso(response);
             
         } catch (CpfInvalidoException e) {
+            System.err.println("ERRO: CPF inválido - " + e.getMessage());
             return criarRespostaErro(400, "CPF inválido", e.getMessage());
         } catch (ClienteNaoEncontradoException e) {
+            System.err.println("ERRO: Cliente não encontrado - " + e.getMessage());
             return criarRespostaErro(404, "Cliente não encontrado", e.getMessage());
         } catch (Exception e) {
+            System.err.println("ERRO: Exception capturada - " + e.getClass().getName() + ": " + e.getMessage());
+            e.printStackTrace();
             return criarRespostaErro(500, "Erro interno", "Verifique os logs");
         }
     }

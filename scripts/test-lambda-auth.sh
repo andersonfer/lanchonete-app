@@ -17,17 +17,56 @@ if ! command -v curl &> /dev/null; then
     exit 1
 fi
 
+# Função para obter URL do API Gateway do Terraform
+get_api_gateway_url() {
+    # Tentar obter do diretório atual primeiro
+    if [[ -d "terraform/lambda/.terraform" ]]; then
+        local url=$(cd terraform/lambda && terraform output -raw api_gateway_url 2>/dev/null || echo "")
+        if [[ -n "$url" && "$url" != "null" ]]; then
+            echo "$url"
+            return 0
+        fi
+        
+        # Tentar com terraform show se output não funcionar
+        local url=$(cd terraform/lambda && terraform show -json 2>/dev/null | jq -r '.values.outputs.api_gateway_url.value // empty' 2>/dev/null || echo "")
+        if [[ -n "$url" && "$url" != "null" ]]; then
+            echo "$url"
+            return 0
+        fi
+    fi
+    
+    # Se não encontrar, tentar do diretório raiz do projeto
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local project_root="$(dirname "$script_dir")"
+    
+    if [[ -d "$project_root/terraform/lambda/.terraform" ]]; then
+        local url=$(cd "$project_root/terraform/lambda" && terraform output -raw api_gateway_url 2>/dev/null || echo "")
+        if [[ -n "$url" && "$url" != "null" ]]; then
+            echo "$url"
+            return 0
+        fi
+        
+        # Tentar com terraform show se output não funcionar
+        local url=$(cd "$project_root/terraform/lambda" && terraform show -json 2>/dev/null | jq -r '.values.outputs.api_gateway_url.value // empty' 2>/dev/null || echo "")
+        if [[ -n "$url" && "$url" != "null" ]]; then
+            echo "$url"
+            return 0
+        fi
+    fi
+    
+    return 1
+}
+
 # Obter URL da API Gateway (assumindo que já foi deployada)
 if [[ -z "$API_GATEWAY_URL" ]]; then
     echo "⚠️  Variável API_GATEWAY_URL não definida. Tentando obter do Terraform..."
     
-    if [[ -f "terraform/lambda/terraform.tfstate" ]]; then
-        API_GATEWAY_URL=$(cd terraform/lambda && terraform output -raw api_gateway_url 2>/dev/null || echo "")
-    fi
-    
-    if [[ -z "$API_GATEWAY_URL" ]]; then
+    if API_GATEWAY_URL=$(get_api_gateway_url); then
+        echo "✅ URL obtida do Terraform: $API_GATEWAY_URL"
+    else
         echo "❌ URL da API Gateway não encontrada. Configure API_GATEWAY_URL ou faça deploy primeiro."
         echo "💡 Exemplo: export API_GATEWAY_URL=https://abc123.execute-api.us-east-1.amazonaws.com/prod"
+        echo "💡 Ou execute: cd terraform/lambda && terraform output api_gateway_url"
         exit 1
     fi
 fi

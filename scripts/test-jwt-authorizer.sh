@@ -18,7 +18,7 @@ echo "🔑 1. OBTENDO TOKENS DE TESTE..."
 echo "   Obtendo token cliente..."
 CUSTOMER_RESPONSE=$(curl -s -X POST "$API_BASE_URL/auth" \
   -H "Content-Type: application/json" \
-  -d '{"cpf": "12345678901", "tipoAuth": "cliente"}')
+  -d '{"cpf": "12345678901", "authType": "cliente"}')
 
 CUSTOMER_TOKEN=$(echo "$CUSTOMER_RESPONSE" | jq -r '.token')
 
@@ -33,7 +33,7 @@ echo "   ✅ Token cliente obtido: ${CUSTOMER_TOKEN:0:50}..."
 echo "   Obtendo token anônimo..."
 ANON_RESPONSE=$(curl -s -X POST "$API_BASE_URL/auth" \
   -H "Content-Type: application/json" \
-  -d '{"tipoAuth": "anonimo"}')
+  -d '{"authType": "anonimo"}')
 
 ANON_TOKEN=$(echo "$ANON_RESPONSE" | jq -r '.token')
 

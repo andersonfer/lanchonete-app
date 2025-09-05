@@ -58,7 +58,7 @@ main() {
     log_info "🔑 Autenticação com CPF (cliente registrado)..."
     CUSTOMER_RESPONSE=$(curl -s -X POST "$API_BASE/auth" \
         -H "Content-Type: application/json" \
-        -d '{"cpf": "12345678901", "authType": "customer"}' || {
+        -d '{"cpf": "12345678901", "authType": "cliente"}' || {
         log_error "Falha na autenticação do cliente"
         exit 1
     })
@@ -74,7 +74,7 @@ main() {
     log_info "👤 Autenticação anônima..."
     ANON_RESPONSE=$(curl -s -X POST "$API_BASE/auth" \
         -H "Content-Type: application/json" \
-        -d '{"authType": "anonymous"}' || {
+        -d '{"authType": "anonimo"}' || {
         log_error "Falha na autenticação anônima"
         exit 1
     })

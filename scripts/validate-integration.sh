@@ -174,7 +174,7 @@ validate_api_gateway() {
     log_info "🔑 Testando endpoint público /auth..."
     HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$API_URL/auth" \
         -H "Content-Type: application/json" \
-        -d '{"authType": "anonymous"}' || echo "000")
+        -d '{"authType": "anonimo"}' || echo "000")
     
     if [[ "$HTTP_STATUS" == "200" ]]; then
         log_success "Endpoint /auth respondendo: $HTTP_STATUS"
@@ -206,7 +206,7 @@ validate_performance() {
     # Obter token para teste
     TOKEN_RESPONSE=$(curl -s -X POST "$API_URL/auth" \
         -H "Content-Type: application/json" \
-        -d '{"authType": "anonymous"}' || echo "")
+        -d '{"authType": "anonimo"}' || echo "")
     
     TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.token' 2>/dev/null || echo "")
     
@@ -354,7 +354,7 @@ main() {
     API_URL=$(cd terraform/lambda && terraform output -raw api_gateway_url 2>/dev/null || echo "")
     if [[ -n "$API_URL" ]]; then
         # Teste completo rápido
-        if TOKEN_RESPONSE=$(curl -s -X POST "$API_URL/auth" -H "Content-Type: application/json" -d '{"authType": "anonymous"}' 2>/dev/null) && \
+        if TOKEN_RESPONSE=$(curl -s -X POST "$API_URL/auth" -H "Content-Type: application/json" -d '{"authType": "anonimo"}' 2>/dev/null) && \
            TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.token' 2>/dev/null) && \
            [[ -n "$TOKEN" && "$TOKEN" != "null" ]] && \
            curl -s -f "$API_URL/produtos/categoria/LANCHE" -H "Authorization: Bearer $TOKEN" &>/dev/null; then

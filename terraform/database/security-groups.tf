@@ -38,16 +38,7 @@ resource "aws_security_group" "rds" {
   }
 }
 
-# Security group rules separadas para evitar dependency cycle
-resource "aws_security_group_rule" "lambda_to_rds" {
-  type                     = "egress"
-  from_port                = 3306
-  to_port                  = 3306
-  protocol                 = "tcp"
-  source_security_group_id = aws_security_group.rds.id
-  security_group_id        = aws_security_group.lambda.id
-  description              = "MySQL access to RDS"
-}
+# Security group rule: RDS aceita conexões apenas da Lambda
 
 resource "aws_security_group_rule" "rds_from_lambda" {
   type                     = "ingress"

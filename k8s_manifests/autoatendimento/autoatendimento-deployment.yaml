@@ -22,12 +22,28 @@ spec:
             - containerPort: 8080
               name: http
 
-          # Configurações via ConfigMap e Secret
+          # Configurações via ConfigMap
           envFrom:
             - configMapRef:
                 name: autoatendimento-config
-            - secretRef:
-                name: mysql-secret
+          
+          # Variáveis de ambiente do banco de dados via Secret
+          env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: rds-secret
+                  key: SPRING_DATASOURCE_URL
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: rds-secret
+                  key: SPRING_DATASOURCE_USERNAME
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rds-secret
+                  key: SPRING_DATASOURCE_PASSWORD
 
           # OTIMIZAÇÃO 1: Resources baseados no consumo real observado
           resources:

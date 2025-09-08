@@ -1,0 +1,79 @@
+name: Deploy Infraestrutura EKS
+
+on:
+  workflow_dispatch:  # Permite execução manual em qualquer branch
+  push:
+    branches:
+      - main
+      - feature/**  # Permite teste em branches feature
+      - develop     # Se houver branch develop
+    paths:
+      - 'infra/kubernetes/**'
+      - '.github/workflows/infra-eks.yml'
+
+env:
+  AWS_REGION: us-east-1
+  TF_WORKING_DIR: infra/kubernetes
+
+jobs:
+  deploy:
+    name: Deploy EKS
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v3
+
+    - name: Configurar AWS CLI
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-region: ${{ env.AWS_REGION }}
+        # LabRole deve ser configurado através de secrets ou OIDC
+        # aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        # aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        # aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.5.0
+
+    - name: Terraform Init
+      working-directory: ${{ env.TF_WORKING_DIR }}
+      run: terraform init
+
+    - name: Terraform Format Check
+      working-directory: ${{ env.TF_WORKING_DIR }}
+      run: terraform fmt -check -recursive
+
+    - name: Terraform Validate
+      working-directory: ${{ env.TF_WORKING_DIR }}
+      run: terraform validate
+
+    - name: Terraform Plan
+      working-directory: ${{ env.TF_WORKING_DIR }}
+      run: terraform plan -out=tfplan
+
+    - name: Terraform Apply
+      working-directory: ${{ env.TF_WORKING_DIR }}
+      # if: github.ref == 'refs/heads/main'  # Comentado para permitir testes
+      run: terraform apply -auto-approve tfplan
+
+    - name: Salvar outputs do Terraform
+      working-directory: ${{ env.TF_WORKING_DIR }}
+      # if: github.ref == 'refs/heads/main'  # Comentado para permitir testes
+      run: |
+        # Exporta outputs para serem usados por outros workflows
+        terraform output -json > ../../eks-outputs.json
+        
+        # Configura kubeconfig para próximos passos
+        aws eks update-kubeconfig --region ${{ env.AWS_REGION }} \
+          --name $(terraform output -raw cluster_name)
+
+    - name: Upload outputs como artefato
+      # if: github.ref == 'refs/heads/main'  # Comentado para permitir testes
+      uses: actions/upload-artifact@v3
+      with:
+        name: eks-outputs
+        path: eks-outputs.json
+        retention-days: 7

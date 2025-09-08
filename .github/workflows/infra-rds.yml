@@ -1,0 +1,165 @@
+name: Deploy Infraestrutura RDS
+
+on:
+  workflow_dispatch:  # Permite execução manual em qualquer branch
+  push:
+    branches:
+      - main
+      - feature/**  # Permite teste em branches feature
+      - develop     # Se houver branch develop
+    paths:
+      - 'infra/database/**'
+      - '.github/workflows/infra-rds.yml'
+
+env:
+  AWS_REGION: us-east-1
+  TF_WORKING_DIR: infra/database
+
+jobs:
+  deploy:
+    name: Deploy RDS MySQL
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v3
+
+    - name: Configurar AWS CLI
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-region: ${{ env.AWS_REGION }}
+        # LabRole deve ser configurado através de secrets ou OIDC
+        # aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        # aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        # aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.5.0
+
+    - name: Terraform Init
+      working-directory: ${{ env.TF_WORKING_DIR }}
+      run: terraform init
+
+    - name: Terraform Format Check
+      working-directory: ${{ env.TF_WORKING_DIR }}
+      run: terraform fmt -check -recursive
+
+    - name: Terraform Validate
+      working-directory: ${{ env.TF_WORKING_DIR }}
+      run: terraform validate
+
+    - name: Terraform Plan
+      working-directory: ${{ env.TF_WORKING_DIR }}
+      run: terraform plan -out=tfplan
+
+    - name: Terraform Apply
+      working-directory: ${{ env.TF_WORKING_DIR }}
+      # if: github.ref == 'refs/heads/main'  # Comentado para permitir testes
+      run: terraform apply -auto-approve tfplan
+
+    - name: Salvar outputs do RDS
+      working-directory: ${{ env.TF_WORKING_DIR }}
+      # if: github.ref == 'refs/heads/main'  # Comentado para permitir testes
+      run: |
+        # Exporta outputs para serem usados pelo pipeline da aplicação
+        terraform output -json > ../../rds-outputs.json
+
+    - name: Instalar MySQL Client e jq
+      # if: github.ref == 'refs/heads/main'  # Comentado para permitir testes
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y mysql-client jq
+
+    - name: Carregar Scripts SQL no RDS
+      # if: github.ref == 'refs/heads/main'  # Comentado para permitir testes
+      run: |
+        set -e
+        set -o pipefail
+        
+        # Lê os outputs do arquivo JSON gerado anteriormente
+        echo "📋 Lendo outputs do RDS..."
+        if [ ! -f "rds-outputs.json" ]; then
+          echo "❌ Arquivo rds-outputs.json não encontrado"
+          exit 1
+        fi
+        
+        RDS_ENDPOINT=$(jq -r '.rds_address.value' rds-outputs.json)
+        RDS_PORT=$(jq -r '.rds_port.value' rds-outputs.json)
+        DATABASE_NAME=$(jq -r '.database_name.value' rds-outputs.json)
+        DATABASE_USERNAME=$(jq -r '.database_username.value' rds-outputs.json)
+        DATABASE_PASSWORD=$(jq -r '.database_password.value' rds-outputs.json)
+        
+        # Valida que todos os valores foram obtidos
+        if [ -z "$RDS_ENDPOINT" ] || [ -z "$RDS_PORT" ] || [ -z "$DATABASE_NAME" ] || [ -z "$DATABASE_USERNAME" ] || [ -z "$DATABASE_PASSWORD" ]; then
+          echo "❌ Erro ao ler outputs do RDS. Valores faltando."
+          exit 1
+        fi
+        
+        # Verifica se a pasta de scripts existe
+        SCRIPTS_DIR="infra/database/scripts"
+        if [ ! -d "$SCRIPTS_DIR" ]; then
+          echo "⚠️ Pasta de scripts não encontrada: $SCRIPTS_DIR"
+          echo "📁 Criando pasta de scripts..."
+          mkdir -p "$SCRIPTS_DIR"
+          exit 0
+        fi
+        
+        # Conta quantos scripts existem
+        SCRIPT_COUNT=$(find "$SCRIPTS_DIR" -name "*.sql" -type f | wc -l)
+        if [ "$SCRIPT_COUNT" -eq 0 ]; then
+          echo "⚠️ Nenhum arquivo .sql encontrado em $SCRIPTS_DIR"
+          exit 0
+        fi
+        
+        echo "🔍 Encontrados $SCRIPT_COUNT scripts SQL para executar"
+        echo "🔗 Conectando ao RDS: $RDS_ENDPOINT:$RDS_PORT/$DATABASE_NAME"
+        
+        # Testa conexão primeiro
+        echo "🔌 Testando conexão com o banco..."
+        mysql -h "$RDS_ENDPOINT" \
+              -P "$RDS_PORT" \
+              -u "$DATABASE_USERNAME" \
+              -p"$DATABASE_PASSWORD" \
+              -e "SELECT 1" \
+              "$DATABASE_NAME" > /dev/null
+        
+        if [ $? -eq 0 ]; then
+          echo "✅ Conexão estabelecida com sucesso"
+        else
+          echo "❌ Falha ao conectar no banco de dados"
+          exit 1
+        fi
+        
+        # Executa cada script SQL em ordem alfabética
+        for SCRIPT in $(find "$SCRIPTS_DIR" -name "*.sql" -type f | sort); do
+          SCRIPT_NAME=$(basename "$SCRIPT")
+          echo ""
+          echo "▶️ Executando script: $SCRIPT_NAME"
+          
+          # Executa o script com mysql client
+          mysql -h "$RDS_ENDPOINT" \
+                -P "$RDS_PORT" \
+                -u "$DATABASE_USERNAME" \
+                -p"$DATABASE_PASSWORD" \
+                "$DATABASE_NAME" < "$SCRIPT"
+          
+          if [ $? -eq 0 ]; then
+            echo "✅ Script executado com sucesso: $SCRIPT_NAME"
+          else
+            echo "❌ Erro ao executar script: $SCRIPT_NAME"
+            exit 1
+          fi
+        done
+        
+        echo ""
+        echo "🎉 Todos os scripts SQL foram executados com sucesso!"
+
+    - name: Upload outputs como artefato
+      # if: github.ref == 'refs/heads/main'  # Comentado para permitir testes
+      uses: actions/upload-artifact@v3
+      with:
+        name: rds-outputs
+        path: rds-outputs.json
+        retention-days: 7

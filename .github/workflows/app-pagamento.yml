@@ -1,0 +1,77 @@
+name: Deploy App Pagamento
+
+on:
+  workflow_dispatch:  # Permite execução manual em qualquer branch
+  push:
+    branches:
+      - main
+      - feature/**  # Permite teste em branches feature
+      - develop     # Se houver branch develop
+    paths:
+      - 'app/pagamento/**'
+      - 'k8s_manifests/pagamento/**'
+      - '.github/workflows/app-pagamento.yml'
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: lanchonete-pagamento
+  SERVICE_NAME: pagamento
+
+jobs:
+  build-and-deploy:
+    name: Build e Deploy Pagamento
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v3
+
+    - name: Configurar AWS CLI
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-region: ${{ env.AWS_REGION }}
+        # LabRole deve ser configurado através de secrets ou OIDC
+
+    - name: Login no Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Setup Java
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+        cache: 'maven'
+
+    - name: Build da aplicação
+      working-directory: app/pagamento
+      run: mvn clean package -DskipTests
+
+    - name: Build e push da imagem Docker
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG app/pagamento
+        docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+    - name: Deploy no Kubernetes
+      env:
+        IMAGE_TAG: ${{ github.sha }}
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      run: |
+        # Configura kubeconfig
+        aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name lanchonete-cluster
+        
+        # Atualiza a imagem no deployment
+        kubectl set image deployment/pagamento-deployment \
+          app=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+          -n default
+        
+        # Aplica todos os manifests (pagamento não precisa de secret)
+        kubectl apply -f k8s_manifests/pagamento/
+        
+        # Aguarda o deployment ficar pronto
+        kubectl rollout status deployment/pagamento-deployment -n default --timeout=5m

@@ -141,7 +141,7 @@ resource "aws_api_gateway_integration" "produtos_categoria_integration" {
 
   request_parameters = {
     "integration.request.path.categoria" = "method.request.path.categoria"
-    # CONTEXT INJECTION - Headers injetados para aplicação
+    # CONTEXT INJECTION - Headers injetados para aplicação (sem prefixo X-)
     "integration.request.header.X-Cliente-ID"   = "context.authorizer.clienteId"
     "integration.request.header.X-CPF"          = "context.authorizer.cpf"
     "integration.request.header.X-Nome"         = "context.authorizer.nome"

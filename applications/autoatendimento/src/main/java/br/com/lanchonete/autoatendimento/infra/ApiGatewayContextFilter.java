@@ -33,6 +33,17 @@ public class ApiGatewayContextFilter extends OncePerRequestFilter {
                                   FilterChain filterChain) throws ServletException, IOException {
         
         logger.debug("Processando context injection do API Gateway");
+        System.out.println("=== DEBUG: ApiGatewayContextFilter executando ===");
+        
+        // DEBUG: Imprimir TODOS os headers
+        System.out.println("=== TODOS OS HEADERS ===");
+        java.util.Enumeration<String> headerNames = request.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String headerName = headerNames.nextElement();
+            String headerValue = request.getHeader(headerName);
+            System.out.println("Header: " + headerName + " = " + headerValue);
+        }
+        System.out.println("=== FIM DOS HEADERS ===");
         
         // Extrair headers injetados pelo API Gateway JWT Authorizer
         String clienteId = request.getHeader(HEADER_CLIENTE_ID);
@@ -96,7 +107,6 @@ public class ApiGatewayContextFilter extends OncePerRequestFilter {
             this.clienteId = clienteId;
             this.cpf = cpf;
             this.nome = nome;
-            setAuthenticated(true);
         }
         
         public Long getClienteId() { return clienteId; }

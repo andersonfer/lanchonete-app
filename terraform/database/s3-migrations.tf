@@ -1,13 +1,7 @@
 # Bucket S3 para armazenar migrations SQL
 
 resource "aws_s3_bucket" "migrations" {
-  bucket = "${var.project_name}-migrations-${random_string.bucket_suffix.result}"
-}
-
-resource "random_string" "bucket_suffix" {
-  length  = 8
-  special = false
-  upper   = false
+  bucket = "${var.project_name}-migrations"
 }
 
 resource "aws_s3_bucket_public_access_block" "migrations" {

@@ -8,6 +8,11 @@ output "cluster_security_group_id" {
   value       = aws_security_group.eks_cluster.id
 }
 
+output "node_security_group_id" {
+  description = "ID do security group dos nodes EKS"
+  value       = aws_security_group.eks_nodes.id
+}
+
 output "cluster_name" {
   description = "Nome do cluster EKS"
   value       = aws_eks_cluster.lanchonete_cluster.name

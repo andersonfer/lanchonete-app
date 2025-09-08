@@ -5,6 +5,11 @@ output "rds_endpoint" {
   value       = aws_db_instance.mysql.endpoint
 }
 
+output "rds_endpoint_host" {
+  description = "Hostname do RDS MySQL (sem porta)"
+  value       = aws_db_instance.mysql.address
+}
+
 output "rds_port" {
   description = "Porta do RDS MySQL"
   value       = aws_db_instance.mysql.port

@@ -1,7 +1,8 @@
-# Execução automática da Lambda de migration após criação do RDS
+# Placeholder para controle de dependências
+# As migrations são executadas via script externo (run-migrations.sh)
 # Tech Challenge Fase 3 - Lanchonete
 
-resource "null_resource" "auto_migrate" {
+resource "null_resource" "migration_ready" {
   depends_on = [
     aws_db_instance.mysql,
     aws_lambda_function.migration,
@@ -9,30 +10,8 @@ resource "null_resource" "auto_migrate" {
     aws_s3_object.seed_sql
   ]
 
-  provisioner "local-exec" {
-    command = <<-EOF
-      echo "🚀 Executando migrations automaticamente..."
-      aws lambda invoke --function-name ${aws_lambda_function.migration.function_name} response.json
-      
-      echo "📄 Resposta da migration:"
-      cat response.json
-      
-      # Verificar se migration foi bem-sucedida (sem jq)
-      if grep -q '"status":"success"' response.json; then
-        echo "✅ Migrations executadas com sucesso!"
-      else
-        echo "❌ Migration falhou - verifique os logs"
-        exit 1
-      fi
-    EOF
-  }
-  
-  provisioner "local-exec" {
-    when    = destroy
-    command = "rm -f response.json"
-  }
-
-  # Re-executar migrations quando necessário
+  # Apenas garantir que todos os recursos estão prontos
+  # A migration será executada via script externo
   triggers = {
     db_id       = aws_db_instance.mysql.id
     files_hash  = md5("${file("${path.module}/migrations/001_create_schema.sql")}${file("${path.module}/migrations/002_seed_data.sql")}")

@@ -4,6 +4,24 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
+variable "project_name" {
+  description = "Nome do projeto"
+  type        = string
+  default     = "lanchonete"
+}
+
+variable "db_username" {
+  description = "Username do banco RDS MySQL"
+  type        = string
+  sensitive   = true
+}
+
+variable "db_password" {
+  description = "Senha do banco RDS MySQL"
+  type        = string
+  sensitive   = true
+}
+
 variable "cluster_name" {
   description = "Nome do cluster EKS"
   type        = string

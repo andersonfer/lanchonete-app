@@ -46,6 +46,23 @@ jobs:
         working-directory: ./infra/backend
         run: terraform validate
       
+      - name: Verificar recursos existentes e importar se necessário
+        working-directory: ./infra/backend
+        run: |
+          # Verifica se o bucket S3 já existe
+          if aws s3api head-bucket --bucket lanchonete-terraform-state 2>/dev/null; then
+            echo "✅ Bucket S3 já existe, importando recursos para o estado..."
+            terraform import aws_s3_bucket.terraform_state lanchonete-terraform-state || true
+            terraform import aws_s3_bucket_server_side_encryption_configuration.terraform_state lanchonete-terraform-state || true
+            terraform import aws_s3_bucket_public_access_block.terraform_state lanchonete-terraform-state || true
+          fi
+          
+          # Verifica se a tabela DynamoDB já existe
+          if aws dynamodb describe-table --table-name lanchonete-terraform-locks 2>/dev/null; then
+            echo "✅ Tabela DynamoDB já existe, importando para o estado..."
+            terraform import aws_dynamodb_table.terraform_locks lanchonete-terraform-locks || true
+          fi
+      
       - name: Terraform Plan
         working-directory: ./infra/backend
         run: terraform plan -out=tfplan

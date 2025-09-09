@@ -51,14 +51,39 @@ jobs:
         run: |
           echo "🧹 Limpando recursos existentes para recriação..."
           
-          # Remove bucket S3 se existir
-          if aws s3api head-bucket --bucket lanchonete-terraform-state 2>/dev/null; then
-            echo "🗑️ Removendo bucket S3 existente..."
-            # Esvazia o bucket primeiro
-            aws s3 rm s3://lanchonete-terraform-state --recursive || true
-            # Remove o bucket
-            aws s3api delete-bucket --bucket lanchonete-terraform-state || true
-            echo "✅ Bucket S3 removido"
+          # Remove bucket S3 se existir (verifica globalmente)
+          echo "🔍 Verificando bucket S3 em todas as regiões..."
+          
+          # Lista de regiões principais para verificar
+          REGIONS=("us-east-1" "us-west-2" "eu-west-1" "ap-southeast-1")
+          BUCKET_FOUND=false
+          
+          for region in "${REGIONS[@]}"; do
+            echo "🔍 Verificando região: $region"
+            if aws s3api head-bucket --bucket lanchonete-terraform-state --region $region 2>/dev/null; then
+              echo "📍 Bucket encontrado na região: $region"
+              echo "🗑️ Removendo bucket S3 existente..."
+              
+              # Esvazia o bucket primeiro
+              aws s3 rm s3://lanchonete-terraform-state --recursive --region $region || true
+              
+              # Remove versionamento se houver
+              aws s3api delete-bucket-versioning --bucket lanchonete-terraform-state --region $region || true
+              
+              # Remove o bucket
+              aws s3api delete-bucket --bucket lanchonete-terraform-state --region $region || true
+              
+              echo "⏳ Aguardando propagação da remoção do S3 (30s)..."
+              sleep 30
+              
+              echo "✅ Bucket S3 removido da região $region"
+              BUCKET_FOUND=true
+              break
+            fi
+          done
+          
+          if [ "$BUCKET_FOUND" = false ]; then
+            echo "ℹ️ Bucket S3 não encontrado em nenhuma região conhecida"
           fi
           
           # Remove tabela DynamoDB se existir

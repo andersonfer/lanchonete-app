@@ -46,22 +46,52 @@ jobs:
         working-directory: ./infra/backend
         run: terraform validate
       
-      - name: Verificar recursos existentes e importar se necessário
+      - name: Verificar e importar recursos existentes
         working-directory: ./infra/backend
         run: |
-          # Verifica se o bucket S3 já existe
-          if aws s3api head-bucket --bucket lanchonete-terraform-state 2>/dev/null; then
-            echo "✅ Bucket S3 já existe, importando recursos para o estado..."
-            terraform import aws_s3_bucket.terraform_state lanchonete-terraform-state || true
-            terraform import aws_s3_bucket_server_side_encryption_configuration.terraform_state lanchonete-terraform-state || true
-            terraform import aws_s3_bucket_public_access_block.terraform_state lanchonete-terraform-state || true
+          echo "🔍 Verificando recursos existentes..."
+          
+          # Verifica se o bucket S3 já existe no estado
+          if ! terraform state show aws_s3_bucket.terraform_state 2>/dev/null; then
+            if aws s3api head-bucket --bucket lanchonete-terraform-state 2>/dev/null; then
+              echo "📥 Importando bucket S3 existente..."
+              terraform import aws_s3_bucket.terraform_state lanchonete-terraform-state
+            fi
+          else
+            echo "✅ Bucket S3 já está no estado"
           fi
           
-          # Verifica se a tabela DynamoDB já existe
-          if aws dynamodb describe-table --table-name lanchonete-terraform-locks 2>/dev/null; then
-            echo "✅ Tabela DynamoDB já existe, importando para o estado..."
-            terraform import aws_dynamodb_table.terraform_locks lanchonete-terraform-locks || true
+          # Verifica se a criptografia do S3 já existe no estado
+          if ! terraform state show aws_s3_bucket_server_side_encryption_configuration.terraform_state 2>/dev/null; then
+            if aws s3api get-bucket-encryption --bucket lanchonete-terraform-state 2>/dev/null; then
+              echo "📥 Importando configuração de criptografia S3..."
+              terraform import aws_s3_bucket_server_side_encryption_configuration.terraform_state lanchonete-terraform-state
+            fi
+          else
+            echo "✅ Configuração de criptografia S3 já está no estado"
           fi
+          
+          # Verifica se o public access block do S3 já existe no estado
+          if ! terraform state show aws_s3_bucket_public_access_block.terraform_state 2>/dev/null; then
+            if aws s3api get-public-access-block --bucket lanchonete-terraform-state 2>/dev/null; then
+              echo "📥 Importando public access block S3..."
+              terraform import aws_s3_bucket_public_access_block.terraform_state lanchonete-terraform-state
+            fi
+          else
+            echo "✅ Public access block S3 já está no estado"
+          fi
+          
+          # Verifica se a tabela DynamoDB já existe no estado
+          if ! terraform state show aws_dynamodb_table.terraform_locks 2>/dev/null; then
+            if aws dynamodb describe-table --table-name lanchonete-terraform-locks 2>/dev/null; then
+              echo "📥 Importando tabela DynamoDB existente..."
+              terraform import aws_dynamodb_table.terraform_locks lanchonete-terraform-locks
+            fi
+          else
+            echo "✅ Tabela DynamoDB já está no estado"
+          fi
+          
+          echo "✅ Verificação de recursos concluída"
       
       - name: Terraform Plan
         working-directory: ./infra/backend

@@ -46,52 +46,33 @@ jobs:
         working-directory: ./infra/backend
         run: terraform validate
       
-      - name: Verificar e importar recursos existentes
+      - name: Limpar recursos existentes para recriação
         working-directory: ./infra/backend
         run: |
-          echo "🔍 Verificando recursos existentes..."
+          echo "🧹 Limpando recursos existentes para recriação..."
           
-          # Verifica se o bucket S3 já existe no estado
-          if ! terraform state show aws_s3_bucket.terraform_state 2>/dev/null; then
-            if aws s3api head-bucket --bucket lanchonete-terraform-state 2>/dev/null; then
-              echo "📥 Importando bucket S3 existente..."
-              terraform import aws_s3_bucket.terraform_state lanchonete-terraform-state
-            fi
-          else
-            echo "✅ Bucket S3 já está no estado"
+          # Remove bucket S3 se existir
+          if aws s3api head-bucket --bucket lanchonete-terraform-state 2>/dev/null; then
+            echo "🗑️ Removendo bucket S3 existente..."
+            # Esvazia o bucket primeiro
+            aws s3 rm s3://lanchonete-terraform-state --recursive || true
+            # Remove o bucket
+            aws s3api delete-bucket --bucket lanchonete-terraform-state || true
+            echo "✅ Bucket S3 removido"
           fi
           
-          # Verifica se a criptografia do S3 já existe no estado
-          if ! terraform state show aws_s3_bucket_server_side_encryption_configuration.terraform_state 2>/dev/null; then
-            if aws s3api get-bucket-encryption --bucket lanchonete-terraform-state 2>/dev/null; then
-              echo "📥 Importando configuração de criptografia S3..."
-              terraform import aws_s3_bucket_server_side_encryption_configuration.terraform_state lanchonete-terraform-state
-            fi
-          else
-            echo "✅ Configuração de criptografia S3 já está no estado"
+          # Remove tabela DynamoDB se existir
+          if aws dynamodb describe-table --table-name lanchonete-terraform-locks 2>/dev/null; then
+            echo "🗑️ Removendo tabela DynamoDB existente..."
+            aws dynamodb delete-table --table-name lanchonete-terraform-locks || true
+            
+            # Aguarda a tabela ser deletada
+            echo "⏳ Aguardando remoção da tabela DynamoDB..."
+            aws dynamodb wait table-not-exists --table-name lanchonete-terraform-locks || true
+            echo "✅ Tabela DynamoDB removida"
           fi
           
-          # Verifica se o public access block do S3 já existe no estado
-          if ! terraform state show aws_s3_bucket_public_access_block.terraform_state 2>/dev/null; then
-            if aws s3api get-public-access-block --bucket lanchonete-terraform-state 2>/dev/null; then
-              echo "📥 Importando public access block S3..."
-              terraform import aws_s3_bucket_public_access_block.terraform_state lanchonete-terraform-state
-            fi
-          else
-            echo "✅ Public access block S3 já está no estado"
-          fi
-          
-          # Verifica se a tabela DynamoDB já existe no estado
-          if ! terraform state show aws_dynamodb_table.terraform_locks 2>/dev/null; then
-            if aws dynamodb describe-table --table-name lanchonete-terraform-locks 2>/dev/null; then
-              echo "📥 Importando tabela DynamoDB existente..."
-              terraform import aws_dynamodb_table.terraform_locks lanchonete-terraform-locks
-            fi
-          else
-            echo "✅ Tabela DynamoDB já está no estado"
-          fi
-          
-          echo "✅ Verificação de recursos concluída"
+          echo "✅ Limpeza concluída - recursos serão recriados"
       
       - name: Terraform Plan
         working-directory: ./infra/backend

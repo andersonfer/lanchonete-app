@@ -68,13 +68,16 @@ jobs:
         # Configura kubeconfig
         aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name lanchonete-cluster
         
-        # Atualiza a imagem no deployment
+        # Aplica todos os manifests PRIMEIRO (cria o deployment)
+        kubectl apply -f k8s_manifests/pagamento/
+        
+        # Aguarda o deployment ser criado
+        sleep 5
+        
+        # Agora atualiza a imagem no deployment
         kubectl set image deployment/pagamento-deployment \
           app=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
           -n default
-        
-        # Aplica todos os manifests (pagamento não precisa de secret)
-        kubectl apply -f k8s_manifests/pagamento/
         
         # Aguarda o deployment ficar pronto
         kubectl rollout status deployment/pagamento-deployment -n default --timeout=5m

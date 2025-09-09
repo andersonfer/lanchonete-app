@@ -141,14 +141,12 @@ jobs:
         fi
         echo "✅ Secret encontrado"
         
-        # Aplica todos os manifests (exceto o secret placeholder que já foi criado)
+        # Aplica todos os manifests PRIMEIRO (cria o deployment)
         echo "📦 Aplicando manifests do Kubernetes..."
-        for manifest in k8s_manifests/autoatendimento/*.yaml; do
-          if [[ ! "$manifest" == *"rds-secret.yaml"* ]]; then
-            echo "  Aplicando: $(basename $manifest)"
-            kubectl apply -f "$manifest"
-          fi
-        done
+        kubectl apply -f k8s_manifests/autoatendimento/
+        
+        # Aguarda o deployment ser criado
+        sleep 5
         
         # Atualiza a imagem no deployment
         echo "🐳 Atualizando imagem Docker no deployment..."

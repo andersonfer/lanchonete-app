@@ -1,7 +1,10 @@
 # Configuração do Terraform
 terraform {
   required_version = ">= 1.0"
-  
+
+  # Backend S3 configurado via parâmetros no CI/CD
+  backend "s3" {}
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -31,7 +34,7 @@ variable "nome_projeto" {
 # Configurações locais para evitar repetição
 locals {
   prefix = var.nome_projeto
-  
+
   common_tags = {
     Projeto   = var.nome_projeto
     ManagedBy = "terraform"
@@ -48,11 +51,16 @@ data "aws_vpc" "padrao" {
   default = true
 }
 
-# Busca todas as subnets da VPC dinamicamente
+# Busca subnets em zonas suportadas pelo EKS
 data "aws_subnets" "disponiveis" {
   filter {
     name   = "vpc-id"
     values = [data.aws_vpc.padrao.id]
+  }
+
+  filter {
+    name   = "availability-zone"
+    values = ["us-east-1a", "us-east-1b", "us-east-1c", "us-east-1d", "us-east-1f"]
   }
 }
 
@@ -89,7 +97,7 @@ resource "aws_eks_cluster" "principal" {
     security_group_ids      = [aws_security_group.eks_cluster.id]
     endpoint_private_access = true
     endpoint_public_access  = true
-    public_access_cidrs    = ["0.0.0.0/0"]
+    public_access_cidrs     = ["0.0.0.0/0"]
   }
 
   tags = merge(

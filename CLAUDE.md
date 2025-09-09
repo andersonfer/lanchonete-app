@@ -63,3 +63,4 @@ Crie um projeto AWS POC com as seguintes especificações:
 
 5. **Ambiente**
    - Não anotar em nenhum lugar o tipo de ambiente (dev, prod, etc.).
+- os comandos terraform apply sou eu que executo e te copio a saída

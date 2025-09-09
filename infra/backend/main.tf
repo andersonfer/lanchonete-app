@@ -2,7 +2,7 @@
 # Este módulo deve ser executado PRIMEIRO, antes dos outros módulos
 terraform {
   required_version = ">= 1.0"
-  
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -32,7 +32,7 @@ variable "nome_projeto" {
 # Configurações locais
 locals {
   prefix = var.nome_projeto
-  
+
   common_tags = {
     Projeto   = var.nome_projeto
     ManagedBy = "terraform"
@@ -42,29 +42,20 @@ locals {
 
 # Bucket S3 para armazenar o estado do Terraform
 resource "aws_s3_bucket" "terraform_state" {
-  bucket = "${local.prefix}-terraform-state"
-  
+  bucket = "lanchonete-terraform-state"
+
   # Previne deleção acidental
   lifecycle {
-    prevent_destroy = false  # POC permite destruir
+    prevent_destroy = false # POC permite destruir
   }
-  
-  tags = local.common_tags
-}
 
-# Versionamento do bucket (importante para estado do Terraform)
-resource "aws_s3_bucket_versioning" "terraform_state" {
-  bucket = aws_s3_bucket.terraform_state.id
-  
-  versioning_configuration {
-    status = "Enabled"
-  }
+  tags = local.common_tags
 }
 
 # Criptografia do bucket
 resource "aws_s3_bucket_server_side_encryption_configuration" "terraform_state" {
   bucket = aws_s3_bucket.terraform_state.id
-  
+
   rule {
     apply_server_side_encryption_by_default {
       sse_algorithm = "AES256"
@@ -75,7 +66,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "terraform_state" 
 # Bloqueia acesso público ao bucket
 resource "aws_s3_bucket_public_access_block" "terraform_state" {
   bucket = aws_s3_bucket.terraform_state.id
-  
+
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
@@ -85,14 +76,14 @@ resource "aws_s3_bucket_public_access_block" "terraform_state" {
 # Tabela DynamoDB para lock do estado
 resource "aws_dynamodb_table" "terraform_locks" {
   name         = "${local.prefix}-terraform-locks"
-  billing_mode = "PAY_PER_REQUEST"  # POC usa pay-per-request
+  billing_mode = "PAY_PER_REQUEST" # POC usa pay-per-request
   hash_key     = "LockID"
-  
+
   attribute {
     name = "LockID"
     type = "S"
   }
-  
+
   tags = local.common_tags
 }
 

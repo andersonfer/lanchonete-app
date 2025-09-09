@@ -1,7 +1,10 @@
 # Configuração do Terraform
 terraform {
   required_version = ">= 1.0"
-  
+
+  # Backend S3 configurado via parâmetros no CI/CD
+  backend "s3" {}
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -47,17 +50,19 @@ variable "master_username" {
 # Configurações locais
 locals {
   prefix = var.nome_projeto
-  
+
   common_tags = {
     Projeto   = var.nome_projeto
     ManagedBy = "terraform"
   }
 }
 
-# Gera senha aleatória para o banco
+# Gera senha aleatória para o banco (sem caracteres problemáticos)
 resource "random_password" "rds_password" {
   length  = 16
   special = true
+  # Exclui caracteres não permitidos pelo RDS: '/', '@', '"', ' '
+  override_special = "!#$%&*()_+=<>?{}|~"
 }
 
 # Busca a VPC padrão
@@ -122,32 +127,32 @@ resource "aws_db_instance" "mysql" {
   # Configurações do banco
   engine         = "mysql"
   engine_version = "8.0"
-  instance_class = "db.t3.micro"  # Menor instância para POC
-  
+  instance_class = "db.t3.micro" # Menor instância para POC
+
   # Armazenamento
-  allocated_storage     = 20
-  storage_type         = "gp2"
-  storage_encrypted    = false  # POC não precisa criptografia
-  
+  allocated_storage = 20
+  storage_type      = "gp2"
+  storage_encrypted = false # POC não precisa criptografia
+
   # Credenciais
   db_name  = var.database_name
   username = var.master_username
   password = random_password.rds_password.result
-  
+
   # Rede
   db_subnet_group_name   = aws_db_subnet_group.principal.name
   vpc_security_group_ids = [aws_security_group.rds.id]
   publicly_accessible    = false
-  
+
   # Configurações de manutenção
-  skip_final_snapshot       = true  # POC não precisa snapshot final
-  deletion_protection       = false  # POC permite deletar facilmente
-  backup_retention_period   = 1     # Backup mínimo para POC
-  
+  skip_final_snapshot     = true  # POC não precisa snapshot final
+  deletion_protection     = false # POC permite deletar facilmente
+  backup_retention_period = 1     # Backup mínimo para POC
+
   # Performance e disponibilidade
-  multi_az               = false    # POC não precisa multi-AZ
+  multi_az                   = false # POC não precisa multi-AZ
   auto_minor_version_upgrade = true
-  
+
   tags = merge(
     local.common_tags,
     {

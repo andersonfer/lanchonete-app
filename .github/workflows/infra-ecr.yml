@@ -1,4 +1,4 @@
-name: Deploy Infraestrutura EKS
+name: Deploy Infraestrutura ECR
 
 on:
   workflow_dispatch:  # Permite execução manual em qualquer branch
@@ -8,16 +8,16 @@ on:
       - feature/**  # Permite teste em branches feature
       - develop     # Se houver branch develop
     paths:
-      - 'infra/kubernetes/**'
-      - '.github/workflows/infra-eks.yml'
+      - 'infra/ecr/**'
+      - '.github/workflows/infra-ecr.yml'
 
 env:
   AWS_REGION: us-east-1
-  TF_WORKING_DIR: infra/kubernetes
+  TF_WORKING_DIR: infra/ecr
 
 jobs:
   deploy:
-    name: Deploy EKS
+    name: Deploy ECR
     runs-on: ubuntu-latest
     
     steps:
@@ -57,7 +57,7 @@ jobs:
         # Inicializa com backend remoto usando parâmetros
         terraform init \
           -backend-config="bucket=$BUCKET_NAME" \
-          -backend-config="key=kubernetes/terraform.tfstate" \
+          -backend-config="key=ecr/terraform.tfstate" \
           -backend-config="region=$REGION" \
           -backend-config="dynamodb_table=$TABLE_NAME" \
           -backend-config="encrypt=true"
@@ -79,22 +79,18 @@ jobs:
       # if: github.ref == 'refs/heads/main'  # Comentado para permitir testes
       run: terraform apply -auto-approve tfplan
 
-    - name: Salvar outputs do EKS
+    - name: Salvar outputs do ECR
       working-directory: ${{ env.TF_WORKING_DIR }}
       # if: github.ref == 'refs/heads/main'  # Comentado para permitir testes
       run: |
-        # Exporta outputs para serem usados por outros workflows
-        terraform output -json > eks-outputs.json
-        cat eks-outputs.json
-        
-        # Configura kubeconfig para próximos passos
-        aws eks update-kubeconfig --region ${{ env.AWS_REGION }} \
-          --name $(terraform output -raw cluster_name)
+        # Exporta outputs para serem usados pelos workflows das aplicações
+        terraform output -json > ecr-outputs.json
+        cat ecr-outputs.json
 
     - name: Upload outputs como artefato
       # if: github.ref == 'refs/heads/main'  # Comentado para permitir testes
       uses: actions/upload-artifact@v4
       with:
-        name: eks-outputs
-        path: infra/kubernetes/eks-outputs.json
+        name: ecr-outputs
+        path: infra/ecr/ecr-outputs.json
         retention-days: 7

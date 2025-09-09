@@ -22,10 +22,10 @@ jobs:
     
     steps:
     - name: Checkout código
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Configurar AWS CLI
-      uses: aws-actions/configure-aws-credentials@v2
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-region: ${{ env.AWS_REGION }}
         # LabRole configurado através de secrets
@@ -34,13 +34,33 @@ jobs:
         aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
 
     - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v2
+      uses: hashicorp/setup-terraform@v3
       with:
         terraform_version: 1.5.0
 
-    - name: Terraform Init
+    - name: Download backend outputs
+      uses: actions/download-artifact@v4
+      with:
+        name: backend-outputs
+        path: ./
+
+    - name: Terraform Init com backend remoto
       working-directory: ${{ env.TF_WORKING_DIR }}
-      run: terraform init
+      run: |
+        # Lê os outputs do backend
+        BUCKET_NAME=$(jq -r '.s3_bucket_name.value' backend-outputs.json)
+        TABLE_NAME=$(jq -r '.dynamodb_table_name.value' backend-outputs.json)
+        REGION=$(jq -r '.regiao.value' backend-outputs.json)
+        
+        echo "🔧 Configurando backend: bucket=$BUCKET_NAME, table=$TABLE_NAME, region=$REGION"
+        
+        # Inicializa com backend remoto usando parâmetros
+        terraform init \
+          -backend-config="bucket=$BUCKET_NAME" \
+          -backend-config="key=database/terraform.tfstate" \
+          -backend-config="region=$REGION" \
+          -backend-config="dynamodb_table=$TABLE_NAME" \
+          -backend-config="encrypt=true"
 
     - name: Terraform Format Check
       working-directory: ${{ env.TF_WORKING_DIR }}
@@ -64,7 +84,8 @@ jobs:
       # if: github.ref == 'refs/heads/main'  # Comentado para permitir testes
       run: |
         # Exporta outputs para serem usados pelo pipeline da aplicação
-        terraform output -json > ../../rds-outputs.json
+        terraform output -json > rds-outputs.json
+        cat rds-outputs.json
 
     - name: Instalar MySQL Client e jq
       # if: github.ref == 'refs/heads/main'  # Comentado para permitir testes
@@ -80,16 +101,16 @@ jobs:
         
         # Lê os outputs do arquivo JSON gerado anteriormente
         echo "📋 Lendo outputs do RDS..."
-        if [ ! -f "rds-outputs.json" ]; then
+        if [ ! -f "infra/database/rds-outputs.json" ]; then
           echo "❌ Arquivo rds-outputs.json não encontrado"
           exit 1
         fi
         
-        RDS_ENDPOINT=$(jq -r '.rds_address.value' rds-outputs.json)
-        RDS_PORT=$(jq -r '.rds_port.value' rds-outputs.json)
-        DATABASE_NAME=$(jq -r '.database_name.value' rds-outputs.json)
-        DATABASE_USERNAME=$(jq -r '.database_username.value' rds-outputs.json)
-        DATABASE_PASSWORD=$(jq -r '.database_password.value' rds-outputs.json)
+        RDS_ENDPOINT=$(jq -r '.rds_address.value' infra/database/rds-outputs.json)
+        RDS_PORT=$(jq -r '.rds_port.value' infra/database/rds-outputs.json)
+        DATABASE_NAME=$(jq -r '.database_name.value' infra/database/rds-outputs.json)
+        DATABASE_USERNAME=$(jq -r '.database_username.value' infra/database/rds-outputs.json)
+        DATABASE_PASSWORD=$(jq -r '.database_password.value' infra/database/rds-outputs.json)
         
         # Valida que todos os valores foram obtidos
         if [ -z "$RDS_ENDPOINT" ] || [ -z "$RDS_PORT" ] || [ -z "$DATABASE_NAME" ] || [ -z "$DATABASE_USERNAME" ] || [ -z "$DATABASE_PASSWORD" ]; then
@@ -161,5 +182,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: rds-outputs
-        path: rds-outputs.json
+        path: infra/database/rds-outputs.json
         retention-days: 7

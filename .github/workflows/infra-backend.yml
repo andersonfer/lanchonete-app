@@ -1,60 +1,68 @@
-name: Deploy Backend Terraform
+name: Backend Terraform (S3 + DynamoDB)
 
 on:
-  workflow_dispatch:  # Permite execução manual em qualquer branch
   push:
-    branches:
-      - main
-      - feature/**  # Permite teste em branches feature
-      - develop     # Se houver branch develop
+    branches: [main, feature/migracao_eks]
     paths:
       - 'infra/backend/**'
       - '.github/workflows/infra-backend.yml'
+  workflow_dispatch:
 
 env:
   AWS_REGION: us-east-1
-  TF_WORKING_DIR: infra/backend
+  TF_VERSION: 1.5.0
 
 jobs:
-  deploy:
-    name: Deploy Backend S3/DynamoDB
+  terraform:
+    name: Criar Backend Terraform
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout código
-      uses: actions/checkout@v3
-
-    - name: Configurar AWS CLI
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        aws-region: ${{ env.AWS_REGION }}
-        # LabRole configurado através de secrets
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v2
-      with:
-        terraform_version: 1.5.0
-
-    - name: Terraform Init
-      working-directory: ${{ env.TF_WORKING_DIR }}
-      run: terraform init
-
-    - name: Terraform Format Check
-      working-directory: ${{ env.TF_WORKING_DIR }}
-      run: terraform fmt -check -recursive
-
-    - name: Terraform Validate
-      working-directory: ${{ env.TF_WORKING_DIR }}
-      run: terraform validate
-
-    - name: Terraform Plan
-      working-directory: ${{ env.TF_WORKING_DIR }}
-      run: terraform plan -out=tfplan
-
-    - name: Terraform Apply
-      working-directory: ${{ env.TF_WORKING_DIR }}
-      # if: github.ref == 'refs/heads/main'  # Comentado para permitir testes
-      run: terraform apply -auto-approve tfplan
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Configurar Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+      
+      - name: Configurar credenciais AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Terraform Init (sem backend)
+        working-directory: ./infra/backend
+        run: terraform init
+      
+      - name: Verificar formatação Terraform
+        working-directory: ./infra/backend
+        run: terraform fmt -check
+      
+      - name: Validar Terraform
+        working-directory: ./infra/backend
+        run: terraform validate
+      
+      - name: Terraform Plan
+        working-directory: ./infra/backend
+        run: terraform plan -out=tfplan
+      
+      - name: Terraform Apply
+        working-directory: ./infra/backend
+        run: terraform apply -auto-approve tfplan
+      
+      - name: Salvar outputs
+        working-directory: ./infra/backend
+        run: |
+          terraform output -json > backend-outputs.json
+          cat backend-outputs.json
+      
+      - name: Upload outputs como artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-outputs
+          path: infra/backend/backend-outputs.json
+          retention-days: 7

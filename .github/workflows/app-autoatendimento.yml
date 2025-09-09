@@ -58,7 +58,7 @@ jobs:
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
     - name: Baixar outputs do RDS
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: rds-outputs
         path: .

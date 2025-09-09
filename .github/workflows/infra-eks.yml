@@ -72,7 +72,7 @@ jobs:
 
     - name: Upload outputs como artefato
       # if: github.ref == 'refs/heads/main'  # Comentado para permitir testes
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: eks-outputs
         path: eks-outputs.json

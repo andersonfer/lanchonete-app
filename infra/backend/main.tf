@@ -42,7 +42,7 @@ locals {
 
 # Bucket S3 para armazenar o estado do Terraform
 resource "aws_s3_bucket" "terraform_state" {
-  bucket = "lanchonete-terraform-state"
+  bucket = "lanchonete-terraform-state-poc"
 
   # Previne deleção acidental
   lifecycle {

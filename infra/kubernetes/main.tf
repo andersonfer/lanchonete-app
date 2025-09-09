@@ -2,8 +2,6 @@
 terraform {
   required_version = ">= 1.0"
 
-  # Backend S3 configurado via parâmetros no CI/CD
-  backend "s3" {}
 
   required_providers {
     aws = {

@@ -131,6 +131,49 @@ resource "aws_eks_node_group" "aplicacao" {
   )
 }
 
+# Busca o Security Group criado automaticamente pelo EKS para os nodes
+data "aws_security_group" "eks_node_group" {
+  depends_on = [aws_eks_node_group.aplicacao]
+  
+  filter {
+    name   = "group-name"
+    values = ["eks-cluster-sg-${aws_eks_cluster.principal.name}-*"]
+  }
+  
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.padrao.id]
+  }
+}
+
+# Regra para NodePort do Autoatendimento (porta 30080)
+resource "aws_security_group_rule" "nodeport_autoatendimento" {
+  depends_on = [data.aws_security_group.eks_node_group]
+  
+  type              = "ingress"
+  from_port         = 30080
+  to_port           = 30080
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = data.aws_security_group.eks_node_group.id
+  
+  description = "Acesso externo para NodePort do autoatendimento"
+}
+
+# Regra para NodePort do Pagamento (porta 30081)
+resource "aws_security_group_rule" "nodeport_pagamento" {
+  depends_on = [data.aws_security_group.eks_node_group]
+  
+  type              = "ingress"
+  from_port         = 30081
+  to_port           = 30081
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = data.aws_security_group.eks_node_group.id
+  
+  description = "Acesso externo para NodePort do pagamento"
+}
+
 # ===== OUTPUTS PARA PIPELINE CI/CD =====
 
 output "cluster_endpoint" {
@@ -162,4 +205,9 @@ output "vpc_id" {
 output "regiao" {
   description = "Região AWS utilizada"
   value       = var.regiao_aws
+}
+
+output "node_group_security_group_id" {
+  description = "ID do security group dos nodes EKS"
+  value       = data.aws_security_group.eks_node_group.id
 }

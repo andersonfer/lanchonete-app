@@ -7,12 +7,11 @@ metadata:
     app: autoatendimento
     component: service
 spec:
-  type: NodePort                    # Tipo NodePort para acesso externo
+  type: LoadBalancer                # Tipo LoadBalancer para acesso externo via ELB
   selector:
     app: autoatendimento            # Conecta com Pods que têm label app=autoatendimento
   ports:
     - name: http
       port: 8080                      # Porta interna do Service
       targetPort: 8080                # Porta do container
-      nodePort: 30080                 # Porta externa (mesmo que estava funcionando)
       protocol: TCP

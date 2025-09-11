@@ -26,6 +26,10 @@ echo "📈 Aplicando HPAs..."
 kubectl apply -f k8s_manifests/autoatendimento/autoatendimento-hpa.yml
 kubectl apply -f k8s_manifests/pagamento/pagamento-hpa.yml
 
+echo "🔗 Aplicando Ingresses (ALB)..."
+kubectl apply -f k8s_manifests/autoatendimento/autoatendimento-ingress.yaml
+kubectl apply -f k8s_manifests/pagamento/pagamento-ingress.yaml
+
 echo "⏳ Aguardando pods ficarem prontos..."
 echo "  Aguardando autoatendimento..."
 kubectl wait --for=condition=available --timeout=300s deployment/autoatendimento-deployment
@@ -53,8 +57,17 @@ echo "📈 HPAs:"
 kubectl get hpa
 
 echo ""
-echo "🎯 Para acessar as aplicações:"
-echo "  Autoatendimento: http://$(kubectl get service autoatendimento-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'):8080"
-echo "  Pagamento: http://$(kubectl get service pagamento-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'):8081"
+echo "🔗 INGRESSES (ALB):"
+kubectl get ingress -o wide
+
+echo ""
+echo "🎯 Para acessar as aplicações via ALB:"
+echo "  Aguarde 5-10 minutos para os ALBs ficarem ativos..."
+echo "  Autoatendimento: http://$(kubectl get ingress autoatendimento-ingress -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || echo '[AGUARDANDO ALB...]')"
+echo "  Pagamento: http://$(kubectl get ingress pagamento-ingress -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || echo '[AGUARDANDO ALB...]')"
+
+echo ""
+echo "⏳ Aguarde os ALBs ficarem ativos (pode demorar alguns minutos)..."
+echo "   Use: watch -n 30 'kubectl get ingress'"
 
 echo "📋 Deploy finalizado com sucesso!"

@@ -4,65 +4,91 @@
 
 **Este roteiro deve ser seguido a cada nova sessão para subir todo o ambiente:**
 
-### PASSO 1: Criar Backend S3 + DynamoDB
+### Criar Backend S3 + DynamoDB
 ```bash
 cd infra/backend
 terraform init
 terraform apply -auto-approve
 ```
 
-### PASSO 2: Criar Repositórios ECR
+### Criar Repositórios ECR
 ```bash
 cd ../ecr
 terraform init
 terraform apply -auto-approve
 ```
 
-### PASSO 3: Criar Banco RDS MySQL
+### Criar Banco RDS MySQL
 ```bash
 cd ../database
 terraform init
 terraform apply -auto-approve
 ```
 
-### PASSO 4: Criar Cluster EKS (8-12 minutos)
+### Criar Cluster EKS (8-12 minutos)
 ```bash
 cd ../kubernetes
 terraform init
 terraform apply -auto-approve
 ```
 
-### PASSO 5: Configurar kubectl
+### Configurar ALB Controller (5-8 minutos)
+```bash
+cd ../ingress
+terraform init
+terraform apply -auto-approve
+```
+
+### Configurar kubectl
 ```bash
 cd ../..
 aws eks update-kubeconfig --region us-east-1 --name lanchonete-cluster
 kubectl get nodes
 ```
 
-### PASSO 6: Atualizar Manifests com URLs Dinâmicas
+### Atualizar Manifests com URLs Dinâmicas
 ```bash
 ./scripts/update-manifests.sh
 ```
 
-### PASSO 7: Criar Secrets do RDS
+### Criar Secrets do RDS
 ```bash
 ./scripts/create-secrets.sh
 ```
 
-### PASSO 8: Build e Push das Imagens Docker
+### Build e Push das Imagens Docker
 ```bash
 ./scripts/build-and-push.sh
 ```
 
-### PASSO 9: Deploy no Kubernetes
+### Deploy no Kubernetes (inclui Ingresses ALB)
 ```bash
 ./scripts/deploy-k8s.sh
 ```
 
-### PASSO 10: Verificar Funcionamento
+### Aguardar ALBs ficarem ativos (5-10 minutos)
 ```bash
+# Monitorar status dos Ingresses
+watch -n 30 'kubectl get ingress -o wide'
+
+# Verificar quando os ALBs estiverem com ADDRESS
+kubectl get ingress
+```
+
+### Verificar Funcionamento e Testar Integração
+```bash
+# Verificar pods e ingresses
 kubectl get pods
-kubectl get services
+kubectl get ingress -o wide
+
+# Testar health checks dos ALBs
+curl http://[AUTOATENDIMENTO-ALB-URL]/actuator/health
+curl http://[PAGAMENTO-ALB-URL]/actuator/health
+
+# Teste completo de integração
+curl -X POST http://[AUTOATENDIMENTO-ALB-URL]/pedidos/checkout \
+  -H "Content-Type: application/json" \
+  -d '{"cpfCliente": null, "itens": [{"produtoId": 1, "quantidade": 1}]}'
 ```
 
 ---
@@ -74,35 +100,40 @@ kubectl get services
 - `scripts/build-and-push.sh` - Build e push das imagens para ECR
 - `scripts/deploy-k8s.sh` - Deploy completo no Kubernetes
 
-## 📊 Status da Última Sessão (10/09/2025)
+## 📊 Status da Última Sessão (11/09/2025)
 
-**✅ INFRAESTRUTURA TESTADA E FUNCIONANDO:**
-- Backend S3 + DynamoDB: Funcionando
-- ECR Repositories: Imagens buildadas e enviadas
-- RDS MySQL 8.0: Conectado às aplicações
-- EKS Cluster: 2 nodes ativos
-- Security Groups: Configurados via Terraform
-- **Autoatendimento**: LoadBalancer funcionando e testado ✅
-- **Pagamento**: LoadBalancer criado mas curl ainda não retorna (⏳ aguardando)
+**🎉 INFRAESTRUTURA COMPLETA E 100% TESTADA:**
+- **Backend S3 + DynamoDB**: Funcionando ✅
+- **ECR Repositories**: Imagens buildadas e enviadas ✅
+- **RDS MySQL 8.0**: Conectado às aplicações ✅
+- **EKS Cluster**: 2 nodes ativos ✅
+- **AWS Load Balancer Controller**: Instalado via Terraform ✅
+- **Application Load Balancers**: Ambos funcionando perfeitamente ✅
+  - Autoatendimento: `lanchonete-autoatendimento-alb-1781225815.us-east-1.elb.amazonaws.com`
+  - Pagamento: `lanchonete-pagamento-alb-786070014.us-east-1.elb.amazonaws.com`
 
-**🔧 MELHORIAS IMPLEMENTADAS:**
-- Scripts de automação criados e testados
-- Manifests configurados para LoadBalancer (ao invés de NodePort)
-- Security Groups configurados via Terraform para persistir
-- Autoatendimento conectando corretamente ao RDS
+**🔧 MIGRAÇÃO PARA ALB COMPLETA:**
+- ✅ Migração de Classic LoadBalancer para Application Load Balancer
+- ✅ Ingresses ALB configurados para ambos os serviços
+- ✅ Webhook automático entre serviços funcionando
+- ✅ Integração completa testada com 3 fluxos diferentes
+- ✅ Scripts atualizados para incluir deploy dos Ingresses
 
-**⚠️ PRÓXIMOS PASSOS NA NOVA SESSÃO:**
-1. Verificar se LoadBalancer do pagamento está respondendo
-2. Testar ambos os serviços completamente
-3. LoadBalancers podem demorar 5-10 minutos para ficarem ativos
+**📊 TESTES REALIZADOS COM SUCESSO:**
+| **Teste** | **Pedido** | **Valor** | **Status** | **Webhook** |
+|-----------|------------|-----------|------------|-------------|
+| 1 | PED000002 (ID: 2) | R$ 40,70 | ✅ APROVADO | ✅ Automático |
+| 2 | PED000003 (ID: 3) | R$ 56,70 | ✅ APROVADO | ✅ Automático |
+| 3 | PED000004 (ID: 4) | R$ 43,70 | ✅ APROVADO | ✅ Automático |
 
-**📁 ESTRUTURA FINAL:**
+**📁 ESTRUTURA ATUALIZADA:**
 - `infra/backend/` - S3 + DynamoDB (✅ aplicado)
 - `infra/ecr/` - Repositórios de imagem (✅ aplicado)  
 - `infra/database/` - RDS MySQL (✅ aplicado)
 - `infra/kubernetes/` - EKS cluster (✅ aplicado)
-- `k8s_manifests/` - manifests organizados por serviço (✅ aplicado)
-- `scripts/` - scripts de automação (✅ criados)
+- `infra/ingress/` - ALB Controller (✅ aplicado)
+- `k8s_manifests/` - manifests com Ingresses ALB (✅ aplicado)
+- `scripts/` - scripts atualizados com ALB deploy (✅ aplicado)
 
 ---
 

@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: 213187531135.dkr.ecr.us-east-1.amazonaws.com/lanchonete-pagamento:latest
+          image: 339712817738.dkr.ecr.us-east-1.amazonaws.com/lanchonete-pagamento:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8081

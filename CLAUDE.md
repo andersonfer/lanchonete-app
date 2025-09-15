@@ -66,13 +66,13 @@ kubectl get nodes
 ./scripts/deploy-k8s.sh
 ```
 
-### Aguardar ALBs ficarem ativos (5-10 minutos)
+### Aguardar ALBs ficarem ativos (3-5 minutos)
 ```bash
-# Monitorar status dos Ingresses
-watch -n 30 'kubectl get ingress -o wide'
-
 # Verificar quando os ALBs estiverem com ADDRESS
 kubectl get ingress
+
+# Para monitorar continuamente (opcional)
+watch -n 30 'kubectl get ingress -o wide'
 ```
 
 ### Verificar Funcionamento e Testar Integração
@@ -86,21 +86,30 @@ curl http://[AUTOATENDIMENTO-ALB-URL]/actuator/health
 curl http://[PAGAMENTO-ALB-URL]/actuator/health
 
 # Teste completo de integração
+# 1. Criar pedido
 curl -X POST http://[AUTOATENDIMENTO-ALB-URL]/pedidos/checkout \
   -H "Content-Type: application/json" \
   -d '{"cpfCliente": null, "itens": [{"produtoId": 1, "quantidade": 1}]}'
+
+# 2. Processar pagamento (usar o ID retornado do pedido)
+curl -X POST http://[PAGAMENTO-ALB-URL]/pagamentos \
+  -H "Content-Type: application/json" \
+  -d '{"pedidoId": 1, "valor": 18.90}'
+
+# 3. Verificar status do pagamento (aguardar ~10s para processamento)
+curl http://[AUTOATENDIMENTO-ALB-URL]/pedidos/1/pagamento/status
 ```
 
 ---
 
 ## ⚡ Scripts Automatizados Criados
 
-- `scripts/update-manifests.sh` - Atualiza manifests com URLs ECR/RDS dinâmicas
+- `scripts/update-manifests.sh` - Atualiza manifests substituindo qualquer ID de conta AWS pelo correto (resiliente a mudanças)
 - `scripts/create-secrets.sh` - Cria Secrets do RDS automaticamente
 - `scripts/build-and-push.sh` - Build e push das imagens para ECR
 - `scripts/deploy-k8s.sh` - Deploy completo no Kubernetes
 
-## 📊 Status da Última Sessão (11/09/2025)
+## 📊 Status da Última Sessão (15/09/2025)
 
 **🎉 INFRAESTRUTURA COMPLETA E 100% TESTADA:**
 - **Backend S3 + DynamoDB**: Funcionando ✅
@@ -109,8 +118,8 @@ curl -X POST http://[AUTOATENDIMENTO-ALB-URL]/pedidos/checkout \
 - **EKS Cluster**: 2 nodes ativos ✅
 - **AWS Load Balancer Controller**: Instalado via Terraform ✅
 - **Application Load Balancers**: Ambos funcionando perfeitamente ✅
-  - Autoatendimento: `lanchonete-autoatendimento-alb-1781225815.us-east-1.elb.amazonaws.com`
-  - Pagamento: `lanchonete-pagamento-alb-786070014.us-east-1.elb.amazonaws.com`
+  - Os endereços dos ALBs são gerados dinamicamente a cada deploy
+  - Verificar com: `kubectl get ingress`
 
 **🔧 MIGRAÇÃO PARA ALB COMPLETA:**
 - ✅ Migração de Classic LoadBalancer para Application Load Balancer
@@ -120,11 +129,10 @@ curl -X POST http://[AUTOATENDIMENTO-ALB-URL]/pedidos/checkout \
 - ✅ Scripts atualizados para incluir deploy dos Ingresses
 
 **📊 TESTES REALIZADOS COM SUCESSO:**
-| **Teste** | **Pedido** | **Valor** | **Status** | **Webhook** |
-|-----------|------------|-----------|------------|-------------|
-| 1 | PED000002 (ID: 2) | R$ 40,70 | ✅ APROVADO | ✅ Automático |
-| 2 | PED000003 (ID: 3) | R$ 56,70 | ✅ APROVADO | ✅ Automático |
-| 3 | PED000004 (ID: 4) | R$ 43,70 | ✅ APROVADO | ✅ Automático |
+- ✅ Integração completa testada entre serviços
+- ✅ Webhook automático funcionando
+- ✅ Aprovações e rejeições de pagamento simuladas (aleatórias)
+- ✅ Script `update-manifests.sh` melhorado para substituir qualquer ID de conta AWS
 
 **📁 ESTRUTURA ATUALIZADA:**
 - `infra/backend/` - S3 + DynamoDB (✅ aplicado)
@@ -132,6 +140,9 @@ curl -X POST http://[AUTOATENDIMENTO-ALB-URL]/pedidos/checkout \
 - `infra/database/` - RDS MySQL (✅ aplicado)
 - `infra/kubernetes/` - EKS cluster (✅ aplicado)
 - `infra/ingress/` - ALB Controller (✅ aplicado)
+- `infra/auth/` - Cognito User Pool para autenticação (🚧 em desenvolvimento)
+- `infra/lambda/` - Lambda de autenticação em Java (🚧 em desenvolvimento)
+- `infra/api-gateway/` - API Gateway com integração Cognito (🚧 em desenvolvimento)
 - `k8s_manifests/` - manifests com Ingresses ALB (✅ aplicado)
 - `scripts/` - scripts atualizados com ALB deploy (✅ aplicado)
 
@@ -147,15 +158,15 @@ curl -X POST http://[AUTOATENDIMENTO-ALB-URL]/pedidos/checkout \
    - Estrutura mínima, simples e funcional para POC ✅
 
 2. **Aplicação**
-   - Dois serviços:
+   - Três serviços principais:
      a) **autoatendimento**: acessa o banco MySQL
      b) **pagamento**: callback simples para autoatendimento, não acessa o banco
-   - Ambos rodando no **mesmo namespace**
+     c) **autenticação**: Lambda em Java + Cognito para identificação via CPF
+   - Serviços Kubernetes rodando no **mesmo namespace**
+   - **API Gateway** protegendo todos os endpoints com autenticação Cognito
    - Integrar os **manifests Kubernetes existentes**, organizando por serviço:
      - `k8s_manifests/autoatendimento`
      - `k8s_manifests/pagamento`
-   - **Remover todos os manifests relacionados a MySQL ou storage** (StatefulSets, PVC, PV, ConfigMaps ou Secrets antigos do banco)
-   - Adicionar apenas arquivos novos quando necessário
 
 3. **Gerenciamento Manual**
    - **Abandonamos GitHub Actions** devido a múltiplos erros
@@ -168,12 +179,47 @@ curl -X POST http://[AUTOATENDIMENTO-ALB-URL]/pedidos/checkout \
    - `infra/ecr/` → Repositórios Docker
    - `infra/database/` → RDS MySQL
    - `infra/kubernetes/` → EKS cluster + node group
+   - `infra/auth/` → Cognito User Pool para autenticação via CPF
+   - `infra/lambda/` → Lambda Function em Java para fluxo de autenticação
+   - `infra/api-gateway/` → API Gateway com authorizer Cognito
    - `k8s_manifests/` → manifests reorganizados por serviço
 
 5. **Segurança**
    - Apenas autoatendimento terá Secret (DB credentials)
    - Pagamento não precisa de Secret
    - Secrets criados manualmente, nunca versionados no Git
+---
+
+## 🔐 **NOVA FEATURE: Autenticação via Cognito + Lambda**
+
+### **Arquitetura de Autenticação:**
+```
+Cliente → API Gateway → Lambda (Java) → Cognito User Pool → JWT Token
+                ↓
+         [Token válido]
+                ↓
+    Serviços protegidos (Autoatendimento/Pagamento)
+```
+
+### **Fluxo de Identificação:**
+1. **Endpoint de autenticação:** `POST /auth/identificar`
+2. **Payload simples:** `{"cpf": "12345678900"}` (ou null para anônimo)
+3. **Auto-cadastro transparente:** CPF novo é cadastrado automaticamente
+4. **Suporte a anônimos:** Tokens temporários sem necessidade de CPF
+5. **Tokens JWT:** Duração de 1h para identificados, 30min para anônimos
+
+### **Integração com Serviços Existentes:**
+- API Gateway protege ALBs com authorizer Cognito
+- Tokens validados automaticamente pela AWS
+- Headers contêm dados do cliente para os serviços
+
+### **Próximos Passos:**
+1. Criar Cognito User Pool (`infra/auth/`)
+2. Desenvolver Lambda de autenticação em Java (`infra/lambda/`)
+3. Configurar API Gateway com authorizer (`infra/api-gateway/`)
+4. Integrar com ALBs existentes
+5. Testar fluxo completo de autenticação
+
 ---
 
 ## Configurações Importantes para Próximas Sessões

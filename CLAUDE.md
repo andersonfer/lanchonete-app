@@ -75,6 +75,28 @@ kubectl get ingress
 watch -n 30 'kubectl get ingress -o wide'
 ```
 
+### (OPCIONAL) Deploy da Autenticação Cognito + API Gateway
+```bash
+# Passo 1: Build da Lambda Java de autenticação
+cd infra/lambda
+./build.sh
+
+# Passo 2: Criar Cognito User Pool
+cd ../auth
+terraform init
+terraform apply -auto-approve
+
+# Passo 3: Deploy da Lambda Java
+cd ../lambda
+terraform init
+terraform apply -auto-approve
+
+# Passo 4: Configurar API Gateway com Cognito Authorizer
+cd ../api-gateway
+terraform init
+terraform apply -auto-approve
+```
+
 ### Verificar Funcionamento e Testar Integração
 ```bash
 # Verificar pods e ingresses
@@ -85,7 +107,7 @@ kubectl get ingress -o wide
 curl http://[AUTOATENDIMENTO-ALB-URL]/actuator/health
 curl http://[PAGAMENTO-ALB-URL]/actuator/health
 
-# Teste completo de integração
+# Teste completo de integração (sem autenticação)
 # 1. Criar pedido
 curl -X POST http://[AUTOATENDIMENTO-ALB-URL]/pedidos/checkout \
   -H "Content-Type: application/json" \
@@ -98,6 +120,18 @@ curl -X POST http://[PAGAMENTO-ALB-URL]/pagamentos \
 
 # 3. Verificar status do pagamento (aguardar ~10s para processamento)
 curl http://[AUTOATENDIMENTO-ALB-URL]/pedidos/1/pagamento/status
+
+# Teste com autenticação via API Gateway (após deploy da autenticação)
+# 1. Obter token anônimo
+curl -X POST https://[API-GATEWAY-URL]/v1/auth/identificar \
+  -H "Content-Type: application/json" \
+  -d '{"cpf": null}'
+
+# 2. Criar pedido protegido (usar token do passo anterior)
+curl -X POST https://[API-GATEWAY-URL]/v1/autoatendimento/pedidos/checkout \
+  -H "Authorization: Bearer [TOKEN]" \
+  -H "Content-Type: application/json" \
+  -d '{"cpfCliente": null, "itens": [{"produtoId": 1, "quantidade": 1}]}'
 ```
 
 ---
@@ -108,6 +142,7 @@ curl http://[AUTOATENDIMENTO-ALB-URL]/pedidos/1/pagamento/status
 - `scripts/create-secrets.sh` - Cria Secrets do RDS automaticamente
 - `scripts/build-and-push.sh` - Build e push das imagens para ECR
 - `scripts/deploy-k8s.sh` - Deploy completo no Kubernetes
+- `infra/lambda/build.sh` - Build da Lambda Java de autenticação
 
 ## 📊 Status da Última Sessão (15/09/2025)
 
@@ -118,33 +153,39 @@ curl http://[AUTOATENDIMENTO-ALB-URL]/pedidos/1/pagamento/status
 - **EKS Cluster**: 2 nodes ativos ✅
 - **AWS Load Balancer Controller**: Instalado via Terraform ✅
 - **Application Load Balancers**: Ambos funcionando perfeitamente ✅
-  - Os endereços dos ALBs são gerados dinamicamente a cada deploy
-  - Verificar com: `kubectl get ingress`
+  - Autoatendimento ALB: Ativo e funcional
+  - Pagamento ALB: Ativo e funcional
+  - Verificar endereços atuais: `kubectl get ingress`
 
-**🔧 MIGRAÇÃO PARA ALB COMPLETA:**
-- ✅ Migração de Classic LoadBalancer para Application Load Balancer
-- ✅ Ingresses ALB configurados para ambos os serviços
-- ✅ Webhook automático entre serviços funcionando
-- ✅ Integração completa testada com 3 fluxos diferentes
-- ✅ Scripts atualizados para incluir deploy dos Ingresses
+**🔐 AUTENTICAÇÃO COGNITO + API GATEWAY IMPLEMENTADA:**
+- ✅ **Cognito User Pool**: Configurado para autenticação via CPF
+- ✅ **Lambda Java**: Autenticação com auto-cadastro e suporte anônimo
+- ✅ **API Gateway**: Integrado com authorizer Cognito protegendo os ALBs
+- ✅ **Fluxo anônimo**: Completamente funcional
+- ⚠️ **Fluxo com CPF**: Implementado mas com problemas de autenticação
+  - Erro "Incorrect username or password" para usuários existentes
+  - Necessário investigar política de senhas do Cognito
 
-**📊 TESTES REALIZADOS COM SUCESSO:**
-- ✅ Integração completa testada entre serviços
-- ✅ Webhook automático funcionando
-- ✅ Aprovações e rejeições de pagamento simuladas (aleatórias)
-- ✅ Script `update-manifests.sh` melhorado para substituir qualquer ID de conta AWS
+**📊 TESTES DE INTEGRAÇÃO REALIZADOS:**
+- ✅ Fluxo completo anônimo executado com sucesso:
+  1. Identificação anônima → Token obtido
+  2. Busca produtos categoria LANCHE → X-Burger encontrado
+  3. Checkout pedido → PED000004 criado (R$ 18,90)
+  4. Pagamento → Processado
+  5. Status final → APROVADO ✅
+- ⚠️ Fluxo com CPF: Bloqueado na etapa de autenticação
 
-**📁 ESTRUTURA ATUALIZADA:**
+**📁 ESTRUTURA FINALIZADA:**
 - `infra/backend/` - S3 + DynamoDB (✅ aplicado)
 - `infra/ecr/` - Repositórios de imagem (✅ aplicado)  
 - `infra/database/` - RDS MySQL (✅ aplicado)
 - `infra/kubernetes/` - EKS cluster (✅ aplicado)
 - `infra/ingress/` - ALB Controller (✅ aplicado)
-- `infra/auth/` - Cognito User Pool para autenticação (🚧 em desenvolvimento)
-- `infra/lambda/` - Lambda de autenticação em Java (🚧 em desenvolvimento)
-- `infra/api-gateway/` - API Gateway com integração Cognito (🚧 em desenvolvimento)
+- `infra/auth/` - Cognito User Pool (✅ aplicado)
+- `infra/lambda/` - Lambda Java de autenticação (✅ aplicado)
+- `infra/api-gateway/` - API Gateway com Cognito Authorizer (✅ aplicado)
 - `k8s_manifests/` - manifests com Ingresses ALB (✅ aplicado)
-- `scripts/` - scripts atualizados com ALB deploy (✅ aplicado)
+- `scripts/` - scripts completos incluindo autenticação (✅ aplicado)
 
 ---
 
@@ -213,12 +254,24 @@ Cliente → API Gateway → Lambda (Java) → Cognito User Pool → JWT Token
 - Tokens validados automaticamente pela AWS
 - Headers contêm dados do cliente para os serviços
 
-### **Próximos Passos:**
-1. Criar Cognito User Pool (`infra/auth/`)
-2. Desenvolver Lambda de autenticação em Java (`infra/lambda/`)
-3. Configurar API Gateway com authorizer (`infra/api-gateway/`)
-4. Integrar com ALBs existentes
-5. Testar fluxo completo de autenticação
+### **Status da Implementação:**
+✅ Cognito User Pool configurado (`infra/auth/`)
+✅ Lambda de autenticação em Java criada (`infra/lambda/`)
+✅ API Gateway com authorizer configurado (`infra/api-gateway/`)
+✅ Integração com ALBs existentes implementada
+✅ Script de deploy automatizado (`scripts/deploy-auth.sh`)
+✅ Fluxo anônimo 100% funcional
+⚠️ Fluxo com CPF precisa de ajustes na política de senhas
+
+### **Como obter as URLs atuais:**
+```bash
+# URL do API Gateway
+cd infra/api-gateway
+terraform output api_gateway_endpoint
+
+# URLs dos ALBs
+kubectl get ingress -o wide
+```
 
 ---
 
@@ -247,3 +300,7 @@ Cliente → API Gateway → Lambda (Java) → Cognito User Pool → JWT Token
 - Não filtrar AZs específicas para subnets
 - os comandos de terraform apply sou eu quem executa e te copio a saída, para evitar timeout
 - sem comentarios sobre algo que foi removido
+- em todo início de sessão, nós temos que subir a infraestrutura do zero
+- quando vc for aplicar o terraform do RDS, deve ter um timeout de 10 minutos
+- quando vc for aplicar o terraform do EKS, deve ter um timeout de 20 minutos
+- nunca adicione urls hardcoded do claude.md, pois elas mudam a cada fim de sessao

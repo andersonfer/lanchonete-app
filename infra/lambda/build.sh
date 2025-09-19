@@ -13,9 +13,18 @@ if ! command -v mvn &> /dev/null; then
     exit 1
 fi
 
-# Limpar e compilar o projeto Java
+# Executar testes unitários
+echo "🧪 Executando testes unitários..."
+mvn clean test
+if [ $? -ne 0 ]; then
+    echo "❌ Testes falharam! Build interrompido."
+    exit 1
+fi
+echo "✅ Todos os testes passaram!"
+
+# Compilar o projeto Java
 echo "📦 Compilando projeto Java..."
-mvn clean package -DskipTests
+mvn package -DskipTests
 
 # Verificar se o build foi bem-sucedido
 if [ ! -d "target" ]; then

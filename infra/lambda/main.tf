@@ -35,6 +35,13 @@ data "terraform_remote_state" "auth" {
   }
 }
 
+# Buscar ALB do autoatendimento por tags
+data "aws_lb" "autoatendimento" {
+  tags = {
+    "ingress.k8s.aws/stack" = "lanchonete-autoatendimento"
+  }
+}
+
 # Lambda Function usando ZIP já pronto
 resource "aws_lambda_function" "auth_lambda" {
   filename         = "${path.module}/lambda-auth.zip"
@@ -50,6 +57,7 @@ resource "aws_lambda_function" "auth_lambda" {
     variables = {
       USER_POOL_ID = data.terraform_remote_state.auth.outputs.user_pool_id
       CLIENT_ID    = data.terraform_remote_state.auth.outputs.user_pool_client_id
+      AUTOATENDIMENTO_URL = "http://${data.aws_lb.autoatendimento.dns_name}"
     }
   }
 

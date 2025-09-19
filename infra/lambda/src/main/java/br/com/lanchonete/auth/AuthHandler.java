@@ -9,6 +9,10 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -17,16 +21,26 @@ public class AuthHandler implements RequestHandler<APIGatewayProxyRequestEvent, 
 
     private final CognitoIdentityProviderClient cognitoClient;
     private final ObjectMapper objectMapper;
-    private final String userPoolId;
-    private final String clientId;
+    private final AuthConfig config;
+    private final HttpClient httpClient;
 
     public AuthHandler() {
-        this.cognitoClient = CognitoIdentityProviderClient.builder()
-                .region(Region.US_EAST_1)
-                .build();
-        this.objectMapper = new ObjectMapper();
-        this.userPoolId = System.getenv("USER_POOL_ID");
-        this.clientId = System.getenv("CLIENT_ID");
+        this(AuthConfig.fromEnvironment(),
+             CognitoIdentityProviderClient.builder()
+                     .region(Region.US_EAST_1)
+                     .build(),
+             HttpClient.newHttpClient(),
+             new ObjectMapper());
+    }
+
+    public AuthHandler(AuthConfig config,
+                      CognitoIdentityProviderClient cognitoClient,
+                      HttpClient httpClient,
+                      ObjectMapper objectMapper) {
+        this.config = config;
+        this.cognitoClient = cognitoClient;
+        this.httpClient = httpClient;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -56,50 +70,47 @@ public class AuthHandler implements RequestHandler<APIGatewayProxyRequestEvent, 
             String cpfLimpo = limparCpf(cpf);
             context.getLogger().log("Autenticando CPF: " + cpfLimpo);
 
-            // Tentar criar usuário (se não existir)
+            // 1. Verificar/Criar cliente no MySQL primeiro (fonte da verdade)
+            if (!verificarClienteExiste(cpfLimpo, context)) {
+                context.getLogger().log("Cliente não existe no MySQL, criando...");
+                if (!criarClienteNoMySQL(cpfLimpo, context)) {
+                    context.getLogger().log("ERRO CRÍTICO: Falha ao criar cliente no MySQL");
+                    return criarErroResponse(500, "Erro ao criar cliente no sistema");
+                }
+                context.getLogger().log("Cliente criado no MySQL com sucesso");
+            } else {
+                context.getLogger().log("Cliente já existe no MySQL");
+            }
+
+            // 2. Tentar autenticar no Cognito
+            AdminInitiateAuthResponse authResponse = null;
             try {
-                criarUsuarioSeNaoExistir(cpfLimpo, context);
+                authResponse = tentarAutenticarCognito(cpfLimpo, context);
             } catch (Exception e) {
-                context.getLogger().log("Usuário já existe ou erro na criação: " + e.getMessage());
+                context.getLogger().log("Falha na autenticação, tentando criar usuário no Cognito: " + e.getMessage());
+
+                // Se falhou, criar usuário no Cognito e tentar novamente
+                if (!criarUsuarioSeNaoExistir(cpfLimpo, context)) {
+                    return criarErroResponse(500, "Erro ao criar usuário de autenticação");
+                }
+
+                try {
+                    authResponse = tentarAutenticarCognito(cpfLimpo, context);
+                } catch (Exception e2) {
+                    context.getLogger().log("ERRO CRÍTICO: Falha na autenticação mesmo após criar usuário: " + e2.getMessage());
+                    return criarErroResponse(500, "Erro na autenticação");
+                }
             }
 
-            // Fazer autenticação admin (sem senha)
-            AdminInitiateAuthRequest authRequest = AdminInitiateAuthRequest.builder()
-                    .userPoolId(userPoolId)
-                    .clientId(clientId)
-                    .authFlow(AuthFlowType.ADMIN_NO_SRP_AUTH)
-                    .authParameters(Map.of(
-                            "USERNAME", cpfLimpo,
-                            "PASSWORD", "Temp1234" // Senha temporária fixa
-                    ))
-                    .build();
-
-            AdminInitiateAuthResponse authResponse = cognitoClient.adminInitiateAuth(authRequest);
-
-            // Verificar se precisa definir senha permanente
+            // 3. Processar resposta da autenticação
             if (authResponse.challengeName() == ChallengeNameType.NEW_PASSWORD_REQUIRED) {
-                // Definir senha permanente automaticamente
-                AdminRespondToAuthChallengeRequest challengeRequest = AdminRespondToAuthChallengeRequest.builder()
-                        .userPoolId(userPoolId)
-                        .clientId(clientId)
-                        .challengeName(ChallengeNameType.NEW_PASSWORD_REQUIRED)
-                        .session(authResponse.session())
-                        .challengeResponses(Map.of(
-                                "USERNAME", cpfLimpo,
-                                "NEW_PASSWORD", "Lanchonete@2024"
-                        ))
-                        .build();
-
-                AdminRespondToAuthChallengeResponse challengeResponse = cognitoClient.adminRespondToAuthChallenge(challengeRequest);
-                authResponse = AdminInitiateAuthResponse.builder()
-                        .authenticationResult(challengeResponse.authenticationResult())
-                        .build();
+                authResponse = processarDesafioSenha(authResponse, cpfLimpo, context);
             }
 
-            // Retornar tokens
+            // 4. Retornar tokens
             AuthenticationResultType result = authResponse.authenticationResult();
             IdentificacaoResponse response = new IdentificacaoResponse(
-                    result.idToken(), // API Gateway Cognito Authorizer precisa do ID Token
+                    result.idToken(),
                     result.expiresIn(),
                     cpfLimpo,
                     "IDENTIFICADO"
@@ -108,7 +119,7 @@ public class AuthHandler implements RequestHandler<APIGatewayProxyRequestEvent, 
             return criarSucessoResponse(response);
 
         } catch (Exception e) {
-            context.getLogger().log("Erro ao autenticar CPF: " + e.getMessage());
+            context.getLogger().log("Erro geral na autenticação: " + e.getMessage());
             return criarErroResponse(400, "Erro na autenticação");
         }
     }
@@ -122,12 +133,12 @@ public class AuthHandler implements RequestHandler<APIGatewayProxyRequestEvent, 
 
             // Autenticar usuário anônimo
             AdminInitiateAuthRequest authRequest = AdminInitiateAuthRequest.builder()
-                    .userPoolId(userPoolId)
-                    .clientId(clientId)
+                    .userPoolId(config.getUserPoolId())
+                    .clientId(config.getClientId())
                     .authFlow(AuthFlowType.ADMIN_NO_SRP_AUTH)
                     .authParameters(Map.of(
                             "USERNAME", userId,
-                            "PASSWORD", "Temp1234"
+                            "PASSWORD", "Lanchonete@2024"
                     ))
                     .build();
 
@@ -137,8 +148,8 @@ public class AuthHandler implements RequestHandler<APIGatewayProxyRequestEvent, 
             if (authResponse.challengeName() == ChallengeNameType.NEW_PASSWORD_REQUIRED) {
                 // Definir senha permanente automaticamente
                 AdminRespondToAuthChallengeRequest challengeRequest = AdminRespondToAuthChallengeRequest.builder()
-                        .userPoolId(userPoolId)
-                        .clientId(clientId)
+                        .userPoolId(config.getUserPoolId())
+                        .clientId(config.getClientId())
                         .challengeName(ChallengeNameType.NEW_PASSWORD_REQUIRED)
                         .session(authResponse.session())
                         .challengeResponses(Map.of(
@@ -169,20 +180,112 @@ public class AuthHandler implements RequestHandler<APIGatewayProxyRequestEvent, 
         }
     }
 
-    private void criarUsuarioSeNaoExistir(String username, Context context) {
+    private boolean verificarClienteExiste(String cpf, Context context) {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(config.getAutoatendimentoUrl() + "/clientes/cpf/" + cpf))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200) {
+                context.getLogger().log("Cliente encontrado no MySQL: " + cpf);
+                return true;
+            } else if (response.statusCode() == 404) {
+                context.getLogger().log("Cliente não encontrado no MySQL: " + cpf);
+                return false;
+            } else {
+                context.getLogger().log("Erro ao verificar cliente no MySQL. Status: " + response.statusCode());
+                return false;
+            }
+        } catch (Exception e) {
+            context.getLogger().log("Erro ao conectar com MySQL: " + e.getMessage());
+            return false;
+        }
+    }
+
+    private boolean criarClienteNoMySQL(String cpf, Context context) {
+        try {
+            Map<String, String> clienteData = new HashMap<>();
+            clienteData.put("cpf", cpf);
+            clienteData.put("nome", "Cliente " + cpf);
+            clienteData.put("email", cpf + "@lanchonete.com");
+
+            String jsonBody = objectMapper.writeValueAsString(clienteData);
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(config.getAutoatendimentoUrl() + "/clientes"))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200 || response.statusCode() == 201) {
+                context.getLogger().log("Cliente criado no MySQL: " + cpf);
+                return true;
+            } else {
+                context.getLogger().log("Erro ao criar cliente no MySQL. Status: " + response.statusCode() + ", Body: " + response.body());
+                return false;
+            }
+        } catch (Exception e) {
+            context.getLogger().log("Erro ao criar cliente no MySQL: " + e.getMessage());
+            return false;
+        }
+    }
+
+    private AdminInitiateAuthResponse tentarAutenticarCognito(String cpf, Context context) throws Exception {
+        AdminInitiateAuthRequest authRequest = AdminInitiateAuthRequest.builder()
+                .userPoolId(config.getUserPoolId())
+                .clientId(config.getClientId())
+                .authFlow(AuthFlowType.ADMIN_NO_SRP_AUTH)
+                .authParameters(Map.of(
+                        "USERNAME", cpf,
+                        "PASSWORD", "Lanchonete@2024"
+                ))
+                .build();
+
+        return cognitoClient.adminInitiateAuth(authRequest);
+    }
+
+    private AdminInitiateAuthResponse processarDesafioSenha(AdminInitiateAuthResponse authResponse, String cpf, Context context) throws Exception {
+        AdminRespondToAuthChallengeRequest challengeRequest = AdminRespondToAuthChallengeRequest.builder()
+                .userPoolId(config.getUserPoolId())
+                .clientId(config.getClientId())
+                .challengeName(ChallengeNameType.NEW_PASSWORD_REQUIRED)
+                .session(authResponse.session())
+                .challengeResponses(Map.of(
+                        "USERNAME", cpf,
+                        "NEW_PASSWORD", "Lanchonete@2024"
+                ))
+                .build();
+
+        AdminRespondToAuthChallengeResponse challengeResponse = cognitoClient.adminRespondToAuthChallenge(challengeRequest);
+        return AdminInitiateAuthResponse.builder()
+                .authenticationResult(challengeResponse.authenticationResult())
+                .build();
+    }
+
+    private boolean criarUsuarioSeNaoExistir(String username, Context context) {
         try {
             AdminCreateUserRequest createRequest = AdminCreateUserRequest.builder()
-                    .userPoolId(userPoolId)
+                    .userPoolId(config.getUserPoolId())
                     .username(username)
-                    .temporaryPassword("Temp1234")
+                    .temporaryPassword("Lanchonete@2024")
                     .messageAction(MessageActionType.SUPPRESS) // Não enviar email
                     .build();
 
             cognitoClient.adminCreateUser(createRequest);
-            context.getLogger().log("Usuário criado: " + username);
+            context.getLogger().log("Usuário criado no Cognito: " + username);
+            return true;
 
         } catch (UsernameExistsException e) {
-            context.getLogger().log("Usuário já existe: " + username);
+            context.getLogger().log("Usuário já existe no Cognito: " + username);
+            return true;
+        } catch (Exception e) {
+            context.getLogger().log("Erro ao criar usuário no Cognito: " + e.getMessage());
+            return false;
         }
     }
 

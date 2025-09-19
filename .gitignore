@@ -26,3 +26,24 @@ Thumbs.db
 *.bak
 delete-markers.json
 versions.json
+
+# Java/Maven
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+maven-status/
+maven-archiver/
+surefire-reports/
+test-classes/
+
+# Lambda build artifacts
+infra/lambda/lambda-auth.zip
+infra/lambda/target/
+
+# Claude Code
+.claude/

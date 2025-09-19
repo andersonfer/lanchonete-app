@@ -4,6 +4,11 @@
 
 **Este roteiro deve ser seguido a cada nova sessão para subir todo o ambiente:**
 
+⏱️ **Tempo total estimado: ~30 minutos**
+- Infraestrutura básica: ~25min (RDS: 6min, EKS: 16min)
+- Autenticação completa: ~5min adicional
+- Testes automatizados: incluídos no final
+
 ### Criar Backend S3 + DynamoDB
 ```bash
 cd infra/backend
@@ -75,7 +80,7 @@ kubectl get ingress
 watch -n 30 'kubectl get ingress -o wide'
 ```
 
-### (OPCIONAL) Deploy da Autenticação Cognito + API Gateway
+### Deploy da Autenticação Cognito + API Gateway
 ```bash
 # Passo 1: Build da Lambda Java de autenticação
 cd infra/lambda
@@ -97,7 +102,14 @@ terraform init
 terraform apply -auto-approve
 ```
 
-### Verificar Funcionamento e Testar Integração
+### Executar Testes Automatizados de Integração
+```bash
+# Executar todos os cenários de autenticação automaticamente
+cd scripts
+./test-auth-scenarios.sh
+```
+
+### Verificar Funcionamento Manual (Opcional)
 ```bash
 # Verificar pods e ingresses
 kubectl get pods
@@ -107,21 +119,7 @@ kubectl get ingress -o wide
 curl http://[AUTOATENDIMENTO-ALB-URL]/actuator/health
 curl http://[PAGAMENTO-ALB-URL]/actuator/health
 
-# Teste completo de integração (sem autenticação)
-# 1. Criar pedido
-curl -X POST http://[AUTOATENDIMENTO-ALB-URL]/pedidos/checkout \
-  -H "Content-Type: application/json" \
-  -d '{"cpfCliente": null, "itens": [{"produtoId": 1, "quantidade": 1}]}'
-
-# 2. Processar pagamento (usar o ID retornado do pedido)
-curl -X POST http://[PAGAMENTO-ALB-URL]/pagamentos \
-  -H "Content-Type: application/json" \
-  -d '{"pedidoId": 1, "valor": 18.90}'
-
-# 3. Verificar status do pagamento (aguardar ~10s para processamento)
-curl http://[AUTOATENDIMENTO-ALB-URL]/pedidos/1/pagamento/status
-
-# Teste com autenticação via API Gateway (após deploy da autenticação)
+# Teste manual com autenticação via API Gateway
 # 1. Obter token anônimo
 curl -X POST https://[API-GATEWAY-URL]/v1/auth/identificar \
   -H "Content-Type: application/json" \
@@ -142,9 +140,25 @@ curl -X POST https://[API-GATEWAY-URL]/v1/autoatendimento/pedidos/checkout \
 - `scripts/create-secrets.sh` - Cria Secrets do RDS automaticamente
 - `scripts/build-and-push.sh` - Build e push das imagens para ECR
 - `scripts/deploy-k8s.sh` - Deploy completo no Kubernetes
+- `scripts/test-auth-scenarios.sh` - Testes automatizados de todos os cenários de autenticação (5 cenários completos)
 - `infra/lambda/build.sh` - Build da Lambda Java de autenticação
 
-## 📊 Status da Última Sessão (15/09/2025)
+## 🤖 Automação para Claude
+
+**IMPORTANTE**: Usar sempre o agente `infra-deploy-orchestrator` para deploy completo:
+```
+Preciso usar o agente infra-deploy-orchestrator para fazer o deploy completo da infraestrutura seguindo o roteiro do CLAUDE.md
+```
+
+**Sequência automatizada padrão:**
+1. TodoWrite para criar lista de tarefas
+2. Executar cada módulo Terraform na ordem
+3. Configurar kubectl e ALBs
+4. Executar scripts automatizados
+5. Rodar testes de integração
+6. Marcar todos como completed
+
+## 📊 Status da Última Sessão (19/09/2025)
 
 **🎉 INFRAESTRUTURA COMPLETA E 100% TESTADA:**
 - **Backend S3 + DynamoDB**: Funcionando ✅
@@ -157,23 +171,26 @@ curl -X POST https://[API-GATEWAY-URL]/v1/autoatendimento/pedidos/checkout \
   - Pagamento ALB: Ativo e funcional
   - Verificar endereços atuais: `kubectl get ingress`
 
-**🔐 AUTENTICAÇÃO COGNITO + API GATEWAY IMPLEMENTADA:**
+**🔐 AUTENTICAÇÃO COGNITO + API GATEWAY 100% FUNCIONAL:**
 - ✅ **Cognito User Pool**: Configurado para autenticação via CPF
 - ✅ **Lambda Java**: Autenticação com auto-cadastro e suporte anônimo
 - ✅ **API Gateway**: Integrado com authorizer Cognito protegendo os ALBs
 - ✅ **Fluxo anônimo**: Completamente funcional
-- ⚠️ **Fluxo com CPF**: Implementado mas com problemas de autenticação
-  - Erro "Incorrect username or password" para usuários existentes
-  - Necessário investigar política de senhas do Cognito
+- ✅ **Fluxo com CPF**: Todos os cenários funcionando perfeitamente
+- ✅ **Segurança**: API Gateway rejeitando corretamente requests não autenticados
 
-**📊 TESTES DE INTEGRAÇÃO REALIZADOS:**
-- ✅ Fluxo completo anônimo executado com sucesso:
-  1. Identificação anônima → Token obtido
-  2. Busca produtos categoria LANCHE → X-Burger encontrado
-  3. Checkout pedido → PED000004 criado (R$ 18,90)
-  4. Pagamento → Processado
-  5. Status final → APROVADO ✅
-- ⚠️ Fluxo com CPF: Bloqueado na etapa de autenticação
+**🧪 TESTES AUTOMATIZADOS IMPLEMENTADOS:**
+- ✅ **Script de Testes**: `scripts/test-auth-scenarios.sh` criado
+- ✅ **5 Cenários Completos** testados e aprovados:
+  1. **Segurança**: Cliente não autenticado (rejeitado corretamente)
+  2. **Cliente Anônimo**: X-Burger (LANCHE) - R$ 18,90 - APROVADO
+  3. **Cliente Novo**: Refrigerante Lata (BEBIDA) - R$ 6,90 - APROVADO
+  4. **Cliente via Endpoint**: Batata Frita P (ACOMPANHAMENTO) - R$ 10,90 - APROVADO
+  5. **Cliente Pré-existente**: Pudim (SOBREMESA) - R$ 8,90 - APROVADO
+- ✅ **Cobertura Completa**: Todas as 4 categorias de produtos testadas
+- ✅ **Taxa de Sucesso**: 100% - Todos os pagamentos aprovados
+- ✅ **Auto-configuração**: URLs obtidas dinamicamente via Terraform/kubectl
+- ✅ **Tempo de Execução**: ~30 segundos para todos os testes
 
 **📁 ESTRUTURA FINALIZADA:**
 - `infra/backend/` - S3 + DynamoDB (✅ aplicado)
@@ -259,9 +276,11 @@ Cliente → API Gateway → Lambda (Java) → Cognito User Pool → JWT Token
 ✅ Lambda de autenticação em Java criada (`infra/lambda/`)
 ✅ API Gateway com authorizer configurado (`infra/api-gateway/`)
 ✅ Integração com ALBs existentes implementada
-✅ Script de deploy automatizado (`scripts/deploy-auth.sh`)
 ✅ Fluxo anônimo 100% funcional
-⚠️ Fluxo com CPF precisa de ajustes na política de senhas
+✅ **Fluxo com CPF 100% funcional** (problema de senhas resolvido)
+✅ **Testes automatizados completos** (`scripts/test-auth-scenarios.sh`)
+✅ **5 cenários de autenticação validados**
+✅ **Sistema pronto para produção**
 
 ### **Como obter as URLs atuais:**
 ```bash

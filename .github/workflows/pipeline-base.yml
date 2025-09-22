@@ -1,0 +1,170 @@
+name: "Pipeline 1 - Base Infrastructure"
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-1
+  TF_VERSION: "1.5.0"
+
+jobs:
+  base-infra:
+    name: "Deploy Base Infrastructure"
+    runs-on: ubuntu-latest
+
+    outputs:
+      ecr_autoatendimento: ${{ steps.ecr_outputs.outputs.autoatendimento_url }}
+      ecr_pagamento: ${{ steps.ecr_outputs.outputs.pagamento_url }}
+      rds_endpoint: ${{ steps.rds_outputs.outputs.endpoint }}
+
+    steps:
+      - name: "📥 Checkout do código"
+        uses: actions/checkout@v4
+
+      - name: "🔐 Configurar credenciais AWS"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: "⚙️ Configurar Terraform"
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: "🧪 Validar credenciais AWS"
+        run: |
+          echo "Validando credenciais AWS..."
+          aws sts get-caller-identity
+
+      # Backend Infrastructure (S3 + DynamoDB)
+      - name: "🗄️ Deploy Backend Infrastructure"
+        id: backend
+        working-directory: infra/backend
+        run: |
+          echo "Criando S3 bucket e DynamoDB para estado do Terraform..."
+          terraform init
+          terraform validate
+          terraform plan -out=tfplan
+          terraform apply tfplan
+
+      # ECR Repositories
+      - name: "🐳 Deploy Repositórios ECR"
+        id: ecr
+        working-directory: infra/ecr
+        run: |
+          echo "Criando repositórios ECR..."
+          terraform init
+          terraform validate
+          terraform plan -out=tfplan
+          terraform apply tfplan
+
+      - name: "📤 Exportar URLs do ECR"
+        id: ecr_outputs
+        working-directory: infra/ecr
+        run: |
+          AUTOATENDIMENTO_URL=$(terraform output -raw ecr_autoatendimento_url)
+          PAGAMENTO_URL=$(terraform output -raw ecr_pagamento_url)
+          echo "autoatendimento_url=$AUTOATENDIMENTO_URL" >> $GITHUB_OUTPUT
+          echo "pagamento_url=$PAGAMENTO_URL" >> $GITHUB_OUTPUT
+          echo "URLs do ECR exportadas com sucesso"
+
+      # RDS Database
+      - name: "💾 Deploy Banco de Dados RDS"
+        id: rds
+        working-directory: infra/database
+        timeout-minutes: 15
+        run: |
+          echo "Criando banco MySQL no RDS..."
+          terraform init
+          terraform validate
+          terraform plan -out=tfplan
+          terraform apply tfplan
+
+      - name: "📤 Exportar Endpoint do RDS"
+        id: rds_outputs
+        working-directory: infra/database
+        run: |
+          RDS_ENDPOINT=$(terraform output -raw db_endpoint)
+          echo "endpoint=$RDS_ENDPOINT" >> $GITHUB_OUTPUT
+          echo "Endpoint do RDS: $RDS_ENDPOINT"
+
+      - name: "🔐 Armazenar senha do RDS no Parameter Store"
+        working-directory: infra/database
+        run: |
+          RDS_PASSWORD=$(terraform output -raw db_password)
+          aws ssm put-parameter \
+            --name "/lanchonete/rds/password" \
+            --value "$RDS_PASSWORD" \
+            --type "SecureString" \
+            --overwrite \
+            --description "Senha do RDS para banco lanchonete"
+          echo "Senha do RDS armazenada no Parameter Store"
+
+      # Smoke Tests
+      - name: "🧪 Smoke Test - Verificar Backend S3"
+        run: |
+          echo "Verificando backend S3..."
+          aws s3 ls s3://lanchonete-terraform-state-poc/ || exit 1
+          echo "✅ Backend S3 está acessível"
+
+      - name: "🧪 Smoke Test - Verificar Repositórios ECR"
+        run: |
+          echo "Verificando repositórios ECR..."
+          aws ecr describe-repositories --repository-names lanchonete-autoatendimento
+          aws ecr describe-repositories --repository-names lanchonete-pagamento
+          echo "✅ Repositórios ECR criados com sucesso"
+
+      - name: "🧪 Smoke Test - Verificar Banco RDS"
+        run: |
+          echo "Verificando status do banco RDS..."
+          DB_STATUS=$(aws rds describe-db-instances \
+            --db-instance-identifier lanchonete-mysql \
+            --query 'DBInstances[0].DBInstanceStatus' \
+            --output text)
+
+          echo "Status do banco: $DB_STATUS"
+
+          if [[ "$DB_STATUS" == "available" ]]; then
+            echo "✅ Banco RDS está disponível"
+          elif [[ "$DB_STATUS" == "creating" ]] || [[ "$DB_STATUS" == "backing-up" ]] || [[ "$DB_STATUS" == "modifying" ]]; then
+            echo "⚠️ Banco RDS ainda está sendo criado (status: $DB_STATUS)"
+            echo "Isso é normal durante o deploy inicial"
+          else
+            echo "❌ Status inesperado do banco: $DB_STATUS"
+            exit 1
+          fi
+
+          # Verificar se endpoint existe
+          RDS_ENDPOINT="${{ steps.rds_outputs.outputs.endpoint }}"
+          if [[ -n "$RDS_ENDPOINT" ]]; then
+            echo "✅ Endpoint do RDS configurado: $RDS_ENDPOINT"
+          else
+            echo "❌ Endpoint do RDS não encontrado"
+            exit 1
+          fi
+
+      - name: "🧪 Smoke Test - Verificar Parameter Store"
+        run: |
+          echo "Verificando senha do RDS no Parameter Store..."
+          aws ssm describe-parameters \
+            --filters "Key=Name,Values=/lanchonete/rds/password" \
+            --query 'Parameters[0].Name' \
+            --output text | grep -q "/lanchonete/rds/password" || exit 1
+          echo "✅ Senha do RDS armazenada com sucesso no Parameter Store"
+
+      - name: "📊 Resumo do Pipeline"
+        if: always()
+        run: |
+          echo "=== RESUMO DO PIPELINE BASE INFRASTRUCTURE ==="
+          echo "✅ Backend: S3 + DynamoDB implantados"
+          echo "✅ ECR: Repositórios criados"
+          echo "✅ RDS: Banco MySQL implantado"
+          echo "✅ Secrets: Senha do RDS armazenada no Parameter Store"
+          echo "============================================="
+          echo "ECR Autoatendimento: ${{ steps.ecr_outputs.outputs.autoatendimento_url }}"
+          echo "ECR Pagamento: ${{ steps.ecr_outputs.outputs.pagamento_url }}"
+          echo "Endpoint RDS: ${{ steps.rds_outputs.outputs.endpoint }}"

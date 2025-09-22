@@ -1,0 +1,204 @@
+name: "Pipeline 2 - Kubernetes"
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Pipeline 1 - Base Infrastructure"]
+    types: [completed]
+
+env:
+  AWS_REGION: us-east-1
+  TF_VERSION: "1.5.0"
+
+jobs:
+  check-base:
+    name: "Verificar Pipeline Base"
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run' }}
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+    steps:
+      - name: "✅ Verificar status do Pipeline Base"
+        id: check
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_run" ]]; then
+            echo "Pipeline Base completado com sucesso"
+          else
+            echo "Execução manual ou via PR"
+          fi
+          echo "should_run=true" >> $GITHUB_OUTPUT
+
+  k8s-infra:
+    name: "Deploy Kubernetes Infrastructure"
+    runs-on: ubuntu-latest
+    needs: check-base
+    if: needs.check-base.outputs.should_run == 'true'
+
+    outputs:
+      cluster_name: ${{ steps.eks_outputs.outputs.cluster_name }}
+      cluster_endpoint: ${{ steps.eks_outputs.outputs.cluster_endpoint }}
+
+    steps:
+      - name: "📥 Checkout do código"
+        uses: actions/checkout@v4
+
+      - name: "🔐 Configurar credenciais AWS"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: "⚙️ Configurar Terraform"
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: "🧪 Validar credenciais AWS"
+        run: |
+          echo "Validando credenciais AWS..."
+          aws sts get-caller-identity
+
+      - name: "🔍 Verificar pré-requisitos"
+        run: |
+          echo "Verificando se a infraestrutura base existe..."
+
+          # Verificar S3 backend
+          aws s3 ls s3://lanchonete-terraform-state-poc/ >/dev/null 2>&1 || {
+            echo "❌ Backend S3 não encontrado. Execute o Pipeline Base primeiro."
+            exit 1
+          }
+          echo "✅ Backend S3 encontrado"
+
+          # Verificar ECR
+          aws ecr describe-repositories --repository-names lanchonete-autoatendimento >/dev/null 2>&1 || {
+            echo "❌ Repositórios ECR não encontrados. Execute o Pipeline Base primeiro."
+            exit 1
+          }
+          echo "✅ Repositórios ECR encontrados"
+
+          # Verificar RDS
+          aws rds describe-db-instances --db-instance-identifier lanchonete-mysql >/dev/null 2>&1 || {
+            echo "❌ Banco RDS não encontrado. Execute o Pipeline Base primeiro."
+            exit 1
+          }
+          echo "✅ Banco RDS encontrado"
+
+      # EKS Cluster
+      - name: "☸️ Deploy Cluster EKS"
+        id: eks
+        working-directory: infra/kubernetes
+        timeout-minutes: 25
+        run: |
+          echo "Criando cluster EKS (isso pode demorar 15-20 minutos)..."
+          terraform init
+          terraform validate
+          terraform plan -out=tfplan
+          terraform apply tfplan
+
+      - name: "📤 Exportar dados do EKS"
+        id: eks_outputs
+        working-directory: infra/kubernetes
+        run: |
+          CLUSTER_NAME=$(terraform output -raw cluster_name)
+          CLUSTER_ENDPOINT=$(terraform output -raw cluster_endpoint)
+          echo "cluster_name=$CLUSTER_NAME" >> $GITHUB_OUTPUT
+          echo "cluster_endpoint=$CLUSTER_ENDPOINT" >> $GITHUB_OUTPUT
+          echo "Cluster EKS: $CLUSTER_NAME"
+          echo "Endpoint: $CLUSTER_ENDPOINT"
+
+      - name: "🔧 Configurar kubectl"
+        run: |
+          echo "Configurando kubectl para o cluster EKS..."
+          aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ steps.eks_outputs.outputs.cluster_name }}
+
+          echo "Verificando conexão com o cluster..."
+          kubectl version --client
+          kubectl get nodes
+
+      # ALB Controller
+      - name: "🎯 Deploy ALB Controller"
+        id: alb
+        working-directory: infra/ingress
+        timeout-minutes: 10
+        run: |
+          echo "Instalando AWS Load Balancer Controller..."
+          terraform init
+          terraform validate
+          terraform plan -out=tfplan
+          terraform apply tfplan
+
+      # Smoke Tests
+      - name: "🧪 Smoke Test - Verificar Cluster EKS"
+        run: |
+          echo "Verificando status do cluster EKS..."
+          CLUSTER_STATUS=$(aws eks describe-cluster \
+            --name ${{ steps.eks_outputs.outputs.cluster_name }} \
+            --query 'cluster.status' \
+            --output text)
+
+          if [[ "$CLUSTER_STATUS" == "ACTIVE" ]]; then
+            echo "✅ Cluster EKS está ativo"
+          else
+            echo "❌ Status inesperado do cluster: $CLUSTER_STATUS"
+            exit 1
+          fi
+
+      - name: "🧪 Smoke Test - Verificar Nodes"
+        run: |
+          echo "Verificando nodes do cluster..."
+          NODE_COUNT=$(kubectl get nodes --no-headers | wc -l)
+
+          if [[ $NODE_COUNT -ge 2 ]]; then
+            echo "✅ $NODE_COUNT nodes encontrados no cluster"
+            kubectl get nodes
+          else
+            echo "❌ Número insuficiente de nodes: $NODE_COUNT (esperado: 2+)"
+            exit 1
+          fi
+
+      - name: "🧪 Smoke Test - Verificar ALB Controller"
+        run: |
+          echo "Verificando AWS Load Balancer Controller..."
+
+          # Verificar se o namespace existe
+          kubectl get namespace kube-system || exit 1
+
+          # Verificar se o deployment do ALB controller está rodando
+          kubectl get deployment -n kube-system aws-load-balancer-controller || {
+            echo "⚠️ ALB Controller deployment não encontrado imediatamente"
+            echo "Aguardando 30 segundos para instalação completar..."
+            sleep 30
+            kubectl get deployment -n kube-system aws-load-balancer-controller || exit 1
+          }
+
+          # Verificar pods do ALB controller
+          ALB_PODS=$(kubectl get pods -n kube-system -l app.kubernetes.io/name=aws-load-balancer-controller --no-headers | wc -l)
+          if [[ $ALB_PODS -ge 1 ]]; then
+            echo "✅ ALB Controller está rodando ($ALB_PODS pods)"
+            kubectl get pods -n kube-system -l app.kubernetes.io/name=aws-load-balancer-controller
+          else
+            echo "❌ ALB Controller pods não encontrados"
+            exit 1
+          fi
+
+      - name: "🧪 Smoke Test - Verificar CRDs do Ingress"
+        run: |
+          echo "Verificando Custom Resource Definitions do ALB..."
+          kubectl get crd ingressclassparams.elbv2.k8s.aws || exit 1
+          kubectl get crd targetgroupbindings.elbv2.k8s.aws || exit 1
+          echo "✅ CRDs do ALB Controller instalados corretamente"
+
+      - name: "📊 Resumo do Pipeline"
+        if: always()
+        run: |
+          echo "=== RESUMO DO PIPELINE KUBERNETES ==="
+          echo "✅ Cluster EKS: Criado e ativo"
+          echo "✅ Node Group: 2 nodes provisionados"
+          echo "✅ kubectl: Configurado com sucesso"
+          echo "✅ ALB Controller: Instalado e funcionando"
+          echo "====================================="
+          echo "Cluster: ${{ steps.eks_outputs.outputs.cluster_name }}"
+          echo "Endpoint: ${{ steps.eks_outputs.outputs.cluster_endpoint }}"

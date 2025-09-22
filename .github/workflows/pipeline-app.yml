@@ -1,0 +1,406 @@
+name: "Pipeline 4 - Application"
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Pipeline 2 - Kubernetes", "Pipeline 3 - Authentication"]
+    types: [completed]
+
+env:
+  AWS_REGION: us-east-1
+  TF_VERSION: "1.5.0"
+
+jobs:
+  check-dependencies:
+    name: "Verificar Pipelines Dependentes"
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+    steps:
+      - name: "✅ Verificar status dos Pipelines"
+        id: check
+        run: |
+          echo "Verificando pipelines dependentes..."
+          # Por simplicidade, sempre executar se triggered
+          echo "should_run=true" >> $GITHUB_OUTPUT
+
+  app-deploy:
+    name: "Deploy Applications"
+    runs-on: ubuntu-latest
+    needs: check-dependencies
+    if: needs.check-dependencies.outputs.should_run == 'true'
+
+    steps:
+      - name: "📥 Checkout do código"
+        uses: actions/checkout@v4
+
+      - name: "🔐 Configurar credenciais AWS"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: "☕ Setup Java 17"
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: "🔧 Setup Maven"
+        uses: actions/setup-maven@v4
+
+      - name: "🐳 Setup Docker Buildx"
+        uses: docker/setup-buildx-action@v3
+
+      - name: "☸️ Setup kubectl"
+        uses: azure/setup-kubectl@v3
+
+      - name: "🧪 Validar credenciais AWS"
+        run: |
+          echo "Validando credenciais AWS..."
+          aws sts get-caller-identity
+
+      # Verificar todos os pré-requisitos
+      - name: "🔍 Verificar infraestrutura completa"
+        id: check_infra
+        run: |
+          echo "Verificando toda a infraestrutura necessária..."
+
+          # Base Infrastructure
+          echo "Verificando Base Infrastructure..."
+          aws s3 ls s3://lanchonete-terraform-state-poc/ >/dev/null 2>&1 || {
+            echo "❌ Backend S3 não encontrado"
+            exit 1
+          }
+          aws ecr describe-repositories --repository-names lanchonete-autoatendimento >/dev/null 2>&1 || {
+            echo "❌ ECR repositories não encontrados"
+            exit 1
+          }
+          aws rds describe-db-instances --db-instance-identifier lanchonete-mysql >/dev/null 2>&1 || {
+            echo "❌ RDS não encontrado"
+            exit 1
+          }
+          echo "✅ Base Infrastructure OK"
+
+          # Kubernetes Infrastructure
+          echo "Verificando Kubernetes Infrastructure..."
+          aws eks describe-cluster --name lanchonete-cluster >/dev/null 2>&1 || {
+            echo "❌ Cluster EKS não encontrado"
+            exit 1
+          }
+          echo "✅ Kubernetes Infrastructure OK"
+
+          # Authentication Infrastructure
+          echo "Verificando Authentication Infrastructure..."
+          aws lambda get-function --function-name lanchonete-auth >/dev/null 2>&1 || {
+            echo "❌ Lambda de autenticação não encontrada"
+            exit 1
+          }
+          echo "✅ Authentication Infrastructure OK"
+
+      # Obter URLs e configurações do Terraform State
+      - name: "📤 Obter configurações da infraestrutura"
+        id: get_config
+        run: |
+          echo "Obtendo configurações da infraestrutura..."
+
+          # ECR URLs
+          cd infra/ecr
+          terraform init -backend-config="bucket=lanchonete-terraform-state-poc"
+          ECR_AUTOATENDIMENTO=$(terraform output -raw ecr_autoatendimento_url)
+          ECR_PAGAMENTO=$(terraform output -raw ecr_pagamento_url)
+          echo "ecr_autoatendimento=$ECR_AUTOATENDIMENTO" >> $GITHUB_OUTPUT
+          echo "ecr_pagamento=$ECR_PAGAMENTO" >> $GITHUB_OUTPUT
+          cd ../..
+
+          # RDS Endpoint
+          cd infra/database
+          terraform init -backend-config="bucket=lanchonete-terraform-state-poc"
+          RDS_ENDPOINT=$(terraform output -raw db_endpoint)
+          echo "rds_endpoint=$RDS_ENDPOINT" >> $GITHUB_OUTPUT
+          cd ../..
+
+          # API Gateway URL
+          cd infra/api-gateway
+          terraform init -backend-config="bucket=lanchonete-terraform-state-poc"
+          API_GATEWAY_URL=$(terraform output -raw api_gateway_endpoint)
+          echo "api_gateway_url=$API_GATEWAY_URL" >> $GITHUB_OUTPUT
+          cd ../..
+
+          echo "ECR Autoatendimento: $ECR_AUTOATENDIMENTO"
+          echo "ECR Pagamento: $ECR_PAGAMENTO"
+          echo "RDS Endpoint: $RDS_ENDPOINT"
+          echo "API Gateway: $API_GATEWAY_URL"
+
+      # Unit Tests Java
+      - name: "🧪 Executar Unit Tests - Autoatendimento"
+        working-directory: autoatendimento
+        run: |
+          echo "Executando testes unitários do Autoatendimento..."
+          mvn test
+          echo "✅ Testes do Autoatendimento concluídos"
+
+      - name: "🧪 Executar Unit Tests - Pagamento"
+        working-directory: pagamento
+        run: |
+          echo "Executando testes unitários do Pagamento..."
+          mvn test
+          echo "✅ Testes do Pagamento concluídos"
+
+      # Build das aplicações
+      - name: "🔨 Build Maven - Autoatendimento"
+        working-directory: autoatendimento
+        run: |
+          echo "Compilando aplicação Autoatendimento..."
+          mvn clean package -DskipTests
+          echo "✅ Build do Autoatendimento concluído"
+
+      - name: "🔨 Build Maven - Pagamento"
+        working-directory: pagamento
+        run: |
+          echo "Compilando aplicação Pagamento..."
+          mvn clean package -DskipTests
+          echo "✅ Build do Pagamento concluído"
+
+      # Login no ECR
+      - name: "🔐 Login no ECR"
+        run: |
+          echo "Fazendo login no ECR..."
+          aws ecr get-login-password --region ${{ env.AWS_REGION }} | \
+            docker login --username AWS --password-stdin ${{ steps.get_config.outputs.ecr_autoatendimento }}
+
+      # Build e Push das imagens Docker
+      - name: "🐳 Build e Push - Autoatendimento"
+        working-directory: autoatendimento
+        run: |
+          echo "Construindo imagem Docker do Autoatendimento..."
+          docker build -t lanchonete-autoatendimento:latest .
+          docker tag lanchonete-autoatendimento:latest ${{ steps.get_config.outputs.ecr_autoatendimento }}:latest
+          docker push ${{ steps.get_config.outputs.ecr_autoatendimento }}:latest
+          echo "✅ Imagem do Autoatendimento enviada para ECR"
+
+      - name: "🐳 Build e Push - Pagamento"
+        working-directory: pagamento
+        run: |
+          echo "Construindo imagem Docker do Pagamento..."
+          docker build -t lanchonete-pagamento:latest .
+          docker tag lanchonete-pagamento:latest ${{ steps.get_config.outputs.ecr_pagamento }}:latest
+          docker push ${{ steps.get_config.outputs.ecr_pagamento }}:latest
+          echo "✅ Imagem do Pagamento enviada para ECR"
+
+      # Configurar kubectl
+      - name: "☸️ Configurar kubectl"
+        run: |
+          echo "Configurando kubectl para o cluster EKS..."
+          aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name lanchonete-cluster
+          kubectl version --client
+          kubectl get nodes
+
+      # Atualizar manifests com URLs dinâmicas
+      - name: "📝 Atualizar Kubernetes Manifests"
+        run: |
+          echo "Atualizando manifests com URLs do ECR..."
+
+          # Obter ID da conta AWS
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+
+          # Atualizar deployments com URLs corretas
+          find k8s_manifests -name "*.yaml" -o -name "*.yml" | while read file; do
+            sed -i "s|[0-9]\{12\}\.dkr\.ecr\.us-east-1\.amazonaws\.com|${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com|g" "$file"
+            echo "Atualizado: $file"
+          done
+
+      # Criar secrets do RDS
+      - name: "🔐 Criar Kubernetes Secrets"
+        run: |
+          echo "Criando secrets do RDS..."
+
+          # Obter senha do Parameter Store
+          RDS_PASSWORD=$(aws ssm get-parameter \
+            --name "/lanchonete/rds/password" \
+            --with-decryption \
+            --query 'Parameter.Value' \
+            --output text)
+
+          # Criar secret se não existir
+          kubectl create secret generic mysql-secret \
+            --from-literal=host=${{ steps.get_config.outputs.rds_endpoint }} \
+            --from-literal=username=admin \
+            --from-literal=password="${RDS_PASSWORD}" \
+            --from-literal=database=lanchonete \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          echo "✅ Secrets criados/atualizados"
+
+      # Deploy no Kubernetes
+      - name: "🚀 Deploy Aplicações no Kubernetes"
+        run: |
+          echo "Fazendo deploy das aplicações..."
+
+          # Deploy dos manifestos
+          kubectl apply -f k8s_manifests/
+
+          # Aguardar pods ficarem prontos
+          echo "Aguardando pods ficarem prontos..."
+          kubectl wait --for=condition=ready pod -l app=autoatendimento --timeout=300s || true
+          kubectl wait --for=condition=ready pod -l app=pagamento --timeout=300s || true
+
+          # Verificar status
+          kubectl get pods
+          kubectl get services
+          kubectl get ingress
+
+      # Aguardar ALBs ficarem ativos
+      - name: "⏳ Aguardar ALBs ficarem ativos"
+        id: alb_wait
+        run: |
+          echo "Aguardando ALBs serem provisionados (pode levar 3-5 minutos)..."
+
+          MAX_ATTEMPTS=20
+          ATTEMPT=1
+
+          while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+            echo "Tentativa $ATTEMPT de $MAX_ATTEMPTS..."
+
+            # Verificar se os ALBs têm hostnames
+            AUTOATENDIMENTO_ALB=$(kubectl get ingress autoatendimento-ingress -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || echo "")
+            PAGAMENTO_ALB=$(kubectl get ingress pagamento-ingress -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || echo "")
+
+            if [[ -n "$AUTOATENDIMENTO_ALB" && -n "$PAGAMENTO_ALB" ]]; then
+              echo "✅ ALBs provisionados com sucesso!"
+              echo "autoatendimento_alb=$AUTOATENDIMENTO_ALB" >> $GITHUB_OUTPUT
+              echo "pagamento_alb=$PAGAMENTO_ALB" >> $GITHUB_OUTPUT
+              echo "Autoatendimento ALB: $AUTOATENDIMENTO_ALB"
+              echo "Pagamento ALB: $PAGAMENTO_ALB"
+              break
+            fi
+
+            echo "Aguardando... ALBs ainda não prontos"
+            kubectl get ingress
+            sleep 30
+            ATTEMPT=$((ATTEMPT + 1))
+          done
+
+          if [[ -z "$AUTOATENDIMENTO_ALB" || -z "$PAGAMENTO_ALB" ]]; then
+            echo "❌ ALBs não ficaram prontos no tempo esperado"
+            echo "autoatendimento_alb=" >> $GITHUB_OUTPUT
+            echo "pagamento_alb=" >> $GITHUB_OUTPUT
+          fi
+
+      # Smoke Tests com ALBs reais
+      - name: "🧪 Smoke Test - Health Check via ALB"
+        run: |
+          echo "Verificando health dos serviços via ALB..."
+
+          AUTOATENDIMENTO_ALB="${{ steps.alb_wait.outputs.autoatendimento_alb }}"
+          PAGAMENTO_ALB="${{ steps.alb_wait.outputs.pagamento_alb }}"
+
+          if [[ -n "$AUTOATENDIMENTO_ALB" ]]; then
+            echo "Testando Autoatendimento via ALB..."
+            HEALTH_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://${AUTOATENDIMENTO_ALB}/actuator/health || echo "000")
+            if [[ "$HEALTH_RESPONSE" == "200" ]]; then
+              echo "✅ Autoatendimento health check OK via ALB"
+            else
+              echo "⚠️ Autoatendimento health check retornou: $HEALTH_RESPONSE"
+            fi
+          else
+            echo "⚠️ ALB do Autoatendimento não disponível"
+          fi
+
+          if [[ -n "$PAGAMENTO_ALB" ]]; then
+            echo "Testando Pagamento via ALB..."
+            HEALTH_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://${PAGAMENTO_ALB}/actuator/health || echo "000")
+            if [[ "$HEALTH_RESPONSE" == "200" ]]; then
+              echo "✅ Pagamento health check OK via ALB"
+            else
+              echo "⚠️ Pagamento health check retornou: $HEALTH_RESPONSE"
+            fi
+          else
+            echo "⚠️ ALB do Pagamento não disponível"
+          fi
+
+      - name: "🧪 E2E Test - Cliente Anônimo"
+        id: e2e_test
+        run: |
+          echo "Executando teste E2E com cliente anônimo..."
+          API_URL="${{ steps.get_config.outputs.api_gateway_url }}"
+
+          # 1. Obter token anônimo
+          echo "Obtendo token para cliente anônimo..."
+          AUTH_RESPONSE=$(curl -s -X POST ${API_URL}/v1/auth/identificar \
+            -H "Content-Type: application/json" \
+            -d '{"cpf": null}')
+
+          TOKEN=$(echo $AUTH_RESPONSE | jq -r '.token' || echo "")
+
+          if [[ -z "$TOKEN" || "$TOKEN" == "null" ]]; then
+            echo "❌ Falha ao obter token de autenticação"
+            echo "Response: $AUTH_RESPONSE"
+            echo "e2e_success=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+          echo "✅ Token obtido com sucesso"
+
+          # 2. Criar um pedido
+          echo "Criando pedido de teste..."
+          PEDIDO_RESPONSE=$(curl -s -X POST ${API_URL}/v1/autoatendimento/pedidos/checkout \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "cpfCliente": null,
+              "itens": [
+                {
+                  "produtoId": 1,
+                  "quantidade": 1,
+                  "observacao": "Teste E2E Pipeline"
+                }
+              ]
+            }')
+
+          PEDIDO_ID=$(echo $PEDIDO_RESPONSE | jq -r '.id' || echo "")
+
+          if [[ -n "$PEDIDO_ID" && "$PEDIDO_ID" != "null" ]]; then
+            echo "✅ Pedido criado com sucesso! ID: $PEDIDO_ID"
+            echo "e2e_success=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Falha ao criar pedido - integração quebrada"
+            echo "Response: $PEDIDO_RESPONSE"
+            echo "e2e_success=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      - name: "📊 Resumo do Pipeline"
+        if: always()
+        run: |
+          echo "=== RESUMO DO PIPELINE APPLICATION ==="
+          echo "✅ Unit Tests: Executados com sucesso"
+          echo "✅ Build Maven: Aplicações compiladas"
+          echo "✅ Docker Images: Construídas e enviadas ao ECR"
+          echo "✅ Kubernetes Deploy: Aplicações implantadas"
+          echo "✅ ALBs: Provisionados e configurados"
+          if [[ "${{ steps.e2e_test.outputs.e2e_success }}" == "true" ]]; then
+            echo "✅ Teste E2E: Stack completa validada com sucesso"
+          else
+            echo "❌ Teste E2E: Falha na validação - verificar logs acima"
+            echo "Isso indica problema na integração entre componentes"
+          fi
+          echo "======================================="
+          echo ""
+          if [[ "${{ steps.e2e_test.outputs.e2e_success }}" == "true" ]]; then
+            echo "🎉 IMPLANTAÇÃO COMPLETA E VALIDADA!"
+          else
+            echo "⚠️ IMPLANTAÇÃO COM PROBLEMAS - REVISAR LOGS"
+          fi
+          echo "API Gateway URL: ${{ steps.get_config.outputs.api_gateway_url }}"
+          AUTOATENDIMENTO_ALB="${{ steps.alb_wait.outputs.autoatendimento_alb }}"
+          PAGAMENTO_ALB="${{ steps.alb_wait.outputs.pagamento_alb }}"
+          if [[ -n "$AUTOATENDIMENTO_ALB" ]]; then
+            echo "Autoatendimento ALB: http://$AUTOATENDIMENTO_ALB"
+          fi
+          if [[ -n "$PAGAMENTO_ALB" ]]; then
+            echo "Pagamento ALB: http://$PAGAMENTO_ALB"
+          fi

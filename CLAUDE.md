@@ -9,6 +9,14 @@
 - Autenticação completa: ~5min adicional
 - Testes automatizados: incluídos no final
 
+### ⚠️ PASSO 0: Verificar Credenciais AWS
+**IMPORTANTE: Sempre perguntar antes de iniciar o deploy**
+```
+As credenciais AWS já foram atualizadas para esta sessão?
+- Se SIM: prosseguir com o deploy
+- Se NÃO: aguardar atualização das credenciais
+```
+
 ### Criar Backend S3 + DynamoDB
 ```bash
 cd infra/backend
@@ -131,6 +139,50 @@ curl -X POST https://[API-GATEWAY-URL]/v1/autoatendimento/pedidos/checkout \
   -H "Content-Type: application/json" \
   -d '{"cpfCliente": null, "itens": [{"produtoId": 1, "quantidade": 1}]}'
 ```
+
+### 🧹 PASSO FINAL: Destruir Toda Infraestrutura
+**IMPORTANTE: Sempre lembrar ao final de cada sessão**
+```bash
+# DESTRUIR TUDO AO FINAL DA SESSÃO para evitar custos AWS
+# Executar na ordem reversa da criação:
+
+# 1. Remover API Gateway
+cd infra/api-gateway
+terraform destroy -auto-approve
+
+# 2. Remover Lambda
+cd ../lambda
+terraform destroy -auto-approve
+
+# 3. Remover Cognito
+cd ../auth
+terraform destroy -auto-approve
+
+# 4. Remover recursos Kubernetes (manifestos)
+kubectl delete -f k8s_manifests/
+
+# 5. Remover ALB Controller
+cd ../ingress
+terraform destroy -auto-approve
+
+# 6. Remover EKS Cluster
+cd ../kubernetes
+terraform destroy -auto-approve
+
+# 7. Remover RDS Database
+cd ../database
+terraform destroy -auto-approve
+
+# 8. Remover ECR Repositories
+cd ../ecr
+terraform destroy -auto-approve
+
+# 9. Remover Backend S3 + DynamoDB (por último)
+cd ../backend
+terraform destroy -auto-approve
+```
+
+⚠️ **LEMBRETE FINAL: Sempre destruir tudo ao final da sessão para evitar cobranças desnecessárias!**
 
 ---
 

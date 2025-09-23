@@ -128,3 +128,14 @@ output "repositorios_nomes" {
     for idx, servico in local.servicos : servico => aws_ecr_repository.repos[idx].name
   }
 }
+
+# Outputs específicos para o pipeline CI/CD
+output "ecr_autoatendimento_url" {
+  description = "URL do repositório ECR do autoatendimento"
+  value       = aws_ecr_repository.repos[0].repository_url
+}
+
+output "ecr_pagamento_url" {
+  description = "URL do repositório ECR do pagamento"
+  value       = aws_ecr_repository.repos[1].repository_url
+}

@@ -50,8 +50,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: "🔧 Setup Maven"
-        uses: actions/setup-maven@v4
 
       - name: "🐳 Setup Docker Buildx"
         uses: docker/setup-buildx-action@v3

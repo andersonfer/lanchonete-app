@@ -63,8 +63,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: "🔧 Setup Maven"
-        uses: actions/setup-maven@v4
 
       - name: "🧪 Validar credenciais AWS"
         run: |

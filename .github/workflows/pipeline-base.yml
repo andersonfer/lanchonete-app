@@ -74,8 +74,25 @@ jobs:
         id: ecr
         working-directory: infra/ecr
         run: |
-          echo "Criando repositórios ECR..."
+          echo "Verificando e criando repositórios ECR..."
+
+          # Verificar se os repositórios já existem
+          REPO1_EXISTS=$(aws ecr describe-repositories --repository-names lanchonete-autoatendimento 2>&1 || true)
+          REPO2_EXISTS=$(aws ecr describe-repositories --repository-names lanchonete-pagamento 2>&1 || true)
+
           terraform init
+
+          # Se os repositórios já existem, importar ao invés de criar
+          if [[ ! "$REPO1_EXISTS" =~ "RepositoryNotFoundException" ]]; then
+            echo "Repositório autoatendimento já existe, importando..."
+            terraform import 'aws_ecr_repository.repos[0]' lanchonete-autoatendimento || true
+          fi
+
+          if [[ ! "$REPO2_EXISTS" =~ "RepositoryNotFoundException" ]]; then
+            echo "Repositório pagamento já existe, importando..."
+            terraform import 'aws_ecr_repository.repos[1]' lanchonete-pagamento || true
+          fi
+
           terraform validate
           terraform plan -out=tfplan
           terraform apply tfplan
@@ -96,8 +113,21 @@ jobs:
         working-directory: infra/database
         timeout-minutes: 15
         run: |
-          echo "Criando banco MySQL no RDS..."
+          echo "Verificando e criando banco MySQL no RDS..."
+
+          # Verificar se o RDS já existe
+          DB_EXISTS=$(aws rds describe-db-instances --db-instance-identifier lanchonete-mysql 2>&1 || true)
+
           terraform init
+
+          # Se o RDS já existe, importar ao invés de criar
+          if [[ ! "$DB_EXISTS" =~ "DBInstanceNotFound" ]]; then
+            echo "RDS instance já existe, importando..."
+            terraform import aws_db_instance.mysql lanchonete-mysql || true
+            terraform import aws_db_subnet_group.mysql_subnet_group lanchonete-db-subnet-group || true
+            terraform import aws_security_group.rds_mysql lanchonete-rds-security-group || true
+          fi
+
           terraform validate
           terraform plan -out=tfplan
           terraform apply tfplan
@@ -106,7 +136,7 @@ jobs:
         id: rds_outputs
         working-directory: infra/database
         run: |
-          RDS_ENDPOINT=$(terraform output -raw db_endpoint)
+          RDS_ENDPOINT=$(terraform output -raw rds_endpoint)
           echo "endpoint=$RDS_ENDPOINT" >> $GITHUB_OUTPUT
           echo "Endpoint do RDS: $RDS_ENDPOINT"
 

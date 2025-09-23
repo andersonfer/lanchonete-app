@@ -105,6 +105,21 @@ jobs:
             exit 1
           fi
 
+          # Criar ZIP para Lambda
+          echo "🗜️ Criando lambda-auth.zip..."
+          cd target
+          zip -r ../lambda-auth.zip lanchonete-auth-lambda-1.0.0.jar
+          cd ..
+
+          # Verificar se ZIP foi criado
+          if [[ -f "lambda-auth.zip" ]]; then
+            echo "✅ Lambda ZIP criado com sucesso"
+            ls -lh lambda-auth.zip
+          else
+            echo "❌ Falha ao criar Lambda ZIP"
+            exit 1
+          fi
+
       # Cognito User Pool
       - name: "🔐 Deploy Cognito User Pool"
         id: cognito

@@ -40,19 +40,18 @@ data "terraform_remote_state" "lambda" {
   }
 }
 
-# Buscar ALB do autoatendimento por tags
-data "aws_lb" "autoatendimento" {
-  tags = {
-    "ingress.k8s.aws/stack" = "lanchonete-autoatendimento"
-  }
-}
+# TODO: ALBs serão criados pelo Pipeline 4, não estão disponíveis ainda
+# data "aws_lb" "autoatendimento" {
+#   tags = {
+#     "ingress.k8s.aws/stack" = "lanchonete-autoatendimento"
+#   }
+# }
 
-# Buscar ALB do pagamento por tags
-data "aws_lb" "pagamento" {
-  tags = {
-    "ingress.k8s.aws/stack" = "lanchonete"
-  }
-}
+# data "aws_lb" "pagamento" {
+#   tags = {
+#     "ingress.k8s.aws/stack" = "lanchonete"
+#   }
+# }
 
 # API Gateway REST API
 resource "aws_api_gateway_rest_api" "lanchonete_api" {
@@ -156,7 +155,7 @@ resource "aws_api_gateway_integration" "autoatendimento_alb_integration" {
 
   type                    = "HTTP_PROXY"
   integration_http_method = "ANY"
-  uri                     = "http://${data.aws_lb.autoatendimento.dns_name}/{proxy}"
+  uri                     = "http://placeholder-autoatendimento-alb/{proxy}"
 
   request_parameters = {
     "integration.request.path.proxy" = "method.request.path.proxy"
@@ -202,7 +201,7 @@ resource "aws_api_gateway_integration" "pagamento_alb_integration" {
 
   type                    = "HTTP_PROXY"
   integration_http_method = "ANY"
-  uri                     = "http://${data.aws_lb.pagamento.dns_name}/{proxy}"
+  uri                     = "http://placeholder-pagamento-alb/{proxy}"
 
   request_parameters = {
     "integration.request.path.proxy" = "method.request.path.proxy"

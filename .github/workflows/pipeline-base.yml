@@ -74,30 +74,11 @@ jobs:
         id: ecr
         working-directory: infra/ecr
         run: |
-          echo "Verificando e criando repositórios ECR..."
+          echo "Gerenciando repositórios ECR..."
           terraform init
-
-          # Verificar o que já está no state
-          echo "Estado atual do Terraform:"
-          terraform state list || echo "State vazio"
-
-          # Verificar se repositórios existem na AWS e importar apenas se não estão no state
-          if ! terraform state list | grep -q 'aws_ecr_repository.repos\[0\]'; then
-            if aws ecr describe-repositories --repository-names lanchonete-autoatendimento >/dev/null 2>&1; then
-              echo "Importando repositório autoatendimento..."
-              terraform import 'aws_ecr_repository.repos[0]' lanchonete-autoatendimento || true
-            fi
-          fi
-
-          if ! terraform state list | grep -q 'aws_ecr_repository.repos\[1\]'; then
-            if aws ecr describe-repositories --repository-names lanchonete-pagamento >/dev/null 2>&1; then
-              echo "Importando repositório pagamento..."
-              terraform import 'aws_ecr_repository.repos[1]' lanchonete-pagamento || true
-            fi
-          fi
-
-          # Aplicar mudanças
           terraform validate
+
+          # Aplicar - se repositórios já existem, vai usar data sources como fallback
           terraform apply -auto-approve
 
       - name: "📤 Exportar URLs do ECR"

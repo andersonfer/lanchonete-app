@@ -129,13 +129,22 @@ output "repositorios_nomes" {
   }
 }
 
-# Outputs específicos para o pipeline CI/CD
+# Data sources para repositórios existentes (fallback se não conseguir criar/importar)
+data "aws_ecr_repository" "autoatendimento_fallback" {
+  name = "lanchonete-autoatendimento"
+}
+
+data "aws_ecr_repository" "pagamento_fallback" {
+  name = "lanchonete-pagamento"
+}
+
+# Outputs específicos para o pipeline CI/CD - usar data sources como fallback
 output "ecr_autoatendimento_url" {
   description = "URL do repositório ECR do autoatendimento"
-  value       = aws_ecr_repository.repos[0].repository_url
+  value       = try(aws_ecr_repository.repos[0].repository_url, data.aws_ecr_repository.autoatendimento_fallback.repository_url)
 }
 
 output "ecr_pagamento_url" {
   description = "URL do repositório ECR do pagamento"
-  value       = aws_ecr_repository.repos[1].repository_url
+  value       = try(aws_ecr_repository.repos[1].repository_url, data.aws_ecr_repository.pagamento_fallback.repository_url)
 }

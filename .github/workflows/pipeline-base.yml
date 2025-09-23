@@ -46,8 +46,25 @@ jobs:
         id: backend
         working-directory: infra/backend
         run: |
-          echo "Criando S3 bucket e DynamoDB para estado do Terraform..."
+          echo "Verificando e criando S3 bucket e DynamoDB para estado do Terraform..."
+
+          # Verificar se os recursos já existem
+          BUCKET_EXISTS=$(aws s3api head-bucket --bucket lanchonete-terraform-state-poc 2>&1 || true)
+          TABLE_EXISTS=$(aws dynamodb describe-table --table-name lanchonete-terraform-locks 2>&1 || true)
+
           terraform init
+
+          # Se os recursos já existem, importar ao invés de criar
+          if [[ ! "$BUCKET_EXISTS" =~ "Not Found" ]] && [[ ! "$BUCKET_EXISTS" =~ "404" ]]; then
+            echo "Bucket S3 já existe, importando para o Terraform state..."
+            terraform import aws_s3_bucket.terraform_state lanchonete-terraform-state-poc || true
+          fi
+
+          if [[ ! "$TABLE_EXISTS" =~ "ResourceNotFoundException" ]]; then
+            echo "Tabela DynamoDB já existe, importando para o Terraform state..."
+            terraform import aws_dynamodb_table.terraform_locks lanchonete-terraform-locks || true
+          fi
+
           terraform validate
           terraform plan -out=tfplan
           terraform apply tfplan

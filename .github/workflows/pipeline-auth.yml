@@ -89,7 +89,7 @@ jobs:
 
       # Build Lambda Java
       - name: "🔨 Build Lambda de Autenticação"
-        working-directory: infra/lambda/lambda-auth
+        working-directory: infra/lambda
         run: |
           echo "Compilando Lambda Java de autenticação..."
 
@@ -97,9 +97,9 @@ jobs:
           mvn clean package
 
           # Verificar se o JAR foi criado
-          if [[ -f "target/lambda-auth.jar" ]]; then
+          if [[ -f "target/lanchonete-auth-lambda-1.0.0.jar" ]]; then
             echo "✅ Lambda JAR criado com sucesso"
-            ls -lh target/lambda-auth.jar
+            ls -lh target/lanchonete-auth-lambda-1.0.0.jar
           else
             echo "❌ Falha ao criar Lambda JAR"
             exit 1

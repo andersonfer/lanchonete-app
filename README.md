@@ -2,8 +2,14 @@
 
 Este é um projeto para o Tech Challenge da pós-graduação SOAT - **Fase 2: Kubernetes**.
 
-**Aluno:** Anderson Fér - rm363691  
+**Aluno:** Anderson Fér - rm363691
 **Vídeo de demonstração:** https://youtu.be/XnkhaoebPZI
+
+## 🚀 CI/CD Status
+[![Pipeline 1 - Base](https://github.com/anderson-faria-fiap/lanchonete-app/actions/workflows/pipeline-base.yml/badge.svg)](https://github.com/anderson-faria-fiap/lanchonete-app/actions/workflows/pipeline-base.yml)
+[![Pipeline 2 - K8s](https://github.com/anderson-faria-fiap/lanchonete-app/actions/workflows/pipeline-k8s.yml/badge.svg)](https://github.com/anderson-faria-fiap/lanchonete-app/actions/workflows/pipeline-k8s.yml)
+[![Pipeline 3 - Auth](https://github.com/anderson-faria-fiap/lanchonete-app/actions/workflows/pipeline-auth.yml/badge.svg)](https://github.com/anderson-faria-fiap/lanchonete-app/actions/workflows/pipeline-auth.yml)
+[![Pipeline 4 - App](https://github.com/anderson-faria-fiap/lanchonete-app/actions/workflows/pipeline-app.yml/badge.svg)](https://github.com/anderson-faria-fiap/lanchonete-app/actions/workflows/pipeline-app.yml)
 
 ## Descrição do Projeto
 

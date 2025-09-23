@@ -17,6 +17,17 @@ As credenciais AWS já foram atualizadas para esta sessão?
 - Se NÃO: aguardar atualização das credenciais
 ```
 
+### 🔐 PASSO 0.1: Atualizar GitHub Secrets (CI/CD)
+**LEMBRETE: Sempre atualizar secrets do GitHub a cada nova sessão**
+```
+GitHub → Settings → Secrets and variables → Actions:
+- AWS_ACCESS_KEY_ID: [nova access key da sessão]
+- AWS_SECRET_ACCESS_KEY: [nova secret key da sessão]
+- AWS_DEFAULT_REGION: us-east-1
+
+⚠️ CRÍTICO: Sem isso os pipelines CI/CD falharão!
+```
+
 ### Criar Backend S3 + DynamoDB
 ```bash
 cd infra/backend

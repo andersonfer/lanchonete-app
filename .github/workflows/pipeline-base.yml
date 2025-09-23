@@ -75,27 +75,22 @@ jobs:
         working-directory: infra/ecr
         run: |
           echo "Verificando e criando repositórios ECR..."
-
-          # Verificar se os repositórios já existem
-          REPO1_EXISTS=$(aws ecr describe-repositories --repository-names lanchonete-autoatendimento 2>&1 || true)
-          REPO2_EXISTS=$(aws ecr describe-repositories --repository-names lanchonete-pagamento 2>&1 || true)
-
           terraform init
 
-          # Se os repositórios já existem, importar ao invés de criar
-          if [[ ! "$REPO1_EXISTS" =~ "RepositoryNotFoundException" ]]; then
-            echo "Repositório autoatendimento já existe, importando..."
-            terraform import 'aws_ecr_repository.repos[0]' lanchonete-autoatendimento || true
-          fi
+          # Verificar e importar repositórios existentes
+          echo "Verificando repositórios existentes..."
 
-          if [[ ! "$REPO2_EXISTS" =~ "RepositoryNotFoundException" ]]; then
-            echo "Repositório pagamento já existe, importando..."
-            terraform import 'aws_ecr_repository.repos[1]' lanchonete-pagamento || true
-          fi
+          # Tentar importar ambos os repositórios - se já existem no state, o import falhará silenciosamente
+          terraform import 'aws_ecr_repository.repos[0]' lanchonete-autoatendimento 2>/dev/null || true
+          terraform import 'aws_ecr_repository.repos[1]' lanchonete-pagamento 2>/dev/null || true
 
+          # Aplicar com auto-approve para aceitar o estado atual
           terraform validate
-          terraform plan -out=tfplan
-          terraform apply tfplan
+          terraform apply -auto-approve -refresh=true || {
+            echo "Primeira tentativa falhou, tentando refresh e apply novamente..."
+            terraform refresh
+            terraform apply -auto-approve
+          }
 
       - name: "📤 Exportar URLs do ECR"
         id: ecr_outputs
@@ -114,23 +109,21 @@ jobs:
         timeout-minutes: 15
         run: |
           echo "Verificando e criando banco MySQL no RDS..."
-
-          # Verificar se o RDS já existe
-          DB_EXISTS=$(aws rds describe-db-instances --db-instance-identifier lanchonete-mysql 2>&1 || true)
-
           terraform init
 
-          # Se o RDS já existe, importar ao invés de criar
-          if [[ ! "$DB_EXISTS" =~ "DBInstanceNotFound" ]]; then
-            echo "RDS instance já existe, importando..."
-            terraform import aws_db_instance.mysql lanchonete-mysql || true
-            terraform import aws_db_subnet_group.mysql_subnet_group lanchonete-db-subnet-group || true
-            terraform import aws_security_group.rds_mysql lanchonete-rds-security-group || true
-          fi
+          # Tentar importar recursos existentes - falha silenciosamente se já estão no state
+          echo "Verificando recursos RDS existentes..."
+          terraform import aws_db_instance.mysql lanchonete-mysql 2>/dev/null || true
+          terraform import aws_db_subnet_group.mysql_subnet_group lanchonete-db-subnet-group 2>/dev/null || true
+          terraform import aws_security_group.rds_mysql lanchonete-rds-security-group 2>/dev/null || true
 
+          # Aplicar com auto-approve
           terraform validate
-          terraform plan -out=tfplan
-          terraform apply tfplan
+          terraform apply -auto-approve -refresh=true || {
+            echo "Primeira tentativa falhou, tentando refresh e apply novamente..."
+            terraform refresh
+            terraform apply -auto-approve
+          }
 
       - name: "📤 Exportar Endpoint do RDS"
         id: rds_outputs

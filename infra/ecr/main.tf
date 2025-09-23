@@ -2,6 +2,13 @@
 terraform {
   required_version = ">= 1.0"
 
+  backend "s3" {
+    bucket         = "lanchonete-terraform-state-poc"
+    key            = "ecr/terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "lanchonete-terraform-locks"
+  }
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -28,123 +35,51 @@ variable "nome_projeto" {
   default     = "lanchonete"
 }
 
-variable "servicos" {
-  description = "Lista dos serviços que precisam de repositórios ECR"
-  type        = list(string)
-  default     = ["autoatendimento", "pagamento"]
-
-  validation {
-    condition     = length(var.servicos) > 0
-    error_message = "A lista de serviços não pode estar vazia."
-  }
+# Data sources para repositórios ECR existentes - não gerenciamos, apenas consultamos
+data "aws_ecr_repository" "autoatendimento" {
+  name = "lanchonete-autoatendimento"
 }
 
-# Configurações locais consolidadas
+data "aws_ecr_repository" "pagamento" {
+  name = "lanchonete-pagamento"
+}
+
+# Registry URL para facilitar build
+data "aws_caller_identity" "current" {}
+
 locals {
-  prefix   = var.nome_projeto
-  servicos = var.servicos
-
-  common_tags = {
-    Projeto   = var.nome_projeto
-    ManagedBy = "terraform"
-    Purpose   = "container-registry"
-  }
+  registry_url = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.regiao_aws}.amazonaws.com"
 }
 
-# Repositórios ECR para cada serviço
-resource "aws_ecr_repository" "repos" {
-  count = length(local.servicos)
-
-  name                 = "${local.prefix}-${local.servicos[count.index]}"
-  image_tag_mutability = "MUTABLE" # Permite sobrescrever tags (bom para POC)
-
-  # Configuração de scanning de imagens
-  image_scanning_configuration {
-    scan_on_push = false # Desabilitado para POC (economiza custo e tempo)
-  }
-
-  tags = merge(
-    local.common_tags,
-    {
-      Name    = "${local.prefix}-${local.servicos[count.index]}"
-      Servico = local.servicos[count.index]
-    }
-  )
-}
-
-# Política de ciclo de vida para limpar imagens antigas (economiza custo)
-resource "aws_ecr_lifecycle_policy" "cleanup" {
-  count      = length(local.servicos)
-  repository = aws_ecr_repository.repos[count.index].name
-
-  policy = jsonencode({
-    rules = [
-      {
-        rulePriority = 1
-        description  = "Manter apenas as 10 imagens mais recentes"
-        selection = {
-          tagStatus   = "untagged"
-          countType   = "imageCountMoreThan"
-          countNumber = 1
-        }
-        action = {
-          type = "expire"
-        }
-      },
-      {
-        rulePriority = 2
-        description  = "Manter apenas as 10 tags mais recentes"
-        selection = {
-          tagStatus     = "tagged"
-          tagPrefixList = ["v", "latest", "main", "feature"]
-          countType     = "imageCountMoreThan"
-          countNumber   = 10
-        }
-        action = {
-          type = "expire"
-        }
-      }
-    ]
-  })
-}
-
-# ===== OUTPUTS =====
-
-output "repositorios_ecr" {
-  description = "URLs dos repositórios ECR criados"
-  value = {
-    for idx, servico in local.servicos : servico => aws_ecr_repository.repos[idx].repository_url
-  }
-}
-
+# Outputs consolidados
 output "registry_url" {
   description = "URL base do registry ECR"
-  value       = split("/", aws_ecr_repository.repos[0].repository_url)[0]
+  value       = local.registry_url
+}
+
+output "repositorios_ecr" {
+  description = "URLs dos repositórios ECR"
+  value = {
+    autoatendimento = data.aws_ecr_repository.autoatendimento.repository_url
+    pagamento       = data.aws_ecr_repository.pagamento.repository_url
+  }
 }
 
 output "repositorios_nomes" {
   description = "Nomes dos repositórios ECR"
   value = {
-    for idx, servico in local.servicos : servico => aws_ecr_repository.repos[idx].name
+    autoatendimento = data.aws_ecr_repository.autoatendimento.name
+    pagamento       = data.aws_ecr_repository.pagamento.name
   }
 }
 
-# Data sources para repositórios existentes (fallback se não conseguir criar/importar)
-data "aws_ecr_repository" "autoatendimento_fallback" {
-  name = "lanchonete-autoatendimento"
-}
-
-data "aws_ecr_repository" "pagamento_fallback" {
-  name = "lanchonete-pagamento"
-}
-
-# Outputs específicos para o pipeline CI/CD - usar data sources como fallback
+# Outputs específicos para o pipeline CI/CD
 output "ecr_autoatendimento_url" {
   description = "URL do repositório ECR do autoatendimento"
-  value       = try(aws_ecr_repository.repos[0].repository_url, data.aws_ecr_repository.autoatendimento_fallback.repository_url)
+  value       = data.aws_ecr_repository.autoatendimento.repository_url
 }
 
 output "ecr_pagamento_url" {
   description = "URL do repositório ECR do pagamento"
-  value       = try(aws_ecr_repository.repos[1].repository_url, data.aws_ecr_repository.pagamento_fallback.repository_url)
+  value       = data.aws_ecr_repository.pagamento.repository_url
 }

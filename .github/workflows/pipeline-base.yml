@@ -77,20 +77,28 @@ jobs:
           echo "Verificando e criando repositórios ECR..."
           terraform init
 
-          # Verificar e importar repositórios existentes
-          echo "Verificando repositórios existentes..."
+          # Verificar o que já está no state
+          echo "Estado atual do Terraform:"
+          terraform state list || echo "State vazio"
 
-          # Tentar importar ambos os repositórios - se já existem no state, o import falhará silenciosamente
-          terraform import 'aws_ecr_repository.repos[0]' lanchonete-autoatendimento 2>/dev/null || true
-          terraform import 'aws_ecr_repository.repos[1]' lanchonete-pagamento 2>/dev/null || true
+          # Verificar se repositórios existem na AWS e importar apenas se não estão no state
+          if ! terraform state list | grep -q 'aws_ecr_repository.repos\[0\]'; then
+            if aws ecr describe-repositories --repository-names lanchonete-autoatendimento >/dev/null 2>&1; then
+              echo "Importando repositório autoatendimento..."
+              terraform import 'aws_ecr_repository.repos[0]' lanchonete-autoatendimento || true
+            fi
+          fi
 
-          # Aplicar com auto-approve para aceitar o estado atual
+          if ! terraform state list | grep -q 'aws_ecr_repository.repos\[1\]'; then
+            if aws ecr describe-repositories --repository-names lanchonete-pagamento >/dev/null 2>&1; then
+              echo "Importando repositório pagamento..."
+              terraform import 'aws_ecr_repository.repos[1]' lanchonete-pagamento || true
+            fi
+          fi
+
+          # Aplicar mudanças
           terraform validate
-          terraform apply -auto-approve -refresh=true || {
-            echo "Primeira tentativa falhou, tentando refresh e apply novamente..."
-            terraform refresh
-            terraform apply -auto-approve
-          }
+          terraform apply -auto-approve
 
       - name: "📤 Exportar URLs do ECR"
         id: ecr_outputs

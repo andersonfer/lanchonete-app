@@ -125,7 +125,7 @@ jobs:
       - name: "🔐 Armazenar senha do RDS no Parameter Store"
         working-directory: infra/database
         run: |
-          RDS_PASSWORD=$(terraform output -raw db_password)
+          RDS_PASSWORD=$(terraform output -raw database_password)
           aws ssm put-parameter \
             --name "/lanchonete/rds/password" \
             --value "$RDS_PASSWORD" \

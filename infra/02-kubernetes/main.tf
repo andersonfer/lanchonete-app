@@ -62,4 +62,4 @@ locals {
     Projeto   = var.nome_projeto
     ManagedBy = "terraform"
   }
-}
+}# Pipeline 2 test trigger Wed Sep 24 12:28:33 PM -03 2025

@@ -1,5 +1,10 @@
 output "lambda_function_name" {
-  description = "Nome da função Lambda"
+  description = "Nome da função Lambda de autenticação"
+  value       = aws_lambda_function.auth_lambda.function_name
+}
+
+output "function_name" {
+  description = "Nome da função Lambda (alias)"
   value       = aws_lambda_function.auth_lambda.function_name
 }
 

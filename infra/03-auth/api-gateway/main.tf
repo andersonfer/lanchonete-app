@@ -9,7 +9,7 @@ terraform {
 
   backend "s3" {
     bucket         = "lanchonete-terraform-state-poc"
-    key            = "api-gateway/terraform.tfstate"
+    key            = "03-auth-api-gateway/terraform.tfstate"
     region         = "us-east-1"
     dynamodb_table = "lanchonete-terraform-locks"
     encrypt        = true
@@ -25,7 +25,7 @@ data "terraform_remote_state" "auth" {
   backend = "s3"
   config = {
     bucket = "lanchonete-terraform-state-poc"
-    key    = "auth/terraform.tfstate"
+    key    = "03-auth-cognito/terraform.tfstate"
     region = "us-east-1"
   }
 }
@@ -35,7 +35,7 @@ data "terraform_remote_state" "lambda" {
   backend = "s3"
   config = {
     bucket = "lanchonete-terraform-state-poc"
-    key    = "lambda/terraform.tfstate"
+    key    = "03-auth-lambda/terraform.tfstate"
     region = "us-east-1"
   }
 }

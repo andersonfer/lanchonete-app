@@ -1,0 +1,162 @@
+name: 03 - Deploy Auth (Cognito + Lambda + API Gateway)
+
+on:
+  push:
+    branches: [ feature/pipeline_rds ]
+    paths:
+      - 'infra/03-auth/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'infra/03-auth/**'
+  workflow_dispatch:
+
+jobs:
+  deploy-auth:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        aws-region: us-east-1
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.5.0
+
+    - name: Setup Java 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'corretto'
+        java-version: '17'
+
+    - name: Setup Maven
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'corretto'
+        java-version: '17'
+
+    - name: Build Lambda JAR
+      run: |
+        cd infra/03-auth/lambda-src
+        mvn clean package -DskipTests
+        ls -la target/
+
+    - name: Terraform Init - Cognito
+      run: |
+        cd infra/03-auth/cognito
+        terraform init
+
+    - name: Terraform Plan - Cognito
+      run: |
+        cd infra/03-auth/cognito
+        terraform plan
+
+    - name: Terraform Apply - Cognito
+      run: |
+        cd infra/03-auth/cognito
+        terraform apply -auto-approve
+      timeout-minutes: 10
+
+    - name: Terraform Init - Lambda
+      run: |
+        cd infra/03-auth/lambda
+        terraform init
+
+    - name: Terraform Plan - Lambda
+      run: |
+        cd infra/03-auth/lambda
+        terraform plan
+
+    - name: Terraform Apply - Lambda
+      run: |
+        cd infra/03-auth/lambda
+        terraform apply -auto-approve
+      timeout-minutes: 10
+
+    - name: Terraform Init - API Gateway
+      run: |
+        cd infra/03-auth/api-gateway
+        terraform init
+
+    - name: Terraform Plan - API Gateway
+      run: |
+        cd infra/03-auth/api-gateway
+        terraform plan
+
+    - name: Terraform Apply - API Gateway
+      run: |
+        cd infra/03-auth/api-gateway
+        terraform apply -auto-approve
+      timeout-minutes: 10
+
+    - name: Health Check - Cognito User Pool
+      run: |
+        # Verificar se User Pool foi criado
+        USER_POOL_ID=$(cd infra/03-auth/cognito && terraform output -raw user_pool_id)
+        echo "User Pool ID: $USER_POOL_ID"
+
+        aws cognito-idp describe-user-pool --user-pool-id $USER_POOL_ID
+        echo "Cognito User Pool criado com sucesso"
+
+    - name: Health Check - Lambda Function
+      run: |
+        # Verificar se Lambda foi criada
+        LAMBDA_NAME=$(cd infra/03-auth/lambda && terraform output -raw function_name)
+        echo "Lambda Function: $LAMBDA_NAME"
+
+        aws lambda get-function --function-name $LAMBDA_NAME
+        echo "Lambda Function criada com sucesso"
+
+    - name: Health Check - API Gateway
+      run: |
+        # Verificar se API Gateway foi criado
+        API_GATEWAY_URL=$(cd infra/03-auth/api-gateway && terraform output -raw api_gateway_endpoint)
+        echo "API Gateway URL: $API_GATEWAY_URL"
+
+        # Teste básico de conectividade
+        curl -X GET $API_GATEWAY_URL/health || echo "Endpoint /health não encontrado (esperado)"
+        echo "API Gateway criado com sucesso"
+
+    - name: Integration Test - Auth Flow
+      run: |
+        # Obter URL do API Gateway
+        API_GATEWAY_URL=$(cd infra/03-auth/api-gateway && terraform output -raw api_gateway_endpoint)
+
+        echo "Testando fluxo de autenticação anônima..."
+
+        # Teste de autenticação anônima
+        RESPONSE=$(curl -s -X POST $API_GATEWAY_URL/v1/auth/identificar \
+          -H "Content-Type: application/json" \
+          -d '{"cpf": null}')
+
+        echo "Response: $RESPONSE"
+
+        # Verificar se recebemos um token
+        if echo "$RESPONSE" | grep -q "token"; then
+          echo "✅ Autenticação anônima funcionando"
+        else
+          echo "❌ Erro na autenticação anônima"
+          exit 1
+        fi
+
+    - name: Export Outputs
+      run: |
+        cd infra/03-auth/cognito
+        echo "COGNITO_USER_POOL_ID=$(terraform output -raw user_pool_id)" >> $GITHUB_ENV
+        echo "COGNITO_CLIENT_ID=$(terraform output -raw user_pool_client_id)" >> $GITHUB_ENV
+
+        cd ../lambda
+        echo "AUTH_LAMBDA_FUNCTION_NAME=$(terraform output -raw function_name)" >> $GITHUB_ENV
+
+        cd ../api-gateway
+        echo "API_GATEWAY_ENDPOINT=$(terraform output -raw api_gateway_endpoint)" >> $GITHUB_ENV
+        echo "Auth infrastructure deployment completed successfully"

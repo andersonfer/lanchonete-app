@@ -1,4 +1,4 @@
-name: 02 - Deploy Kubernetes (EKS + ECR)
+name: 02 - Deploy Kubernetes (EKS + ECR only)
 
 on:
   push:
@@ -81,14 +81,14 @@ jobs:
         # Verificar se namespace foi criado
         kubectl get namespace lanchonete
 
-    - name: Health Check - ALB Controller
+    - name: Health Check - Node Group
       run: |
-        # Verificar se ALB Controller está rodando
-        echo "Verificando ALB Controller..."
-        kubectl get pods -n kube-system -l app.kubernetes.io/name=aws-load-balancer-controller
+        # Verificar se node group está ativo
+        echo "Verificando Node Group..."
+        aws eks describe-nodegroup --cluster-name lanchonete-cluster --nodegroup-name lanchonete-nodes --query 'nodegroup.status' --output text
 
-        # Aguardar ALB Controller ficar ready
-        kubectl wait --for=condition=Ready pods -n kube-system -l app.kubernetes.io/name=aws-load-balancer-controller --timeout=300s
+        # Verificar se pods básicos estão rodando
+        kubectl get pods -n kube-system
 
     - name: Export Outputs
       run: |

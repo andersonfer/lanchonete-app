@@ -59,19 +59,14 @@ output "vpc_id" {
   value       = data.aws_vpc.padrao.id
 }
 
-# ALB Controller
-output "controller_service_account" {
-  description = "Nome do ServiceAccount do AWS Load Balancer Controller"
-  value       = kubernetes_service_account.aws_load_balancer_controller.metadata[0].name
+# Node Group
+output "node_group_name" {
+  description = "Nome do Node Group"
+  value       = aws_eks_node_group.nodes.node_group_name
 }
 
-output "controller_namespace" {
-  description = "Namespace do AWS Load Balancer Controller"
-  value       = kubernetes_service_account.aws_load_balancer_controller.metadata[0].namespace
-}
-
-output "helm_release_status" {
-  description = "Status da instalação do Helm"
-  value       = helm_release.aws_load_balancer_controller.status
+output "node_group_status" {
+  description = "Status do Node Group"
+  value       = aws_eks_node_group.nodes.status
 }
 

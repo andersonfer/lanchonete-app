@@ -4,7 +4,7 @@ output "api_gateway_url" {
 }
 
 output "api_gateway_endpoint" {
-  description = "Endpoint do API Gateway"
+  description = "Endpoint do API Gateway com stage v1"
   value       = "https://${aws_api_gateway_rest_api.lanchonete_api.id}.execute-api.${var.regiao}.amazonaws.com/v1"
 }
 

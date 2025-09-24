@@ -1,48 +1,8 @@
 # ==============================================================================
-# AWS LOAD BALANCER CONTROLLER - MÓDULO TERRAFORM
-# Configuração repetível para ALB + Ingress Controller
+# AWS LOAD BALANCER CONTROLLER - Application Load Balancer para EKS
 # ==============================================================================
 
-terraform {
-  required_version = ">= 1.0"
-  
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
-    }
-    helm = {
-      source  = "hashicorp/helm"
-      version = "~> 2.0"
-    }
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = "~> 2.0"
-    }
-  }
-  
-  # Backend S3 configurado
-  backend "s3" {
-    bucket         = "lanchonete-terraform-state-poc"
-    key            = "ingress/terraform.tfstate"
-    region         = "us-east-1"
-    dynamodb_table = "lanchonete-terraform-locks"
-    encrypt        = true
-  }
-}
-
-# ==============================================================================
-# PROVIDERS
-# ==============================================================================
-
-provider "aws" {
-  region = local.regiao
-
-  default_tags {
-    tags = local.common_tags
-  }
-}
-
+# Data sources para cluster EKS existente
 data "aws_eks_cluster" "cluster" {
   name = var.cluster_name
 }
@@ -51,6 +11,7 @@ data "aws_eks_cluster_auth" "cluster" {
   name = var.cluster_name
 }
 
+# Provider configurations usando cluster existente
 provider "kubernetes" {
   host                   = data.aws_eks_cluster.cluster.endpoint
   cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority[0].data)
@@ -62,27 +23,6 @@ provider "helm" {
     host                   = data.aws_eks_cluster.cluster.endpoint
     cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority[0].data)
     token                  = data.aws_eks_cluster_auth.cluster.token
-  }
-}
-
-# ==============================================================================
-# VARIÁVEIS E DADOS
-# ==============================================================================
-
-variable "cluster_name" {
-  description = "Nome do cluster EKS"
-  type        = string
-  default     = "lanchonete-cluster"
-}
-
-locals {
-  nome_projeto = "lanchonete"
-  regiao      = "us-east-1"
-  
-  common_tags = {
-    Projeto     = local.nome_projeto
-    Terraform   = "true"
-    Componente  = "ingress"
   }
 }
 

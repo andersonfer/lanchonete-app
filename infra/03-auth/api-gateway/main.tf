@@ -40,19 +40,8 @@ data "terraform_remote_state" "lambda" {
   }
 }
 
-# Buscar ALB do autoatendimento por tags
-data "aws_lb" "autoatendimento" {
-  tags = {
-    "ingress.k8s.aws/stack" = "lanchonete-autoatendimento"
-  }
-}
-
-# Buscar ALB do pagamento por tags
-data "aws_lb" "pagamento" {
-  tags = {
-    "ingress.k8s.aws/stack" = "lanchonete"
-  }
-}
+# ALBs serão buscados após serem criados pelo ALB Controller
+# Por enquanto, vamos usar placeholders
 
 # API Gateway REST API
 resource "aws_api_gateway_rest_api" "lanchonete_api" {
@@ -156,7 +145,7 @@ resource "aws_api_gateway_integration" "autoatendimento_alb_integration" {
 
   type                    = "HTTP_PROXY"
   integration_http_method = "ANY"
-  uri                     = "http://${data.aws_lb.autoatendimento.dns_name}/{proxy}"
+  uri                     = "http://placeholder-alb-autoatendimento.amazonaws.com/{proxy}"
 
   request_parameters = {
     "integration.request.path.proxy" = "method.request.path.proxy"
@@ -202,7 +191,7 @@ resource "aws_api_gateway_integration" "pagamento_alb_integration" {
 
   type                    = "HTTP_PROXY"
   integration_http_method = "ANY"
-  uri                     = "http://${data.aws_lb.pagamento.dns_name}/{proxy}"
+  uri                     = "http://placeholder-alb-pagamento.amazonaws.com/{proxy}"
 
   request_parameters = {
     "integration.request.path.proxy" = "method.request.path.proxy"

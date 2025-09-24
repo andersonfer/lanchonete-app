@@ -110,7 +110,7 @@ jobs:
     - name: Health Check - Lambda Function
       run: |
         # Verificar se Lambda foi criada
-        LAMBDA_NAME=$(cd infra/03-auth/lambda && terraform output -raw function_name)
+        LAMBDA_NAME=$(cd infra/03-auth/lambda && terraform output -raw lambda_function_name)
         echo "Lambda Function: $LAMBDA_NAME"
 
         aws lambda get-function --function-name $LAMBDA_NAME
@@ -155,7 +155,7 @@ jobs:
         echo "COGNITO_CLIENT_ID=$(terraform output -raw user_pool_client_id)" >> $GITHUB_ENV
 
         cd ../lambda
-        echo "AUTH_LAMBDA_FUNCTION_NAME=$(terraform output -raw function_name)" >> $GITHUB_ENV
+        echo "AUTH_LAMBDA_FUNCTION_NAME=$(terraform output -raw lambda_function_name)" >> $GITHUB_ENV
 
         cd ../api-gateway
         echo "API_GATEWAY_ENDPOINT=$(terraform output -raw api_gateway_endpoint)" >> $GITHUB_ENV

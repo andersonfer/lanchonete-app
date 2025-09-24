@@ -34,11 +34,29 @@ output "repositorio_pagamento" {
   value       = aws_ecr_repository.repos[1].repository_url
 }
 
+output "repositorios_nomes" {
+  description = "Nomes dos repositórios ECR"
+  value = {
+    for idx, servico in local.servicos : servico => aws_ecr_repository.repos[idx].name
+  }
+}
+
 output "repositorios_ecr" {
   description = "URLs de todos os repositórios ECR"
   value = {
     for idx, servico in local.servicos : servico => aws_ecr_repository.repos[idx].repository_url
   }
+}
+
+# Outputs adicionais do EKS
+output "cluster_security_group_id" {
+  description = "ID do security group do cluster"
+  value       = aws_security_group.eks_cluster.id
+}
+
+output "vpc_id" {
+  description = "ID da VPC utilizada"
+  value       = data.aws_vpc.padrao.id
 }
 
 # ALB Controller

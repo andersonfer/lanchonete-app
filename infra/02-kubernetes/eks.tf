@@ -1,43 +1,6 @@
-# Configuração do Terraform
-terraform {
-  required_version = ">= 1.0"
-
-
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
-    }
-  }
-}
-
-# Provider AWS - usa LabRole automaticamente via AWS CLI/credentials
-provider "aws" {
-  region = var.regiao_aws
-}
-
-# Variáveis essenciais
-variable "regiao_aws" {
-  description = "Região AWS para deploy"
-  type        = string
-  default     = "us-east-1"
-}
-
-variable "nome_projeto" {
-  description = "Nome do projeto"
-  type        = string
-  default     = "lanchonete"
-}
-
-# Configurações locais para evitar repetição
-locals {
-  prefix = var.nome_projeto
-
-  common_tags = {
-    Projeto   = var.nome_projeto
-    ManagedBy = "terraform"
-  }
-}
+# ==============================================================================
+# EKS CLUSTER - Elastic Kubernetes Service
+# ==============================================================================
 
 # Busca o LabRole existente no ambiente AWS
 data "aws_iam_role" "lab_role" {
@@ -133,33 +96,4 @@ resource "aws_eks_node_group" "aplicacao" {
 
 # ===== OUTPUTS PARA PIPELINE CI/CD =====
 
-output "cluster_endpoint" {
-  description = "Endpoint do cluster EKS"
-  value       = aws_eks_cluster.principal.endpoint
-}
-
-output "cluster_name" {
-  description = "Nome do cluster EKS"
-  value       = aws_eks_cluster.principal.name
-}
-
-output "cluster_security_group_id" {
-  description = "ID do security group do cluster"
-  value       = aws_security_group.eks_cluster.id
-}
-
-output "cluster_certificate_authority_data" {
-  description = "Certificado CA do cluster (sensível)"
-  value       = aws_eks_cluster.principal.certificate_authority[0].data
-  sensitive   = true
-}
-
-output "vpc_id" {
-  description = "ID da VPC utilizada"
-  value       = data.aws_vpc.padrao.id
-}
-
-output "regiao" {
-  description = "Região AWS utilizada"
-  value       = var.regiao_aws
-}
+# Outputs específicos do EKS movidos para outputs.tf

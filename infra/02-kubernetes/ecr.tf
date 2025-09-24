@@ -59,23 +59,4 @@ resource "aws_ecr_lifecycle_policy" "cleanup" {
   })
 }
 
-# ===== OUTPUTS =====
-
-output "repositorios_ecr" {
-  description = "URLs dos repositórios ECR criados"
-  value = {
-    for idx, servico in local.servicos : servico => aws_ecr_repository.repos[idx].repository_url
-  }
-}
-
-output "registry_url" {
-  description = "URL base do registry ECR"
-  value       = split("/", aws_ecr_repository.repos[0].repository_url)[0]
-}
-
-output "repositorios_nomes" {
-  description = "Nomes dos repositórios ECR"
-  value = {
-    for idx, servico in local.servicos : servico => aws_ecr_repository.repos[idx].name
-  }
-}
+# Outputs do ECR movidos para outputs.tf

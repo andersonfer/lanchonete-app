@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: pagamento-ingress
-  namespace: default
+  namespace: lanchonete
   labels:
     app: pagamento
     component: ingress

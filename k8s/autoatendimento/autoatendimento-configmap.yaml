@@ -3,6 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: autoatendimento-config
+  namespace: lanchonete
   labels:
     app: autoatendimento
     component: config

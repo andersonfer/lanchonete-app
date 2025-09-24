@@ -1,0 +1,77 @@
+name: 01 - Deploy Database (RDS)
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'infra/01-database/**'
+  workflow_dispatch:
+
+jobs:
+  deploy-database:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        aws-region: us-east-1
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.5.0
+
+    - name: Terraform Init
+      run: |
+        cd infra/01-database
+        terraform init
+
+    - name: Terraform Plan
+      run: |
+        cd infra/01-database
+        terraform plan
+
+    - name: Terraform Apply
+      run: |
+        cd infra/01-database
+        terraform apply -auto-approve
+      timeout-minutes: 15
+
+    - name: Health Check - RDS Status
+      run: |
+        cd infra/01-database
+
+        # Extrair identifier do RDS (prefix-mysql)
+        DB_IDENTIFIER="lanchonete-mysql"
+
+        echo "Verificando status do RDS: $DB_IDENTIFIER"
+
+        # Verificar status via AWS API
+        STATUS=$(aws rds describe-db-instances \
+          --db-instance-identifier $DB_IDENTIFIER \
+          --query 'DBInstances[0].DBInstanceStatus' \
+          --output text)
+
+        echo "Status atual: $STATUS"
+
+        # Aguardar até ficar "available"
+        echo "Aguardando RDS ficar disponível..."
+        aws rds wait db-instance-available \
+          --db-instance-identifier $DB_IDENTIFIER
+
+        echo "RDS está disponível!"
+
+    - name: Export Outputs
+      run: |
+        cd infra/01-database
+        echo "RDS_ENDPOINT=$(terraform output -raw rds_endpoint)" >> $GITHUB_ENV
+        echo "DATABASE_USERNAME=$(terraform output -raw database_username)" >> $GITHUB_ENV
+        echo "JDBC_URL=$(terraform output -raw jdbc_url)" >> $GITHUB_ENV
+        echo "Database deployment completed successfully"

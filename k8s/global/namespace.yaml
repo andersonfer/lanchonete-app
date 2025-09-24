@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lanchonete
+  labels:
+    name: lanchonete
+    projeto: lanchonete-app
+    managed-by: terraform
+  annotations:
+    description: "Namespace principal para aplicação Lanchonete"

@@ -1,0 +1,100 @@
+name: 02 - Deploy Kubernetes (EKS + ECR)
+
+on:
+  push:
+    branches: [ feature/pipeline_rds ]
+    paths:
+      - 'infra/02-kubernetes/**'
+      - 'k8s/global/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'infra/02-kubernetes/**'
+      - 'k8s/global/**'
+  workflow_dispatch:
+
+jobs:
+  deploy-kubernetes:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        aws-region: us-east-1
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.5.0
+
+    - name: Terraform Init
+      run: |
+        cd infra/02-kubernetes
+        terraform init
+
+    - name: Terraform Plan
+      run: |
+        cd infra/02-kubernetes
+        terraform plan
+
+    - name: Terraform Apply
+      run: |
+        cd infra/02-kubernetes
+        terraform apply -auto-approve
+      timeout-minutes: 25
+
+    - name: Configure kubectl
+      run: |
+        aws eks update-kubeconfig --region us-east-1 --name lanchonete-cluster
+
+    - name: Health Check - EKS Cluster
+      run: |
+        # Verificar se cluster está ativo
+        CLUSTER_STATUS=$(aws eks describe-cluster --name lanchonete-cluster --query 'cluster.status' --output text)
+        echo "Cluster status: $CLUSTER_STATUS"
+
+        if [ "$CLUSTER_STATUS" != "ACTIVE" ]; then
+          echo "ERROR: Cluster não está ativo"
+          exit 1
+        fi
+
+        # Verificar nodes
+        echo "Verificando nodes..."
+        kubectl get nodes
+
+        # Aguardar nodes ficarem ready
+        kubectl wait --for=condition=Ready nodes --all --timeout=300s
+
+    - name: Apply Global Manifests
+      run: |
+        # Aplicar manifests globais
+        kubectl apply -f k8s/global/namespace.yaml
+        kubectl apply -f k8s/global/configmap.yaml
+
+        # Verificar se namespace foi criado
+        kubectl get namespace lanchonete
+
+    - name: Health Check - ALB Controller
+      run: |
+        # Verificar se ALB Controller está rodando
+        echo "Verificando ALB Controller..."
+        kubectl get pods -n kube-system -l app.kubernetes.io/name=aws-load-balancer-controller
+
+        # Aguardar ALB Controller ficar ready
+        kubectl wait --for=condition=Ready pods -n kube-system -l app.kubernetes.io/name=aws-load-balancer-controller --timeout=300s
+
+    - name: Export Outputs
+      run: |
+        cd infra/02-kubernetes
+        echo "EKS_CLUSTER_NAME=$(terraform output -raw cluster_name)" >> $GITHUB_ENV
+        echo "ECR_REGISTRY_URL=$(terraform output -raw registry_url)" >> $GITHUB_ENV
+        echo "ECR_AUTOATENDIMENTO_REPO=$(terraform output -raw repositorio_autoatendimento)" >> $GITHUB_ENV
+        echo "ECR_PAGAMENTO_REPO=$(terraform output -raw repositorio_pagamento)" >> $GITHUB_ENV
+        echo "Kubernetes infrastructure deployment completed successfully"

@@ -62,11 +62,11 @@ output "vpc_id" {
 # Node Group
 output "node_group_name" {
   description = "Nome do Node Group"
-  value       = aws_eks_node_group.nodes.node_group_name
+  value       = aws_eks_node_group.aplicacao.node_group_name
 }
 
 output "node_group_status" {
   description = "Status do Node Group"
-  value       = aws_eks_node_group.nodes.status
+  value       = aws_eks_node_group.aplicacao.status
 }
 

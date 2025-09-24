@@ -1,6 +1,10 @@
 name: 01 - Deploy Database (RDS)
 
 on:
+  push:
+    branches: [ feature/pipeline_rds ]
+    paths:
+      - 'infra/01-database/**'
   pull_request:
     branches: [ main ]
     paths:

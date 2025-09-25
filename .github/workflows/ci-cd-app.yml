@@ -68,6 +68,13 @@ jobs:
         aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name lanchonete-cluster
         kubectl version --client
 
+    - name: Inicializar Terraform (ECR e Database)
+      run: |
+        echo "🔧 Inicializando módulos Terraform necessários..."
+        cd infra/ecr && terraform init
+        cd ../database && terraform init
+        echo "✅ Terraform inicializado"
+
     - name: Atualizar manifests com URLs dinâmicas
       run: ./scripts/update-manifests.sh
 

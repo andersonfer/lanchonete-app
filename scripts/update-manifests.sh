@@ -7,15 +7,27 @@ set -e
 
 echo "🔍 Coletando informações da infraestrutura..."
 
-# Obter registry ECR
-ECR_REGISTRY=$(cd infra/ecr && terraform output -raw registry_url)
+# Obter registry ECR com fallback
+ECR_REGISTRY=$(cd infra/ecr && terraform output -raw registry_url 2>/dev/null) || ECR_REGISTRY=""
 
-# Obter endpoint RDS  
-RDS_ENDPOINT=$(cd infra/database && terraform output -raw rds_endpoint)
+# Se Terraform falhar, usar AWS CLI como fallback
+if [ -z "$ECR_REGISTRY" ]; then
+    echo "⚠️  Terraform output vazio, usando AWS CLI como fallback..."
+    ECR_REGISTRY=$(aws ecr describe-repositories --repository-names lanchonete-autoatendimento --query 'repositories[0].repositoryUri' --output text 2>/dev/null | cut -d'/' -f1)
+fi
+
+# Obter endpoint RDS
+RDS_ENDPOINT=$(cd infra/database && terraform output -raw rds_endpoint 2>/dev/null) || RDS_ENDPOINT=""
 
 echo "📝 Valores coletados:"
 echo "  ECR Registry: $ECR_REGISTRY"
 echo "  RDS Endpoint: $RDS_ENDPOINT"
+
+# Validar se conseguiu obter o ECR Registry
+if [ -z "$ECR_REGISTRY" ]; then
+    echo "❌ Erro: Não foi possível obter ECR Registry nem via Terraform nem via AWS CLI"
+    exit 1
+fi
 
 echo "🔄 Atualizando manifests..."
 

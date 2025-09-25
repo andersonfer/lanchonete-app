@@ -13,7 +13,11 @@ ECR_REGISTRY=$(cd infra/ecr && terraform output -raw registry_url 2>/dev/null) |
 # Se Terraform falhar, usar AWS CLI como fallback
 if [ -z "$ECR_REGISTRY" ]; then
     echo "⚠️  Terraform output vazio, usando AWS CLI como fallback..."
-    ECR_REGISTRY=$(aws ecr describe-repositories --repository-names lanchonete-autoatendimento --query 'repositories[0].repositoryUri' --output text 2>/dev/null | cut -d'/' -f1)
+    ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text 2>/dev/null)
+    if [ -n "$ACCOUNT_ID" ]; then
+        ECR_REGISTRY="${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com"
+        echo "    Calculado ECR Registry: $ECR_REGISTRY"
+    fi
 fi
 
 # Obter endpoint RDS

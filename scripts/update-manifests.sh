@@ -8,7 +8,7 @@ set -e
 echo "🔍 Coletando informações da infraestrutura..."
 
 # Obter registry ECR com fallback
-ECR_REGISTRY=$(cd infra/ecr && terraform output -raw registry_url 2>/dev/null) || ECR_REGISTRY=""
+ECR_REGISTRY=$(cd infra/ecr && terraform output -raw registry_url 2>/dev/null | grep -E '^[0-9]{12}\.dkr\.ecr\.' | head -1) || ECR_REGISTRY=""
 
 # Se Terraform falhar, usar AWS CLI como fallback
 if [ -z "$ECR_REGISTRY" ]; then

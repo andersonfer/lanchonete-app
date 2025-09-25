@@ -1,12 +1,6 @@
 name: CI/CD - Lanchonete App
 
 on:
-  push:
-    branches-ignore: [ main ]
-    paths:
-      - 'app/**'
-      - 'k8s_manifests/**'
-      - 'scripts/**'
   pull_request:
     branches: [ main ]
     paths:

@@ -11,3 +11,4 @@ public class AutoatendimentoApplication {
 	}
 
 }
+// Teste do pipeline CI

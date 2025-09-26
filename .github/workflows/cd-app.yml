@@ -1,7 +1,7 @@
-name: CI/CD - Lanchonete App
+name: CD - Deploy da Aplicação
 
 on:
-  pull_request:
+  push:
     branches: [ main ]
     paths:
       - 'app/**'
@@ -12,8 +12,8 @@ env:
   AWS_REGION: us-east-1
 
 jobs:
-  test:
-    name: 🧪 Testes
+  build-and-deploy:
+    name: 🚀 Build & Deploy
     runs-on: ubuntu-latest
     steps:
     - name: Checkout código
@@ -26,23 +26,11 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
-    - name: Executar testes - Autoatendimento
+    - name: Executar testes antes do deploy
       run: |
-        cd app/autoatendimento
-        mvn clean test
-
-    - name: Executar testes - Pagamento
-      run: |
-        cd app/pagamento
-        mvn clean test
-
-  build-and-deploy:
-    name: 🚀 Build & Deploy
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-    - name: Checkout código
-      uses: actions/checkout@v4
+        echo "🧪 Executando testes antes do deploy..."
+        cd app/autoatendimento && mvn clean test
+        cd ../pagamento && mvn clean test
 
     - name: Configurar AWS credentials
       uses: aws-actions/configure-aws-credentials@v4

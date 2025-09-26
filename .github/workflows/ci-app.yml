@@ -1,0 +1,47 @@
+name: CI - Testes da Aplicação
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'app/**'
+      - 'k8s_manifests/**'
+      - 'scripts/**'
+      - '.github/workflows/**'
+
+jobs:
+  test:
+    name: 🧪 Executar Testes
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+
+    - name: Setup Java 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Executar testes - Autoatendimento
+      run: |
+        cd app/autoatendimento
+        mvn clean test
+
+    - name: Executar testes - Pagamento
+      run: |
+        cd app/pagamento
+        mvn clean test
+
+    - name: Resumo dos testes
+      if: always()
+      run: |
+        echo ""
+        echo "📊 Resumo dos testes do PR"
+        echo "=========================="
+        if [ $? -eq 0 ]; then
+          echo "✅ Todos os testes passaram com sucesso!"
+        else
+          echo "❌ Alguns testes falharam. Verifique os logs acima."
+        fi

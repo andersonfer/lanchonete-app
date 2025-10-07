@@ -1,3 +1,292 @@
+## 📖 Sobre o Projeto
+
+Este projeto implementa um sistema de autoatendimento para lanchonetes, seguindo os princípios de **Clean Architecture** e **Domain-Driven Design (DDD)**.
+
+
+### Arquitetura Geral
+
+```
+                                           ┌─────────────────────┐
+                                           │   Amazon Cognito    │
+                                           │   (User Pool)       │
+                                           │                     │
+                                           └──────────▲──────────┘
+                                                      │
+┌──────────┐         ┌──────────────────────┐         │
+│  Cliente │────────▶│   API Gateway        │─────────┘
+└──────────┘         │   (REST API)         │
+                     │                      │
+                     └──────────┬───────────┘
+                                │
+                     ┌──────────▼───────────┐
+                     │  Lambda Function     │
+                     │  (Autenticação)      │
+                     └──────────┬───────────┘
+                                │
+                     ┌──────────▼───────────────────────────┐
+                     │   Application Load Balancers         │
+                     │   (ALB Controller)                   │
+                     └──────────┬───────────────────────────┘
+                                │
+           ┌────────────────────┼────────────────────┐
+           │                    │                    │
+    ┌──────▼──────┐      ┌──────▼──────┐     ┌──────▼──────┐
+    │ Auto-       │      │  Pagamento  │     │   Amazon    │
+    │ atendimento │─────▶│  (Callback) │     │   RDS       │
+    │   (EKS)     │      │    (EKS)    │     │  (MySQL)    │
+    └─────────────┘      └─────────────┘     └─────────────┘
+```
+
+### Infraestrutura
+
+#### Gerenciamento de identidade
+**Amazon Cognito User Pool** 
+- Armazena usuários cadastrados (CPFs)
+- Gera e valida tokens JWT
+- Autenticação via CPF (sem senha)
+- Suporte a usuários anônimos
+- **Localização**: `infra/auth/`
+
+#### API Gateway
+**Amazon API Gateway**
+- Authorizer: Cognito (validação automática de tokens)
+- Endpoints protegidos via JWT
+- **Localização**: `infra/api-gateway/`
+
+#### Função de Autenticação
+**AWS Lambda**
+- Recebe CPF do cliente
+- Consulta/cria usuário no Cognito (auto-cadastro)
+- Gera tokens JWT válidos
+- Retorna token para o cliente
+- **Localização**: `infra/lambda/`
+
+#### Balanceamento de Carga
+**AWS Load Balancer Controller**
+- Cria Application Load Balancers via Kubernetes Ingress
+- Distribui tráfego entre pods das aplicações
+- Health checks automáticos
+- Integração nativa com EKS
+- **Localização**: `infra/ingress/`
+
+#### Aplicações
+**Amazon EKS (Elastic Kubernetes Service)** 
+- Orquestração de contêineres
+- **Aplicações**:
+  - **Autoatendimento**: Aplicação principal (gerencia pedidos, produtos, clientes)
+  - **Pagamento**: Processamento de pagamento e callback
+- **Localização**: `infra/kubernetes/` e `k8s_manifests/`
+**Amazon ECR** 
+- Registro de contêineres
+- Repositórios privados para imagens Docker:
+  - `lanchonete-autoatendimento`
+  - `lanchonete-pagamento`
+- **Localização**: `infra/ecr/`
+
+#### Banco de dados gerenciado
+**Amazon RDS MySQL 8.0** - Banco de dados gerenciado
+- Instância: `db.t3.micro`
+- Storage: 20GB (gp2)
+- Acesso exclusivo do serviço Autoatendimento
+- **Localização**: `infra/database/`
+
+#### Gerenciamento de Estado Terraform
+- **S3 Bucket**: Armazena estado centralizado
+- **DynamoDB**: Controla locks para prevenir conflitos
+- **Localização**: `infra/backend/`
+
+
+
+### Deploy da Infraestrutura
+
+A infraestrutura é provisionada via **Terraform** de forma modular e sequencial:
+
+```bash
+# 1. Backend (S3 + DynamoDB)
+cd infra/backend && terraform apply
+
+# 2. Repositórios ECR
+cd infra/ecr && terraform apply
+
+# 3. Banco de Dados RDS
+cd infra/database && terraform apply
+
+# 4. Cluster EKS
+cd infra/kubernetes && terraform apply
+
+# 5. ALB Controller
+cd infra/ingress && terraform apply
+
+# 6. Sistema de Autenticação
+cd infra/lambda && ./build.sh
+cd infra/auth && terraform apply
+cd infra/lambda && terraform apply
+cd infra/api-gateway && terraform apply
+```
+
+### Deploy das Aplicações
+
+Após a infraestrutura provisionada, as aplicações Java são deployadas no Kubernetes:
+
+```bash
+# 1. Configurar kubectl para acessar o cluster EKS
+aws eks update-kubeconfig --region us-east-1 --name lanchonete-cluster
+
+# 2. Atualizar manifestos Kubernetes com URLs dinâmicas
+./scripts/update-manifests.sh
+
+# 3. Criar secrets do RDS no cluster
+./scripts/create-secrets.sh
+
+# 4. Build e push das imagens Docker para ECR
+./scripts/build-and-push.sh
+
+# 5. Deploy das aplicações no Kubernetes
+./scripts/deploy-k8s.sh
+```
+
+## 🔄 CI/CD
+
+### Estrutura de Repositório (Monorepo)
+
+Este projeto utiliza uma abordagem de **monorepo**, onde toda a infraestrutura e código da aplicação estão centralizados em um único repositório.
+
+A estrutura está organizada de forma modular, simulando a separação lógica que existiria em múltiplos repositórios:
+
+```
+lanchonete-app/
+├── infra/
+│   ├── backend/          # Estado do Terraform (S3 + DynamoDB)
+│   ├── ecr/              # Repositórios Docker
+│   ├── database/         # RDS MySQL
+│   ├── kubernetes/       # Cluster EKS
+│   ├── ingress/          # ALB Controller
+│   ├── auth/             # Cognito User Pool
+│   ├── lambda/           # Lambda de Autenticação
+│   └── api-gateway/      # API Gateway + Authorizer
+├── app/
+│   ├── autoatendimento/  # Aplicação principal (Spring Boot)
+│   └── pagamento/        # Serviço de pagamento (Spring Boot)
+├── k8s_manifests/        # Manifestos Kubernetes
+└── scripts/              # Scripts de automação
+```
+
+### Pipelines CI/CD
+
+O projeto foi estruturado para suportar 4 pipelines independentes via GitHub Actions, cada um responsável por uma parte específica da infraestrutura e aplicação:
+
+#### Pipeline 1: Infraestrutura Base
+**Trigger**: Pull Request → main (paths: `infra/backend/**`, `infra/ecr/**`, `infra/database/**`)
+
+**Responsabilidades**:
+- Provisionar backend Terraform (S3 + DynamoDB)
+- Criar repositórios ECR
+- Provisionar banco de dados RDS MySQL
+
+**Diretórios envolvidos**:
+- `infra/backend/`
+- `infra/ecr/`
+- `infra/database/`
+
+**Testes**:
+- Validação de sintaxe Terraform
+- Teste de conectividade com RDS
+- Verificação de autenticação AWS
+
+
+#### Pipeline 2: Infraestrutura Kubernetes
+**Trigger**: Pull Request → main (paths: `infra/kubernetes/**`, `infra/ingress/**`)
+
+**Responsabilidades**:
+- Provisionar cluster EKS
+- Configurar AWS Load Balancer Controller
+- Configurar kubectl
+
+**Diretórios envolvidos**:
+- `infra/kubernetes/`
+- `infra/ingress/`
+
+**Dependências**: Pipeline 1 (Base)
+
+**Testes**:
+- Verificar nodes do cluster ativos
+- Validar ALB Controller instalado
+- Health check dos componentes do EKS
+
+
+#### Pipeline 3: Sistema de Autenticação
+**Trigger**: Pull Request → main (paths: `infra/auth/**`, `infra/lambda/**`, `infra/api-gateway/**`)
+
+**Responsabilidades**:
+- Build da Lambda Function (Java)
+- Provisionar Cognito User Pool
+- Configurar API Gateway com Authorizer
+
+**Diretórios envolvidos**:
+- `infra/auth/`
+- `infra/lambda/`
+- `infra/api-gateway/`
+
+**Dependências**: Pipeline 1 (Base)
+
+**Testes**:
+- Validar build da Lambda
+- Testar geração de tokens
+- Health check do API Gateway
+
+
+#### Pipeline 4: Deploy da Aplicação
+**Trigger**: Pull Request → main (paths: `app/**`, `k8s_manifests/**`, `scripts/**`)
+
+**Responsabilidades**:
+- Executar testes unitários (JUnit)
+- Build das imagens Docker
+- Push para ECR
+- Deploy no Kubernetes
+
+**Diretórios envolvidos**:
+- `app/autoatendimento/`
+- `app/pagamento/`
+- `k8s_manifests/`
+- `scripts/`
+
+**Dependências**: Pipeline 2 (Kubernetes) + Pipeline 3 (Autenticação)
+
+**Testes**:
+- Testes unitários Java (Maven)
+- Validação de build Docker
+- Verificação de pods healthy
+
+
+### Secrets Necessários
+
+Configure os seguintes secrets no GitHub (Settings → Secrets and Variables → Actions):
+
+```yaml
+AWS_ACCESS_KEY_ID: <sua-access-key>
+AWS_SECRET_ACCESS_KEY: <sua-secret-key>
+AWS_SESSION_TOKEN: <seu-session-token> 
+AWS_DEFAULT_REGION: us-east-1
+```
+
+### Comunicação Entre Pipelines
+
+Os pipelines compartilham informações através de:
+
+**Terraform State (S3)**:
+- URLs dos repositórios ECR
+- Endpoint do RDS
+- Nome do cluster EKS
+- URL do API Gateway
+
+**AWS Systems Manager Parameter Store**:
+- Senha do banco RDS (SecureString)
+
+**Kubernetes API**:
+- URLs dos Application Load Balancers
+- Status dos pods e serviços
+
+
 # Sistema de Autoatendimento - Modelagem e Estrutura de Banco de Dados
 
 ## 1. Contexto
@@ -47,8 +336,7 @@ Os índices foram implementados para melhorar a performance das seguintes opera�
 
 ## 5. Justificativa da Escolha do MySQL
 
-O MySQL foi escolhido por sua conformidade ACID essencial para transações financeiras, suporte nativo no AWS RDS que facilita gerenciamento e escalabilidade em cloud, e performance adequada para cargas OLTP com sistema de índices eficiente para as consultas frequentes do sistema de autoatendimento.
-
+O MySQL foi escolhido por sua conformidade ACID essencial para transações financeiras, suporte nativo no AWS RDS que facilita gerenciamento e escalabilidade em cloud, e performance adequada para cargas OLTP.
 ## 6. Scripts de Banco de Dados
 
 Os scripts SQL estão localizados em `infra/database/scripts/`:

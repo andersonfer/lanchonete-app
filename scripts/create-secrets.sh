@@ -1,44 +1,88 @@
 #!/bin/bash
 
-# Script para criar Secrets do Kubernetes automaticamente
+# Script para criar Secrets do Kubernetes para Microserviços
 # Uso: ./scripts/create-secrets.sh
+#
+# Carrega senhas de variáveis de ambiente ou usa valores padrão (desenvolvimento local)
+# Para produção, exporte as variáveis antes de executar:
+#   export MYSQL_ROOT_PASSWORD="senha-forte"
+#   export MYSQL_CLIENTES_PASSWORD="senha-forte"
+#   ...
+#   ./scripts/create-secrets.sh
 
 set -e
 
-echo "🔍 Coletando credenciais do RDS..."
+echo "🔐 Criando Secrets do Kubernetes para Microserviços..."
+echo ""
 
-# Obter dados do RDS do Terraform
-cd infra/database
-RDS_ENDPOINT=$(terraform output -raw rds_endpoint)
-DATABASE_NAME=$(terraform output -raw database_name)
-DATABASE_USERNAME=$(terraform output -raw database_username)
-DATABASE_PASSWORD=$(terraform output -raw database_password)
-cd ../..
+# Carregar .env se existir (desenvolvimento local)
+if [ -f .env ]; then
+    echo "📝 Carregando variáveis de .env"
+    export $(cat .env | grep -v '^#' | xargs)
+fi
 
-# Construir JDBC URL
-JDBC_URL="jdbc:mysql://${RDS_ENDPOINT}/${DATABASE_NAME}"
+# Definir senhas com fallback para desenvolvimento
+MYSQL_ROOT_PASSWORD="${MYSQL_ROOT_PASSWORD:-root123}"
+MYSQL_CLIENTES_PASSWORD="${MYSQL_CLIENTES_PASSWORD:-clientes123}"
+MYSQL_PEDIDOS_PASSWORD="${MYSQL_PEDIDOS_PASSWORD:-pedidos123}"
+MYSQL_COZINHA_PASSWORD="${MYSQL_COZINHA_PASSWORD:-cozinha123}"
+MONGO_PASSWORD="${MONGO_PASSWORD:-mongo123}"
+RABBITMQ_PASSWORD="${RABBITMQ_PASSWORD:-rabbitmq123}"
 
-echo "📝 Dados coletados:"
-echo "  RDS Endpoint: $RDS_ENDPOINT"
-echo "  Database: $DATABASE_NAME"
-echo "  Username: $DATABASE_USERNAME"
-echo "  Password: [HIDDEN]"
-echo "  JDBC URL: $JDBC_URL"
+echo "🗑️  Removendo secrets antigos (se existirem)..."
+kubectl delete secret mysql-clientes-secret --ignore-not-found=true
+kubectl delete secret mysql-pedidos-secret --ignore-not-found=true
+kubectl delete secret mysql-cozinha-secret --ignore-not-found=true
+kubectl delete secret mongodb-secret --ignore-not-found=true
+kubectl delete secret rabbitmq-secret --ignore-not-found=true
 
-echo "🔐 Criando Secret 'rds-secret'..."
+echo ""
+echo "🔨 Criando novos secrets..."
 
-# Deletar secret se já existir (para recriar)
-kubectl delete secret rds-secret --ignore-not-found=true
+# MySQL - Clientes
+echo "  ✓ mysql-clientes-secret"
+kubectl create secret generic mysql-clientes-secret \
+  --from-literal=MYSQL_ROOT_PASSWORD="$MYSQL_ROOT_PASSWORD" \
+  --from-literal=MYSQL_DATABASE="clientes_db" \
+  --from-literal=MYSQL_USER="clientes_user" \
+  --from-literal=MYSQL_PASSWORD="$MYSQL_CLIENTES_PASSWORD"
 
-# Criar o secret
-kubectl create secret generic rds-secret \
-  --from-literal=SPRING_DATASOURCE_URL="$JDBC_URL" \
-  --from-literal=SPRING_DATASOURCE_USERNAME="$DATABASE_USERNAME" \
-  --from-literal=SPRING_DATASOURCE_PASSWORD="$DATABASE_PASSWORD"
+# MySQL - Pedidos
+echo "  ✓ mysql-pedidos-secret"
+kubectl create secret generic mysql-pedidos-secret \
+  --from-literal=MYSQL_ROOT_PASSWORD="$MYSQL_ROOT_PASSWORD" \
+  --from-literal=MYSQL_DATABASE="pedidos_db" \
+  --from-literal=MYSQL_USER="pedidos_user" \
+  --from-literal=MYSQL_PASSWORD="$MYSQL_PEDIDOS_PASSWORD"
 
-echo "✅ Secret 'rds-secret' criado com sucesso!"
+# MySQL - Cozinha
+echo "  ✓ mysql-cozinha-secret"
+kubectl create secret generic mysql-cozinha-secret \
+  --from-literal=MYSQL_ROOT_PASSWORD="$MYSQL_ROOT_PASSWORD" \
+  --from-literal=MYSQL_DATABASE="cozinha_db" \
+  --from-literal=MYSQL_USER="cozinha_user" \
+  --from-literal=MYSQL_PASSWORD="$MYSQL_COZINHA_PASSWORD"
 
-echo "🔍 Verificando Secret criado..."
-kubectl describe secret rds-secret
+# MongoDB - Pagamento
+echo "  ✓ mongodb-secret"
+kubectl create secret generic mongodb-secret \
+  --from-literal=MONGO_INITDB_ROOT_USERNAME="admin" \
+  --from-literal=MONGO_INITDB_ROOT_PASSWORD="$MONGO_PASSWORD" \
+  --from-literal=MONGO_INITDB_DATABASE="pagamentos"
 
-echo "📋 Secret pronto para uso nos deployments!"
+# RabbitMQ
+echo "  ✓ rabbitmq-secret"
+kubectl create secret generic rabbitmq-secret \
+  --from-literal=RABBITMQ_DEFAULT_USER="admin" \
+  --from-literal=RABBITMQ_DEFAULT_PASS="$RABBITMQ_PASSWORD"
+
+echo ""
+echo "✅ Todos os secrets foram criados com sucesso!"
+echo ""
+echo "📋 Resumo dos secrets:"
+kubectl get secrets | grep -E "(mysql-|mongodb-|rabbitmq-)"
+
+echo ""
+echo "🔍 Para verificar um secret específico:"
+echo "   kubectl describe secret mysql-clientes-secret"
+echo "   kubectl get secret mysql-clientes-secret -o yaml"

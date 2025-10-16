@@ -16,8 +16,8 @@ spec:
     spec:
       containers:
         - name: app
-          image: 339712817738.dkr.ecr.us-east-1.amazonaws.com/lanchonete-pagamento:latest
-          imagePullPolicy: Always
+          image: lanchonete-pagamento:latest
+          imagePullPolicy: Never
           ports:
             - containerPort: 8081
               name: http
@@ -27,16 +27,29 @@ spec:
             - configMapRef:
                 name: pagamento-config
 
-          # RESOURCE LIMITS AJUSTADOS para HPA MENOS SENSÍVEL
+          # Variáveis de ambiente do MongoDB via Secret
+          env:
+            - name: MONGO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: MONGO_INITDB_ROOT_PASSWORD
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-secret
+                  key: RABBITMQ_DEFAULT_PASS
+
+          # Resources baseados no consumo esperado
           resources:
             requests:
-              memory: "256Mi"                # AUMENTADO: 200Mi → 256Mi
-              cpu: "150m"                    # AUMENTADO: 50m → 150m (crítico!)
+              memory: "250Mi"
+              cpu: "100m"
             limits:
-              memory: "512Mi"                # AUMENTADO: 400Mi → 512Mi
-              cpu: "500m"                    # AUMENTADO: 300m → 500m
+              memory: "350Mi"
+              cpu: "300m"
 
-          # Health checks otimizados (mais tolerantes)
+          # Health checks escalonados
           startupProbe:
             httpGet:
               path: /actuator/health
@@ -45,27 +58,27 @@ spec:
             initialDelaySeconds: 60
             periodSeconds: 10
             timeoutSeconds: 5
-            failureThreshold: 15
+            failureThreshold: 12
             successThreshold: 1
 
           readinessProbe:
             httpGet:
-              path: /actuator/health
+              path: /actuator/health/readiness
               port: 8081
               scheme: HTTP
             initialDelaySeconds: 5
-            periodSeconds: 10
+            periodSeconds: 5
             timeoutSeconds: 3
-            failureThreshold: 5
+            failureThreshold: 2
             successThreshold: 1
 
           livenessProbe:
             httpGet:
-              path: /actuator/health
+              path: /actuator/health/liveness
               port: 8081
               scheme: HTTP
-            initialDelaySeconds: 120
-            periodSeconds: 30
-            timeoutSeconds: 10
-            failureThreshold: 5
+            initialDelaySeconds: 90
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
             successThreshold: 1

@@ -8,15 +8,26 @@ metadata:
 data:
   # Configurações do servidor
   SERVER_PORT: "8081"
-  SPRING_PROFILES_ACTIVE: "kubernetes"
-  
-  # Configurações do mock Mercado Pago
-  MOCK_WEBHOOK_URL: "http://autoatendimento-service:8080/webhook/pagamento"
-  MOCK_DELAY: "3000"
-  MOCK_APPROVAL_RATE: "80"
-  
+  SPRING_PROFILES_ACTIVE: "prod"
+  SPRING_APPLICATION_NAME: "pagamento"
+
+  # Configurações do MongoDB
+  MONGO_HOST: "mongodb-service"
+  MONGO_PORT: "27017"
+  MONGO_DATABASE: "pagamentos"
+  MONGO_USERNAME: "admin"
+
+  # Configurações do RabbitMQ
+  RABBITMQ_HOST: "rabbitmq-service"
+  RABBITMQ_PORT: "5672"
+  RABBITMQ_USERNAME: "admin"
+
+  # Configurações de Actuator
+  MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics"
+  MANAGEMENT_HEALTH_PROBES_ENABLED: "true"
+
   # Configurações de logging
   LOG_LEVEL: "INFO"
-  
+
   # Configurações de performance
-  JAVA_OPTS: "-Xms128m -Xmx256m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+  JAVA_OPTS: "-Xms256m -Xmx512m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"

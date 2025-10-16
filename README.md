@@ -852,37 +852,336 @@ Seguir esta ordem sequencial:
 
 ## ✅ CHECKLIST POR SERVIÇO
 
-Usar este checklist ao implementar cada serviço:
+Usar este checklist ao implementar cada serviço **NESTA ORDEM EXATA**:
 
-### Código
-- [ ] Spring Boot configurado
-- [ ] application.yml (DB + RabbitMQ)
-- [ ] Entities/Models
-- [ ] Repository
-- [ ] Service
-- [ ] Controller
-- [ ] DTOs
-- [ ] Feign Clients (se REST)
-- [ ] RabbitMQ Config (se eventos)
-- [ ] Exception handlers
+### 1️⃣ Estrutura Base
+- [ ] Criar estrutura Maven (`pom.xml`)
+- [ ] Configurar Spring Boot 3 + Java 17
+- [ ] Criar pacotes: `domain`, `application`, `adapters`, `infrastructure`
 
-### Testes
-- [ ] Testes unitários (Service)
-- [ ] Testes de integração (Controller)
-- [ ] Coverage > 80%
+### 2️⃣ Camada de Domínio
+- [ ] **Domain Models** (Entities com regras de negócio)
+  - Exemplo: `Cliente.java`, `Cpf.java`, `Email.java`
+- [ ] **Domain Exceptions**
+  - Exemplo: `ValidacaoException`, `ClienteNaoEncontradoException`
+- [ ] **Value Objects** (se aplicável)
 
-### Docker/K8s
-- [ ] Dockerfile
-- [ ] Deployment.yaml
-- [ ] Service.yaml (ClusterIP)
-- [ ] NodePort.yaml (Minikube)
-- [ ] ConfigMap (se necessário)
+### 3️⃣ Camada de Aplicação (Use Cases)
+- [ ] **Use Cases** (lógica de negócio pura)
+  - Exemplo: `CadastrarCliente`, `IdentificarCliente`, `BuscarClientePorCpf`
+- [ ] **Gateways/Ports** (interfaces)
+  - Exemplo: `ClienteGateway` (interface)
 
-### Validação
-- [ ] Build passa (`mvn clean install`)
-- [ ] Roda local (docker-compose)
-- [ ] Roda Minikube (`kubectl apply`)
-- [ ] Endpoints testados (curl/Postman)
+### 4️⃣ Camada de Adapters
+
+#### 4.1 **Persistence (Adapters Out)**
+- [ ] **Repository Implementation**
+  - Exemplo: `ClienteGatewayJDBC implements ClienteGateway`
+- [ ] **SQL Scripts**
+  - `schema-mysql.sql` (CREATE TABLE)
+  - `data-mysql.sql` (INSERT inicial)
+
+#### 4.2 **Web (Adapters In)**
+- [ ] **Service Layer** (entre Controller e Use Cases)
+  - Exemplo: `ClienteService` (orquestra use cases + conversões DTO)
+- [ ] **DTOs** (Request/Response)
+  - Exemplo: `ClienteRequest`, `ClienteResponse`, `ErrorResponse`
+- [ ] **Controllers** (REST endpoints)
+  - Exemplo: `ClienteController`
+- [ ] **Exception Handlers** (`@RestControllerAdvice`)
+  - Exemplo: `ExceptionHandlerController`
+
+### 5️⃣ Configuração Spring
+- [ ] **application.yml** (configuração principal)
+  ```yaml
+  spring:
+    datasource:
+      url: jdbc:mysql://...
+    sql:
+      init:
+        mode: always
+        platform: mysql
+        schema-locations: classpath:schema-mysql.sql
+        data-locations: classpath:data-mysql.sql
+  ```
+- [ ] **application-prod.yml** (perfil produção)
+- [ ] **JdbcConfig.java** (força inicialização eager do DataSource)
+  ```java
+  @Configuration
+  public class JdbcConfig {
+      @Bean
+      JdbcTemplate jdbcTemplate(DataSource dataSource) {
+          return new JdbcTemplate(dataSource);
+      }
+  }
+  ```
+- [ ] **UseCaseConfig.java** (beans dos use cases)
+
+### 6️⃣ Testes ⚠️ **ANTES DO DOCKERFILE**
+
+**⚠️ REGRA FUNDAMENTAL:** NUNCA criar Dockerfile antes de garantir 80% de cobertura!
+
+#### 6.1 **Testes Unitários de Domínio**
+- [ ] Testar Value Objects (Cpf, Email)
+- [ ] Testar Entities (Cliente)
+- [ ] Testar Domain Exceptions
+
+#### 6.2 **Testes Unitários de Use Cases**
+- [ ] Testar cada Use Case isoladamente
+- [ ] Mockar gateways com `@Mock`
+
+#### 6.3 **Testes de Integração (Repository)**
+- [ ] Usar `@DataJdbcTest` ou `@SpringBootTest`
+- [ ] Testar SQL queries reais
+
+#### 6.4 **Testes Unitários de Service**
+- [ ] Mockar Use Cases com `@Mock`
+- [ ] Testar conversões DTO
+
+#### 6.5 **Testes Unitários de Controller**
+- [ ] Mockar Service com `@Mock`
+- [ ] Testar HTTP status codes
+
+#### 6.6 **Testes de Exception Handler**
+- [ ] Testar todos os `@ExceptionHandler`
+- [ ] Validar `ErrorResponse` correto
+
+#### 6.7 **Testes de Configuração**
+- [ ] Testar `@Configuration` classes
+- [ ] Validar beans não nulos
+
+#### 6.8 **Validação de Cobertura**
+```bash
+mvn clean test jacoco:report
+# Verificar target/site/jacoco/index.html
+# ⚠️ MÍNIMO 80% POR MICROSERVIÇO
+```
+
+### 7️⃣ Docker & Kubernetes
+
+#### 7.1 **Dockerfile** (só após 80% cobertura!)
+- [ ] Multi-stage build (Maven + JRE)
+- [ ] Usuário não-root (`appuser`)
+- [ ] EXPOSE 8080
+- [ ] ENTRYPOINT com JAVA_OPTS
+
+#### 7.2 **Manifests Kubernetes**
+- [ ] **ConfigMap** (`{service}-configmap.yaml`)
+  ```yaml
+  SPRING_SQL_INIT_MODE: "always"
+  SPRING_SQL_INIT_PLATFORM: "mysql"
+  ```
+- [ ] **Deployment** (`{service}-deployment.yaml`)
+  - imagePullPolicy: `Never` (minikube)
+  - env: variáveis do banco via Secret
+- [ ] **Service ClusterIP** (`{service}-service.yaml`)
+- [ ] **HPA** (`{service}-hpa.yaml`)
+
+### 8️⃣ Deploy Local (Minikube) ⚠️ **OBRIGATÓRIO**
+
+```bash
+# 1. Build da imagem
+docker build -t lanchonete-{service}:latest .
+
+# 2. Carregar no minikube
+minikube image load lanchonete-{service}:latest
+
+# 3. Aplicar manifests
+kubectl apply -f k8s_manifests/{service}/
+
+# 4. Aguardar pods prontos
+kubectl wait --for=condition=ready pod -l app={service} --timeout=180s
+
+# 5. Port-forward
+kubectl port-forward service/{service}-service 8081:8080 &
+```
+
+### 9️⃣ Testes de Endpoints ⚠️ **VIA CURL**
+
+**⚠️ NUNCA criar nada manualmente no banco! Scripts SQL devem rodar automaticamente.**
+
+```bash
+# Testar TODOS os endpoints:
+curl -X POST http://localhost:8081/endpoint1 -H "Content-Type: application/json" -d '{...}'
+curl -X GET http://localhost:8081/endpoint2
+# ... etc
+
+# Validar:
+# ✅ Status code correto (200, 201, 404, etc)
+# ✅ Response JSON correto
+# ✅ Dados persistidos no banco
+```
+
+### 🔟 Limpeza e Documentação
+- [ ] Remover código comentado
+- [ ] Atualizar README do serviço
+- [ ] **Você** faz commit: `git add . && git commit -m "feat: implementa serviço X"`
+- [ ] **Você** faz push: `git push origin branch-name`
+
+**⚠️ IMPORTANTE:** Operações de Git (`git add`, `git commit`, `git push`) são de responsabilidade do usuário!
+
+---
+
+## 📐 ARQUITETURA DE CÓDIGO (Clean Architecture)
+
+### **Estrutura de Pacotes**
+
+```
+src/main/java/br/com/lanchonete/{service}/
+│
+├── domain/                          # 🎯 Núcleo - Regras de Negócio
+│   ├── model/                       # Entities e Value Objects
+│   │   ├── Cliente.java
+│   │   ├── Cpf.java
+│   │   └── Email.java
+│   └── exceptions/                  # Domain Exceptions
+│       ├── ValidacaoException.java
+│       └── ClienteNaoEncontradoException.java
+│
+├── application/                     # 🔧 Casos de Uso
+│   ├── usecases/                    # Use Cases (lógica de negócio)
+│   │   ├── CadastrarCliente.java
+│   │   ├── IdentificarCliente.java
+│   │   └── BuscarClientePorCpf.java
+│   └── gateways/                    # Interfaces (Ports)
+│       └── ClienteGateway.java
+│
+├── adapters/                        # 🔌 Adaptadores
+│   ├── persistence/                 # Adapter Out (BD)
+│   │   └── ClienteGatewayJDBC.java
+│   └── web/                         # Adapter In (HTTP)
+│       ├── controller/
+│       │   ├── ClienteController.java
+│       │   └── ExceptionHandlerController.java
+│       ├── service/
+│       │   └── ClienteService.java  # ⚠️ Orquestra Use Cases + DTO
+│       └── dto/
+│           ├── ClienteRequest.java
+│           ├── ClienteResponse.java
+│           └── ErrorResponse.java
+│
+└── infrastructure/                  # ⚙️ Configuração
+    └── config/
+        ├── JdbcConfig.java          # DataSource eager initialization
+        └── UseCaseConfig.java       # Beans dos Use Cases
+```
+
+### **Fluxo de Dados (Request → Response)**
+
+```
+HTTP Request
+    ↓
+ClienteController        # 1. Recebe ClienteRequest (DTO)
+    ↓
+ClienteService           # 2. Converte DTO → Domain Model
+    ↓                    # 3. Chama Use Case
+CadastrarCliente         # 4. Executa lógica de negócio
+    ↓                    # 5. Chama Gateway (interface)
+ClienteGateway
+    ↓
+ClienteGatewayJDBC       # 6. Persiste no banco
+    ↓
+Database
+    ↓
+Cliente (Domain Model)   # 7. Retorna Entity
+    ↓
+ClienteService           # 8. Converte Domain → DTO
+    ↓
+ClienteResponse (DTO)    # 9. Retorna para Controller
+    ↓
+HTTP Response (JSON)
+```
+
+### **⚠️ CAMADA SERVICE: Por que existe?**
+
+A camada `Service` **não faz parte do Clean Architecture tradicional**, mas foi adicionada para:
+
+1. **Orquestrar múltiplos Use Cases**
+   - Exemplo: Checkout pode precisar validar cliente + criar pedido
+2. **Converter DTOs ↔ Domain Models**
+   - Isola Controllers dos detalhes do domínio
+3. **Simplificar Controllers**
+   - Controller apenas recebe/retorna JSON
+4. **Transações declarativas**
+   - `@Transactional` no Service
+
+**Regra de Ouro:** Service **NÃO** contém lógica de negócio! Apenas orquestra Use Cases.
+
+---
+
+## 📝 PADRÕES E CONVENÇÕES
+
+### **Nomenclatura**
+
+| Tipo | Padrão | Exemplo |
+|------|--------|---------|
+| Use Case | Verbo no infinitivo | `CadastrarCliente` |
+| Service | Substantivo + Service | `ClienteService` |
+| Controller | Substantivo + Controller | `ClienteController` |
+| Gateway | Substantivo + Gateway | `ClienteGateway` |
+| DTO Request | Substantivo + Request | `ClienteRequest` |
+| DTO Response | Substantivo + Response | `ClienteResponse` |
+| Exception | Descrição + Exception | `ClienteNaoEncontradoException` |
+
+### **Testes**
+
+| Tipo | Padrão | Exemplo |
+|------|--------|---------|
+| Método de teste | `t1()`, `t2()`, etc | `void t1() { ... }` |
+| DisplayName | Descrição em português | `@DisplayName("Deve cadastrar cliente com sucesso")` |
+| Mocks | `@Mock` + `@ExtendWith(MockitoExtension.class)` | - |
+| Config tests | `@ContextConfiguration` + Spring | - |
+
+### **application.yml**
+
+```yaml
+spring:
+  datasource:
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+
+  sql:
+    init:
+      mode: always              # ⚠️ OBRIGATÓRIO
+      platform: mysql           # ⚠️ OBRIGATÓRIO
+      schema-locations: classpath:schema-mysql.sql
+      data-locations: classpath:data-mysql.sql
+```
+
+### **ConfigMap Kubernetes**
+
+```yaml
+data:
+  SPRING_SQL_INIT_MODE: "always"        # ⚠️ OBRIGATÓRIO
+  SPRING_SQL_INIT_PLATFORM: "mysql"     # ⚠️ OBRIGATÓRIO
+  SPRING_PROFILES_ACTIVE: "prod"
+```
+
+---
+
+## ⚠️ REGRAS FUNDAMENTAIS
+
+### ❌ **NUNCA FAÇA ISSO:**
+
+1. ❌ Criar Dockerfile antes de 80% cobertura
+2. ❌ Criar dados manualmente no banco via `kubectl exec`
+3. ❌ Pular testes unitários ("testo depois")
+4. ❌ Colocar lógica de negócio no Controller
+5. ❌ Colocar lógica de negócio no Service
+6. ❌ Esquecer `JdbcConfig.java` (DataSource não inicializa!)
+7. ❌ Esquecer `SPRING_SQL_INIT_*` no ConfigMap
+8. ❌ Usar `imagePullPolicy: Always` no Minikube
+
+### ✅ **SEMPRE FAÇA ISSO:**
+
+1. ✅ Testes ANTES de Docker/K8s
+2. ✅ Scripts SQL devem rodar automaticamente no startup
+3. ✅ Testar todos os endpoints via curl após deploy
+4. ✅ Seguir o fluxo: Código → Testes (80%) → Docker → K8s → Curl
+5. ✅ Verificar logs: `kubectl logs -l app={service}`
+6. ✅ Validar tabelas: `kubectl exec mysql-{service}-0 -- mysql ...`
+7. ✅ Usar `@DisplayName` em todos os testes
+8. ✅ Mockar dependências com `@Mock`
+9. ✅ **Você** controla Git: `git add`, `git commit`, `git push` (nunca automatizado)
 
 ---
 
@@ -907,6 +1206,39 @@ Usar este checklist ao implementar cada serviço:
 - ✅ Observabilidade via `kubectl logs`
 - ✅ Sem Prometheus/Grafana para simplicidade
 - ✅ CloudWatch automático no EKS
+
+### **Controle de Versão (Git)** ⚠️
+
+**Operações de Git são de RESPONSABILIDADE DO USUÁRIO:**
+
+```bash
+# Após implementar um serviço completo:
+
+# 1. Verificar mudanças
+git status
+
+# 2. Adicionar arquivos
+git add services/clientes/
+git add k8s_manifests/clientes/
+git add README.md
+
+# 3. Commit com mensagem descritiva
+git commit -m "feat(clientes): implementa microserviço de clientes
+
+- Implementa Clean Architecture
+- Adiciona 58 testes (95% cobertura)
+- Cria Dockerfile e manifests K8s
+- Testa todos endpoints via curl"
+
+# 4. Push para repositório
+git push origin feature/migracao-microservicos
+```
+
+**Regras:**
+- ❌ Assistente NUNCA executa `git add`, `git commit` ou `git push`
+- ✅ Usuário controla quando e o que commitar
+- ✅ Usuário escreve mensagens de commit
+- ✅ Usuário decide quando fazer push
 
 ---
 

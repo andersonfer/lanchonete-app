@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: clientes-config
+  labels:
+    app: clientes
+data:
+  SPRING_PROFILES_ACTIVE: "prod"
+  SPRING_APPLICATION_NAME: "clientes"
+  SERVER_PORT: "8080"
+  MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics"
+  MANAGEMENT_HEALTH_PROBES_ENABLED: "true"
+  SPRING_SQL_INIT_MODE: "always"
+  SPRING_SQL_INIT_PLATFORM: "mysql"

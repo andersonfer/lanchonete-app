@@ -1,0 +1,1 @@
+-- Dados iniciais para H2 (testes locais)

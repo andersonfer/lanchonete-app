@@ -142,10 +142,10 @@ Sistema completo de autoatendimento para lanchonete implementado com arquitetura
 │                           ✅ NodePort (30080-30083)                                 │
 │                           ❌ Sem ALB (usa NodePort direto)                          │
 │                                                                                      │
-│                    http://192.168.49.2:30083 → Clientes                             │
-│                    http://192.168.49.2:30080 → Pedidos                              │
-│                    http://192.168.49.2:30082 → Cozinha                              │
-│                    http://192.168.49.2:30081 → Pagamento                            │
+│                    http://192.168.49.2:30083 → Clientes ✅                          │
+│                    http://192.168.49.2:30081 → Pedidos ✅                           │
+│                    http://192.168.49.2:30082 → Cozinha (pendente)                   │
+│                    http://192.168.49.2:30084 → Pagamento ✅                         │
 └──────────────────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────────────────┐
@@ -172,7 +172,7 @@ LEGENDA:
 
 ## 🎯 MICROSERVIÇOS
 
-### **1. CLIENTES** (Port: 8083)
+### **1. CLIENTES** (Port: 8080) ✅ **IMPLEMENTADO**
 
 **Responsabilidade:** Identificação e cadastro de clientes
 
@@ -180,10 +180,12 @@ LEGENDA:
 
 **Banco de Dados:** MySQL StatefulSet (`clientes_db`)
 
+**Status:** ✅ Operacional - Integrado com serviço de Pedidos via REST
+
 **Endpoints:**
 - `POST /clientes/identificar` - Identifica cliente por CPF
 - `POST /clientes` - Cadastra novo cliente
-- `GET /clientes/{cpf}` - Busca cliente por CPF
+- `GET /clientes/cpf/{cpf}` - Busca cliente por CPF
 
 **Schema MySQL:**
 ```sql
@@ -202,7 +204,7 @@ CREATE TABLE cliente (
 
 ---
 
-### **2. PEDIDOS** (Port: 8080)
+### **2. PEDIDOS** (Port: 8080) ✅ **IMPLEMENTADO**
 
 **Responsabilidade:** Checkout, gestão de pedidos e produtos
 
@@ -210,8 +212,10 @@ CREATE TABLE cliente (
 
 **Banco de Dados:** MySQL StatefulSet (`pedidos_db`)
 
+**Status:** ✅ Operacional - Deploy completo com todas integrações funcionando
+
 **Endpoints:**
-- `POST /pedidos/checkout` - Cria novo pedido
+- `POST /pedidos` - Cria novo pedido (realiza checkout)
 - `GET /pedidos` - Lista todos os pedidos
 - `GET /pedidos/{id}` - Busca pedido por ID
 - `PATCH /pedidos/{id}/retirar` - Marca pedido como retirado
@@ -313,13 +317,15 @@ RECEBIDO → EM_PREPARO → PRONTO → REMOVIDO (após retirada)
 
 ---
 
-### **4. PAGAMENTO** (Port: 8081)
+### **4. PAGAMENTO** (Port: 8081) ✅ **IMPLEMENTADO**
 
 **Responsabilidade:** Processamento de pagamentos (mock)
 
 **Tecnologia:** Spring Boot 3 + Java 17 + MongoDB + RabbitMQ
 
 **Banco de Dados:** MongoDB StatefulSet (`pagamentos` collection)
+
+**Status:** ✅ Operacional - Integrado com serviço de Pedidos via RabbitMQ
 
 **Endpoints:**
 - `POST /pagamentos` - Processa pagamento (interno)
@@ -1242,15 +1248,137 @@ git push origin feature/migracao-microservicos
 
 ---
 
+## 📊 STATUS DE IMPLEMENTAÇÃO
+
+### **Microserviços Implementados**
+
+| Serviço | Status | Porta | NodePort | Integrações | Testes |
+|---------|--------|-------|----------|-------------|--------|
+| **Clientes** | ✅ Operacional | 8080 | 30083 | REST (consumido por Pedidos) | ✅ Validado |
+| **Pedidos** | ✅ Operacional | 8080 | 30081 | REST → Clientes<br>RabbitMQ ↔ Pagamento | ✅ Validado |
+| **Pagamento** | ✅ Operacional | 8081 | 30084 | RabbitMQ ↔ Pedidos | ✅ Validado |
+| **Cozinha** | ⏳ Pendente | 8082 | 30082 | - | - |
+
+### **Validações Realizadas**
+
+#### ✅ **Integração REST (Pedidos → Clientes)**
+```bash
+# Teste: Criar pedido COM CPF para validar Feign Client
+curl -X POST http://192.168.49.2:30081/pedidos \
+  -H "Content-Type: application/json" \
+  -d '{"cpfCliente":"12345678900","itens":[{"produtoId":1,"quantidade":2}]}'
+
+# Resultado: ✅ clienteNome preenchido via Feign
+{
+  "id": 9,
+  "numeroPedido": "PED-000009",
+  "cpfCliente": "12345678900",
+  "clienteNome": "Teste Cliente",  ← Buscado do serviço de Clientes!
+  "status": "CRIADO",
+  "valorTotal": 41.80
+}
+```
+
+#### ✅ **Integração RabbitMQ (Pedidos ↔ Pagamento)**
+```bash
+# Teste: Criar pedido e aguardar atualização de status via eventos
+curl -s -X POST http://192.168.49.2:30081/pedidos \
+  -H "Content-Type: application/json" \
+  -d '{"cpfCliente":null,"itens":[{"produtoId":1,"quantidade":1}]}' \
+  | jq -r '.id,.status'
+# Output: 9
+#         CRIADO
+
+# Aguardar 5 segundos (processamento assíncrono)
+sleep 5
+
+# Verificar status atualizado
+curl -s http://192.168.49.2:30081/pedidos/9 | jq -r '.status'
+# Output: REALIZADO  ← Mudou de CRIADO para REALIZADO via RabbitMQ!
+```
+
+**Fluxo de Eventos Validado:**
+1. Pedidos publica `PedidoCriado` → Exchange `pedido.events`
+2. Pagamento consome evento da fila `pagamentos.pedido-criado`
+3. Pagamento processa (mock 80% aprovação)
+4. Pagamento publica `PagamentoAprovado` → Exchange `pagamento.events`
+5. Pedidos consome evento da fila `pedidos.pagamento-aprovado`
+6. Pedidos atualiza status: `CRIADO` → `REALIZADO`
+
+#### ✅ **RabbitMQ Exchanges e Bindings**
+```bash
+# Verificar exchanges criados
+kubectl exec rabbitmq-0 -- rabbitmqadmin -u admin -p rabbitmq123 list exchanges \
+  | grep -E "pedido|pagamento"
+
+# Resultado:
+| pedido.events      | direct  |
+| pagamento.events   | direct  |
+
+# Verificar bindings
+kubectl exec rabbitmq-0 -- rabbitmqadmin -u admin -p rabbitmq123 list bindings \
+  | grep -E "pedido|pagamento"
+
+# Resultado:
+pedido.events → pagamentos.pedido-criado → pedido.criado
+pagamento.events → pedidos.pagamento-aprovado → pagamento.aprovado
+pagamento.events → pedidos.pagamento-rejeitado → pagamento.rejeitado
+```
+
+### **Problemas Resolvidos**
+
+Durante a implementação do serviço de Pedidos, foram identificados e corrigidos 7 problemas críticos:
+
+1. ✅ **MySQL Secret Incorreto** - Deployment referenciando secret genérico ao invés de `mysql-pedidos-secret`
+2. ✅ **RabbitMQ Exchange Type Mismatch** - Pedidos usando `TopicExchange` enquanto Pagamento usa `DirectExchange`
+3. ✅ **Feign Client - Porta Errada** - URL do Clientes configurada com porta 8083 (deveria ser 8080)
+4. ✅ **Feign Client - Endpoint Errado** - Endpoint `/clientes/{cpf}` ao invés de `/clientes/cpf/{cpf}`
+5. ✅ **NodePort Conflict** - Porta 30080 já alocada pelo autoatendimento
+6. ✅ **Minikube Stopped** - Cluster parado durante deploy
+7. ✅ **RabbitMQ Bindings** - Bindings não criados automaticamente (service restart necessário)
+
+**Documentação detalhada:** Consulte [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) para detalhes completos sobre cada problema e solução.
+
+### **Mapa de Portas (Atualizado)**
+
+| Serviço | Porta Interna | NodePort | URL Minikube |
+|---------|--------------|----------|--------------|
+| Autoatendimento | 8080 | 30080 | http://192.168.49.2:30080 |
+| **Pedidos** | 8080 | **30081** | http://192.168.49.2:30081 |
+| Cozinha | 8082 | 30082 | http://192.168.49.2:30082 |
+| **Clientes** | 8080 | 30083 | http://192.168.49.2:30083 |
+| **Pagamento** | 8081 | 30084 | http://192.168.49.2:30084 |
+
+### **Próximos Passos**
+
+1. ⏳ Implementar microserviço de **Cozinha**
+2. ⏳ Remover aplicação monolítica **Autoatendimento**
+3. ⏳ Configurar **Ingress** para AWS EKS
+4. ⏳ Implementar testes E2E completos
+5. ⏳ Configurar CI/CD no GitHub Actions
+
+---
+
 ## 🆘 TROUBLESHOOTING
 
-### **Pod não inicia**
+Para documentação completa de problemas e soluções, consulte **[TROUBLESHOOTING.md](./TROUBLESHOOTING.md)**.
+
+Este documento contém:
+- 📋 Todos os problemas encontrados durante a implementação
+- 🔧 Soluções passo-a-passo com exemplos de código
+- ✅ Testes de validação para cada integração
+- 🧪 Comandos úteis de debug (logs, RabbitMQ, MySQL, secrets, pods)
+- 📊 Checklist de validação completo
+
+### **Referência Rápida**
+
+#### **Pod não inicia**
 ```bash
 kubectl describe pod <pod-name>
 kubectl logs <pod-name>
 ```
 
-### **Banco não conecta**
+#### **Banco não conecta**
 ```bash
 # Verificar se StatefulSet está pronto
 kubectl get statefulset
@@ -1259,14 +1387,20 @@ kubectl get statefulset
 kubectl exec -it mysql-clientes-0 -- mysql -u root -p
 ```
 
-### **RabbitMQ não recebe mensagens**
+#### **RabbitMQ não recebe mensagens**
 ```bash
 # Acessar Management UI
 kubectl port-forward svc/rabbitmq-service 15672:15672
-# Abrir: http://localhost:15672 (guest/guest)
+# Abrir: http://localhost:15672 (admin/rabbitmq123)
+
+# Verificar exchanges
+kubectl exec rabbitmq-0 -- rabbitmqadmin -u admin -p rabbitmq123 list exchanges
+
+# Verificar bindings
+kubectl exec rabbitmq-0 -- rabbitmqadmin -u admin -p rabbitmq123 list bindings
 ```
 
-### **Minikube service não responde**
+#### **Minikube service não responde**
 ```bash
 minikube service <service-name> --url
 curl $(minikube service <service-name> --url)/actuator/health

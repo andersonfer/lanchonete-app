@@ -21,6 +21,7 @@ Thumbs.db
 *.key
 .env
 .env.local
+.env.secrets
 k8s/databases/secrets/*.yaml
 !k8s/databases/secrets/.gitkeep
 

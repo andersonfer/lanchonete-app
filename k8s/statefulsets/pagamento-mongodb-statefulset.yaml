@@ -1,9 +1,9 @@
 ---
-# PersistentVolumeClaim para MySQL Clientes
+# PersistentVolumeClaim para MongoDB
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: mysql-clientes-pvc
+  name: pagamento-mongodb-pvc
   namespace: default
 spec:
   accessModes:
@@ -14,60 +14,59 @@ spec:
   storageClassName: standard
 
 ---
-# Service para MySQL Clientes (Headless Service)
+# Service para MongoDB (Headless Service)
 apiVersion: v1
 kind: Service
 metadata:
-  name: mysql-clientes-service
+  name: pagamento-mongodb-service
   namespace: default
   labels:
-    app: mysql-clientes
+    app: pagamento-mongodb
 spec:
   type: ClusterIP
   ports:
-    - port: 3306
-      targetPort: 3306
+    - port: 27017
+      targetPort: 27017
       protocol: TCP
-      name: mysql
+      name: mongodb
   selector:
-    app: mysql-clientes
-  clusterIP: None  # Headless service para StatefulSet
+    app: pagamento-mongodb
+  clusterIP: None
 
 ---
-# StatefulSet para MySQL Clientes
+# StatefulSet para MongoDB
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: mysql-clientes
+  name: pagamento-mongodb-statefulset
   namespace: default
   labels:
-    app: mysql-clientes
+    app: pagamento-mongodb
 spec:
-  serviceName: mysql-clientes-service
+  serviceName: pagamento-mongodb-service
   replicas: 1
   selector:
     matchLabels:
-      app: mysql-clientes
+      app: pagamento-mongodb
   template:
     metadata:
       labels:
-        app: mysql-clientes
+        app: pagamento-mongodb
     spec:
       containers:
-      - name: mysql
-        image: mysql:8.0
+      - name: mongodb
+        image: mongo:7.0
         ports:
-        - containerPort: 3306
-          name: mysql
+        - containerPort: 27017
+          name: mongodb
         envFrom:
         - secretRef:
-            name: mysql-clientes-secret
-        env:
-        - name: MYSQL_ROOT_HOST
-          value: "%"
+            name: mongodb-secret
         volumeMounts:
-        - name: mysql-data
-          mountPath: /var/lib/mysql
+        - name: mongodb-data
+          mountPath: /data/db
+        - name: mongodb-config
+          mountPath: /data/configdb
         resources:
           requests:
             memory: "512Mi"
@@ -78,23 +77,24 @@ spec:
         livenessProbe:
           exec:
             command:
-            - mysqladmin
-            - ping
-            - -h
-            - localhost
+            - mongosh
+            - --eval
+            - "db.adminCommand('ping')"
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
         readinessProbe:
           exec:
             command:
-            - bash
-            - -c
-            - mysql -h localhost -u root -p$MYSQL_ROOT_PASSWORD -e 'SELECT 1'
+            - mongosh
+            - --eval
+            - "db.adminCommand('ping')"
           initialDelaySeconds: 10
           periodSeconds: 5
           timeoutSeconds: 2
       volumes:
-      - name: mysql-data
+      - name: mongodb-data
         persistentVolumeClaim:
-          claimName: mysql-clientes-pvc
+          claimName: pagamento-mongodb-pvc
+      - name: mongodb-config
+        emptyDir: {}

@@ -12,13 +12,13 @@ data:
   SPRING_APPLICATION_NAME: "pagamento"
 
   # Configurações do MongoDB
-  MONGO_HOST: "mongodb-service"
+  MONGO_HOST: "pagamento-mongodb-service"
   MONGO_PORT: "27017"
   MONGO_DATABASE: "pagamentos"
   MONGO_USERNAME: "admin"
 
   # Configurações do RabbitMQ
-  RABBITMQ_HOST: "rabbitmq-service"
+  RABBITMQ_HOST: "shared-rabbitmq-service"
   RABBITMQ_PORT: "5672"
   RABBITMQ_USERNAME: "admin"
 

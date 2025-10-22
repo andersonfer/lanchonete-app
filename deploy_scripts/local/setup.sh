@@ -41,11 +41,11 @@ kubectl apply -f k8s/statefulsets/
 
 echo ""
 echo "Aguardando StatefulSets ficarem prontos..."
-kubectl wait --for=condition=ready pod -l app=mongodb --timeout=180s
-kubectl wait --for=condition=ready pod -l app=mysql-clientes --timeout=180s
-kubectl wait --for=condition=ready pod -l app=mysql-cozinha --timeout=180s
-kubectl wait --for=condition=ready pod -l app=mysql-pedidos --timeout=180s
-kubectl wait --for=condition=ready pod -l app=rabbitmq --timeout=180s
+kubectl wait --for=condition=ready pod -l app=pagamento-mongodb --timeout=180s
+kubectl wait --for=condition=ready pod -l app=clientes-mysql --timeout=180s
+kubectl wait --for=condition=ready pod -l app=cozinha-mysql --timeout=180s
+kubectl wait --for=condition=ready pod -l app=pedidos-mysql --timeout=180s
+kubectl wait --for=condition=ready pod -l app=shared-rabbitmq --timeout=180s
 
 echo ""
 echo "Aplicando ConfigMaps..."

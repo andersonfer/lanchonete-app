@@ -5,7 +5,7 @@
 
 set -e
 
-MINIKUBE_URL=$(minikube service pedidos-service-nodeport --url)
+MINIKUBE_URL=$(minikube service pedidos-nodeport --url)
 
 echo "==================================================================="
 echo "TESTE 1: Pedido Anonimo"

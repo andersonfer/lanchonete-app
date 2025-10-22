@@ -3,7 +3,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: mysql-pedidos-pvc
+  name: pedidos-mysql-pvc
   namespace: default
 spec:
   accessModes:
@@ -18,10 +18,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: mysql-pedidos-service
+  name: pedidos-mysql-service
   namespace: default
   labels:
-    app: mysql-pedidos
+    app: pedidos-mysql
 spec:
   type: ClusterIP
   ports:
@@ -30,7 +30,7 @@ spec:
       protocol: TCP
       name: mysql
   selector:
-    app: mysql-pedidos
+    app: pedidos-mysql
   clusterIP: None
 
 ---
@@ -38,20 +38,20 @@ spec:
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: mysql-pedidos
+  name: pedidos-mysql-statefulset
   namespace: default
   labels:
-    app: mysql-pedidos
+    app: pedidos-mysql
 spec:
-  serviceName: mysql-pedidos-service
+  serviceName: pedidos-mysql-service
   replicas: 1
   selector:
     matchLabels:
-      app: mysql-pedidos
+      app: pedidos-mysql
   template:
     metadata:
       labels:
-        app: mysql-pedidos
+        app: pedidos-mysql
     spec:
       containers:
       - name: mysql
@@ -97,4 +97,4 @@ spec:
       volumes:
       - name: mysql-data
         persistentVolumeClaim:
-          claimName: mysql-pedidos-pvc
+          claimName: pedidos-mysql-pvc

@@ -45,7 +45,7 @@ spec:
                   name: mysql-clientes-secret
                   key: MYSQL_DATABASE
             - name: SPRING_DATASOURCE_URL
-              value: "jdbc:mysql://mysql-clientes-service:3306/$(MYSQL_DATABASE)?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+              value: "jdbc:mysql://clientes-mysql-service:3306/$(MYSQL_DATABASE)?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
             - name: SPRING_DATASOURCE_USERNAME
               value: "$(MYSQL_USER)"
             - name: SPRING_DATASOURCE_PASSWORD

@@ -1,9 +1,9 @@
 ---
-# PersistentVolumeClaim para MongoDB
+# PersistentVolumeClaim para MySQL Cozinha
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: mongodb-pvc
+  name: cozinha-mysql-pvc
   namespace: default
 spec:
   accessModes:
@@ -14,59 +14,60 @@ spec:
   storageClassName: standard
 
 ---
-# Service para MongoDB (Headless Service)
+# Service para MySQL Cozinha (Headless Service)
 apiVersion: v1
 kind: Service
 metadata:
-  name: mongodb-service
+  name: cozinha-mysql-service
   namespace: default
   labels:
-    app: mongodb
+    app: cozinha-mysql
 spec:
   type: ClusterIP
   ports:
-    - port: 27017
-      targetPort: 27017
+    - port: 3306
+      targetPort: 3306
       protocol: TCP
-      name: mongodb
+      name: mysql
   selector:
-    app: mongodb
+    app: cozinha-mysql
   clusterIP: None
 
 ---
-# StatefulSet para MongoDB
+# StatefulSet para MySQL Cozinha
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: mongodb
+  name: cozinha-mysql-statefulset
   namespace: default
   labels:
-    app: mongodb
+    app: cozinha-mysql
 spec:
-  serviceName: mongodb-service
+  serviceName: cozinha-mysql-service
   replicas: 1
   selector:
     matchLabels:
-      app: mongodb
+      app: cozinha-mysql
   template:
     metadata:
       labels:
-        app: mongodb
+        app: cozinha-mysql
     spec:
       containers:
-      - name: mongodb
-        image: mongo:7.0
+      - name: mysql
+        image: mysql:8.0
         ports:
-        - containerPort: 27017
-          name: mongodb
+        - containerPort: 3306
+          name: mysql
         envFrom:
         - secretRef:
-            name: mongodb-secret
+            name: mysql-cozinha-secret
+        env:
+        - name: MYSQL_ROOT_HOST
+          value: "%"
         volumeMounts:
-        - name: mongodb-data
-          mountPath: /data/db
-        - name: mongodb-config
-          mountPath: /data/configdb
+        - name: mysql-data
+          mountPath: /var/lib/mysql
         resources:
           requests:
             memory: "512Mi"
@@ -77,24 +78,23 @@ spec:
         livenessProbe:
           exec:
             command:
-            - mongosh
-            - --eval
-            - "db.adminCommand('ping')"
+            - mysqladmin
+            - ping
+            - -h
+            - localhost
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
         readinessProbe:
           exec:
             command:
-            - mongosh
-            - --eval
-            - "db.adminCommand('ping')"
+            - bash
+            - -c
+            - mysql -h localhost -u root -p$MYSQL_ROOT_PASSWORD -e 'SELECT 1'
           initialDelaySeconds: 10
           periodSeconds: 5
           timeoutSeconds: 2
       volumes:
-      - name: mongodb-data
+      - name: mysql-data
         persistentVolumeClaim:
-          claimName: mongodb-pvc
-      - name: mongodb-config
-        emptyDir: {}
+          claimName: cozinha-mysql-pvc

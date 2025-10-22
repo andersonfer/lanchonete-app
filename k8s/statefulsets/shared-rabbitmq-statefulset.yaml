@@ -3,7 +3,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: rabbitmq-pvc
+  name: shared-rabbitmq-pvc
   namespace: default
 spec:
   accessModes:
@@ -18,10 +18,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: rabbitmq-service
+  name: shared-rabbitmq-service
   namespace: default
   labels:
-    app: rabbitmq
+    app: shared-rabbitmq
 spec:
   type: ClusterIP
   ports:
@@ -34,7 +34,7 @@ spec:
       protocol: TCP
       name: management
   selector:
-    app: rabbitmq
+    app: shared-rabbitmq
   clusterIP: None
 
 ---
@@ -42,10 +42,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: rabbitmq-management-nodeport
+  name: shared-rabbitmq-management-nodeport
   namespace: default
   labels:
-    app: rabbitmq
+    app: shared-rabbitmq
 spec:
   type: NodePort
   ports:
@@ -55,27 +55,27 @@ spec:
       protocol: TCP
       name: management
   selector:
-    app: rabbitmq
+    app: shared-rabbitmq
 
 ---
 # StatefulSet para RabbitMQ
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: rabbitmq
+  name: shared-rabbitmq-statefulset
   namespace: default
   labels:
-    app: rabbitmq
+    app: shared-rabbitmq
 spec:
-  serviceName: rabbitmq-service
+  serviceName: shared-rabbitmq-service
   replicas: 1
   selector:
     matchLabels:
-      app: rabbitmq
+      app: shared-rabbitmq
   template:
     metadata:
       labels:
-        app: rabbitmq
+        app: shared-rabbitmq
     spec:
       containers:
       - name: rabbitmq
@@ -122,4 +122,4 @@ spec:
       volumes:
       - name: rabbitmq-data
         persistentVolumeClaim:
-          claimName: rabbitmq-pvc
+          claimName: shared-rabbitmq-pvc

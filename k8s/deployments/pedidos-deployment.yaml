@@ -22,7 +22,7 @@ spec:
         - containerPort: 8080
         env:
         - name: MYSQL_HOST
-          value: "mysql-pedidos-service"
+          value: "pedidos-mysql-service"
         - name: MYSQL_PORT
           value: "3306"
         - name: MYSQL_DATABASE
@@ -38,7 +38,7 @@ spec:
               name: mysql-pedidos-secret
               key: MYSQL_PASSWORD
         - name: RABBITMQ_HOST
-          value: "rabbitmq-service"
+          value: "shared-rabbitmq-service"
         - name: RABBITMQ_PORT
           value: "5672"
         - name: RABBITMQ_USER

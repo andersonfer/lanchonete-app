@@ -1,9 +1,9 @@
 ---
-# PersistentVolumeClaim para MySQL Cozinha
+# PersistentVolumeClaim para MySQL Clientes
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: mysql-cozinha-pvc
+  name: clientes-mysql-pvc
   namespace: default
 spec:
   accessModes:
@@ -14,14 +14,14 @@ spec:
   storageClassName: standard
 
 ---
-# Service para MySQL Cozinha (Headless Service)
+# Service para MySQL Clientes (Headless Service)
 apiVersion: v1
 kind: Service
 metadata:
-  name: mysql-cozinha-service
+  name: clientes-mysql-service
   namespace: default
   labels:
-    app: mysql-cozinha
+    app: clientes-mysql
 spec:
   type: ClusterIP
   ports:
@@ -30,28 +30,28 @@ spec:
       protocol: TCP
       name: mysql
   selector:
-    app: mysql-cozinha
-  clusterIP: None
+    app: clientes-mysql
+  clusterIP: None  # Headless service para StatefulSet
 
 ---
-# StatefulSet para MySQL Cozinha
+# StatefulSet para MySQL Clientes
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: mysql-cozinha
+  name: clientes-mysql-statefulset
   namespace: default
   labels:
-    app: mysql-cozinha
+    app: clientes-mysql
 spec:
-  serviceName: mysql-cozinha-service
+  serviceName: clientes-mysql-service
   replicas: 1
   selector:
     matchLabels:
-      app: mysql-cozinha
+      app: clientes-mysql
   template:
     metadata:
       labels:
-        app: mysql-cozinha
+        app: clientes-mysql
     spec:
       containers:
       - name: mysql
@@ -61,7 +61,7 @@ spec:
           name: mysql
         envFrom:
         - secretRef:
-            name: mysql-cozinha-secret
+            name: mysql-clientes-secret
         env:
         - name: MYSQL_ROOT_HOST
           value: "%"
@@ -97,4 +97,4 @@ spec:
       volumes:
       - name: mysql-data
         persistentVolumeClaim:
-          claimName: mysql-cozinha-pvc
+          claimName: clientes-mysql-pvc

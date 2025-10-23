@@ -2,7 +2,7 @@
 
 **Projeto:** Sistema de Lanchonete - Arquitetura de Microserviços
 **Branch Atual:** `feature/migracao-microservicos`
-**Última Atualização:** 2025-10-17
+**Última Atualização:** 2025-10-23
 
 ---
 
@@ -27,6 +27,8 @@ Migração da arquitetura monolítica para microserviços com os seguintes servi
 - [x] Integração RabbitMQ: Pedidos ↔ Pagamento (validado)
 - [x] Configuração CI/CD básico no GitHub Actions
 - [x] Testes unitários dos 3 microserviços (80%+ cobertura)
+- [x] Documentação OpenAPI/Swagger dos 3 microserviços - `2025-10-23`
+- [x] Script de deploy local renomeado (setup.sh → deploy.sh) - `2025-10-23`
 
 ---
 
@@ -384,7 +386,7 @@ Implementar autenticação e identificação de clientes utilizando AWS Cognito,
 **Estimativa:** 2 dias
 **Ambiente:** Local
 
-- [ ] Gerar documentação OpenAPI/Swagger para todos os microserviços
+- [x] Gerar documentação OpenAPI/Swagger para todos os microserviços - `2025-10-23`
 - [ ] Criar diagramas de arquitetura atualizados com Cognito (C4 Model)
 - [ ] Documentar contratos de eventos (AsyncAPI)
 - [ ] Guia de contribuição (CONTRIBUTING.md)
@@ -480,7 +482,7 @@ Implementar autenticação e identificação de clientes utilizando AWS Cognito,
 
 ---
 
-**Última revisão:** 2025-10-17
+**Última revisão:** 2025-10-23
 **Responsável:** Anderson
 **Status Geral:** 🟢 No prazo
 **Próxima Milestone:** Fase 1 - Implementar Cozinha + Testes E2E Local + Remover Monolito

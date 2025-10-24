@@ -1,45 +1,7 @@
----
-# PersistentVolumeClaim para MySQL Cozinha
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: cozinha-mysql-pvc
-  namespace: default
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 5Gi
-  storageClassName: standard
-
----
-# Service para MySQL Cozinha (Headless Service)
-apiVersion: v1
-kind: Service
-metadata:
-  name: cozinha-mysql-service
-  namespace: default
-  labels:
-    app: cozinha-mysql
-spec:
-  type: ClusterIP
-  ports:
-    - port: 3306
-      targetPort: 3306
-      protocol: TCP
-      name: mysql
-  selector:
-    app: cozinha-mysql
-  clusterIP: None
-
----
-# StatefulSet para MySQL Cozinha
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: cozinha-mysql-statefulset
-  namespace: default
   labels:
     app: cozinha-mysql
 spec:
@@ -59,42 +21,57 @@ spec:
         ports:
         - containerPort: 3306
           name: mysql
-        envFrom:
-        - secretRef:
-            name: mysql-cozinha-secret
         env:
-        - name: MYSQL_ROOT_HOST
-          value: "%"
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-cozinha-secret
+              key: MYSQL_ROOT_PASSWORD
+        - name: MYSQL_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: mysql-cozinha-secret
+              key: MYSQL_DATABASE
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: mysql-cozinha-secret
+              key: MYSQL_USER
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-cozinha-secret
+              key: MYSQL_PASSWORD
         volumeMounts:
-        - name: mysql-data
+        - name: cozinha-mysql-data
           mountPath: /var/lib/mysql
         resources:
           requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
             memory: "512Mi"
             cpu: "500m"
-          limits:
-            memory: "1Gi"
-            cpu: "1000m"
-        livenessProbe:
-          exec:
-            command:
-            - mysqladmin
-            - ping
-            - -h
-            - localhost
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          timeoutSeconds: 5
-        readinessProbe:
-          exec:
-            command:
-            - bash
-            - -c
-            - mysql -h localhost -u root -p$MYSQL_ROOT_PASSWORD -e 'SELECT 1'
-          initialDelaySeconds: 10
-          periodSeconds: 5
-          timeoutSeconds: 2
-      volumes:
-      - name: mysql-data
-        persistentVolumeClaim:
-          claimName: cozinha-mysql-pvc
+  volumeClaimTemplates:
+  - metadata:
+      name: cozinha-mysql-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cozinha-mysql-service
+  labels:
+    app: cozinha-mysql
+spec:
+  clusterIP: None
+  ports:
+  - port: 3306
+    targetPort: 3306
+    name: mysql
+  selector:
+    app: cozinha-mysql

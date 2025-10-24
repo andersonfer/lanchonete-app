@@ -30,6 +30,9 @@ echo "Buildando lanchonete-pagamento..."
 echo "Buildando lanchonete-pedidos..."
 (cd services/pedidos && docker build -t lanchonete-pedidos:latest .)
 
+echo "Buildando lanchonete-cozinha..."
+(cd services/cozinha && docker build -t lanchonete-cozinha:latest .)
+
 echo ""
 echo "Criando secrets..."
 bash k8s/secrets/create-secrets.sh
@@ -72,6 +75,7 @@ echo "Aguardando Deployments ficarem prontos..."
 kubectl wait --for=condition=available deployment/clientes-deployment --timeout=180s
 kubectl wait --for=condition=available deployment/pagamento-deployment --timeout=180s
 kubectl wait --for=condition=available deployment/pedidos-deployment --timeout=180s
+kubectl wait --for=condition=available deployment/cozinha-deployment --timeout=180s
 
 echo ""
 echo "==================================================================="

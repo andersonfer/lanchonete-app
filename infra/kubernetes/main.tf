@@ -131,6 +131,24 @@ resource "aws_eks_node_group" "aplicacao" {
   )
 }
 
+# EBS CSI Driver Addon (necessário para PersistentVolumes com gp2/gp3)
+resource "aws_eks_addon" "ebs_csi_driver" {
+  cluster_name             = aws_eks_cluster.principal.name
+  addon_name               = "aws-ebs-csi-driver"
+  service_account_role_arn = data.aws_iam_role.lab_role.arn
+
+  # Resolve conflitos automaticamente
+  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_update = "OVERWRITE"
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "${local.prefix}-ebs-csi-driver"
+    }
+  )
+}
+
 # Busca o Security Group criado automaticamente pelo EKS para os nodes
 data "aws_security_group" "eks_node_group" {
   depends_on = [aws_eks_node_group.aplicacao]

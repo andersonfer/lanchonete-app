@@ -7,7 +7,7 @@ metadata:
     app: pagamento
     component: service
 spec:
-  type: ClusterIP                   # Tipo ClusterIP para uso interno (ALB via Ingress)
+  type: LoadBalancer                # Tipo LoadBalancer para acesso externo direto
   selector:
     app: pagamento                  # Conecta com Pods que têm label app=pagamento
   ports:

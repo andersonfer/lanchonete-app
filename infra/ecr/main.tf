@@ -31,7 +31,7 @@ variable "nome_projeto" {
 variable "servicos" {
   description = "Lista dos serviços que precisam de repositórios ECR"
   type        = list(string)
-  default     = ["autoatendimento", "pagamento"]
+  default     = ["clientes", "pedidos", "cozinha", "pagamento"]
 
   validation {
     condition     = length(var.servicos) > 0

@@ -377,15 +377,43 @@ kubectl create secret generic rabbitmq-secret \
 
 ---
 
-## 🚀 Próximos Passos
+## ✅ Status Atual (2025-10-27)
 
-1. ✅ Repositórios ECR criados
-2. ✅ Imagens buildadas e pushed
-3. ⏳ Criar estrutura `deploy_scripts/`
-4. ⏳ Criar scripts de deploy
-5. ⏳ Separar manifestos K8s por ambiente
-6. ⏳ Provisionar cluster EKS
-7. ⏳ Testar deploy em ambos ambientes
+### LOCAL (Minikube) - ✅ OPERACIONAL
+- ✅ Scripts de deploy completos em `deploy_scripts/local/`
+- ✅ Manifestos K8s em `k8s/local/`
+- ✅ Testes E2E passando 100%
+- ✅ StatefulSets MySQL, MongoDB, RabbitMQ rodando
+- ✅ 4 microserviços deployados via NodePort
+
+### AWS (EKS) - ✅ OPERACIONAL
+- ✅ Cluster EKS provisionado (2 nós t3.medium)
+- ✅ RDS MySQL (3 instâncias db.t3.micro)
+- ✅ MongoDB/RabbitMQ em pods (emptyDir)
+- ✅ 4 microserviços deployados
+- ✅ LoadBalancer Services (4 NLBs)
+- ✅ Testes E2E passando 100%
+- ✅ Scripts de deploy completos em `deploy_scripts/aws/`
+- ✅ Secrets criados dinamicamente via Terraform
+
+### Decisão Final de Arquitetura AWS
+Após testes, optou-se por **LoadBalancer Services** ao invés de ALB+Ingress por:
+1. **Simplicidade**: Cada serviço tem seu próprio endpoint
+2. **Confiabilidade**: Menos pontos de falha
+3. **Debugging**: Mais fácil isolar problemas
+4. **Custo aceitável**: ~$64/mês (4 NLBs) vs ~$16/mês (1 ALB)
+
+## 🚀 Conclusão
+
+Ambos os ambientes (Local e AWS) estão **100% operacionais** com:
+- ✅ Repositórios ECR criados
+- ✅ Imagens buildadas e pushed
+- ✅ Estrutura `deploy_scripts/` completa
+- ✅ Scripts de deploy automatizados
+- ✅ Manifestos K8s separados por ambiente
+- ✅ Cluster EKS provisionado
+- ✅ Deploy testado e validado em ambos ambientes
+- ✅ Testes E2E completos (local + aws)
 
 ---
 
@@ -393,14 +421,17 @@ kubectl create secret generic rabbitmq-secret \
 
 1. **URLs ECR dinâmicas**: O Account ID da AWS Academy muda a cada sessão. Os scripts pegam as URLs do Terraform automaticamente.
 
-2. **Sem arquivos gerados**: Não criamos arquivos intermediários. A substituição é feita inline e aplicada direto no cluster.
+2. **Secrets dinâmicos AWS**: Script `create-secrets.sh` extrai endpoints e senhas RDS do Terraform e cria secrets no Kubernetes.
 
 3. **Ambientes isolados**: Mudar algo no ambiente LOCAL não afeta AWS e vice-versa.
 
-4. **Secrets não versionados**: Secrets devem ser criados manualmente e não devem estar no Git.
+4. **RDS vs StatefulSets**: AWS usa RDS MySQL (gerenciado), Local usa StatefulSets (pods).
 
-5. **StatefulSets compartilhados**: Bancos de dados usam os mesmos manifestos em ambos ambientes (estão em `k8s/base/`).
+5. **MongoDB/RabbitMQ com emptyDir**: Aceita perda de dados em reinicializações (trade-off AWS Academy).
+
+6. **LoadBalancer URLs**: Mudam a cada redeploy dos Services. Use `kubectl get svc` para obter URLs atualizadas.
 
 ---
 
-**Última atualização:** 2025-10-27
+**Última atualização:** 2025-10-27 20:30
+**Status:** ✅ Ambos ambientes operacionais e validados

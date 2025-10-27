@@ -14,6 +14,9 @@ Sistema completo de autoatendimento para lanchonete implementado com arquitetura
 - [Infraestrutura](#-infraestrutura)
 - [Desenvolvimento](#-desenvolvimento)
 - [Deploy](#-deploy)
+  - [Deploy Local (Minikube)](#deploy-local-minikube)
+  - [Deploy AWS (EKS)](#deploy-aws-eks)
+- [Testes E2E](#-testes-e2e)
 - [Reaproveitamento de Código](#-reaproveitamento-de-código)
 
 ---
@@ -612,36 +615,173 @@ kubectl rollout restart deployment/clientes
 
 ## 🚀 DEPLOY
 
-### **Deploy EKS (Produção)**
+### **Deploy Local (Minikube)**
 
+#### Requisitos
+- Minikube instalado
+- kubectl configurado
+- Docker
+- 4GB RAM disponível
+
+#### Script de Deploy Automatizado
 ```bash
-# 1. Configurar kubectl
-aws eks update-kubeconfig --name lanchonete-cluster --region us-east-1
+# 1. Iniciar Minikube
+minikube start --memory=4096 --cpus=2
 
-# 2. Criar secrets
-./scripts/create-secrets.sh
+# 2. Deploy completo (build + deploy)
+./deploy_scripts/local/deploy.sh
+```
 
-# 3. Deploy databases
-kubectl apply -f k8s/databases/
+O script automaticamente:
+1. Configura Docker para usar daemon do Minikube
+2. Build de todas as imagens Maven
+3. Deploy de StatefulSets (MySQL x3, MongoDB, RabbitMQ)
+4. Aguarda bancos ficarem prontos
+5. Deploy de microserviços
+6. Mostra URLs de acesso (NodePort)
 
-# 4. Aguardar databases
-kubectl wait --for=condition=ready pod -l app=mysql-clientes --timeout=300s
-kubectl wait --for=condition=ready pod -l app=mysql-pedidos --timeout=300s
-kubectl wait --for=condition=ready pod -l app=mysql-cozinha --timeout=300s
-kubectl wait --for=condition=ready pod -l app=mongodb --timeout=300s
-kubectl wait --for=condition=ready pod -l app=rabbitmq --timeout=300s
+#### URLs de Acesso Local
+```bash
+# Obter URLs
+minikube service clientes-service --url
+minikube service pedidos-service --url
+minikube service cozinha-service --url
+minikube service pagamento-service --url
+```
 
-# 5. Deploy services
-kubectl apply -f k8s/services/
+---
 
-# 6. Deploy Ingress (ALB)
-kubectl apply -f k8s/aws/ingress.yaml
+### **Deploy AWS (EKS - Produção)** ✅ **OPERACIONAL**
 
-# 7. Aguardar ALB provisionar
-kubectl wait --for=condition=available --timeout=300s ingress/lanchonete-ingress
+#### Arquitetura AWS Atual
+```
+☁️ AWS Cloud
+├── EKS Cluster (lanchonete-cluster)
+│   ├── 2 Nodes (t3.medium)
+│   ├── 4 Microserviços (1 réplica cada)
+│   ├── MongoDB (StatefulSet com emptyDir)
+│   └── RabbitMQ (StatefulSet com emptyDir)
+│
+├── RDS MySQL (3 instâncias db.t3.micro)
+│   ├── lanchonete-clientes-db
+│   ├── lanchonete-pedidos-db
+│   └── lanchonete-cozinha-db
+│
+├── ECR (4 repositórios)
+│   └── Imagens Docker dos microserviços
+│
+└── Network Load Balancers (4)
+    └── URLs dinâmicas (use kubectl get svc para obter)
+```
 
-# 8. Obter URL do ALB
-kubectl get ingress lanchonete-ingress -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+#### Pré-requisitos AWS
+1. **Infraestrutura provisionada via Terraform:**
+   ```bash
+   cd infra/rds && terraform apply      # RDS MySQL (3 instâncias)
+   cd infra/kubernetes && terraform apply  # Cluster EKS
+   cd infra/ecr && terraform apply      # Repositórios ECR
+   ```
+
+2. **kubectl configurado:**
+   ```bash
+   aws eks update-kubeconfig --name lanchonete-cluster --region us-east-1
+   ```
+
+#### Script de Deploy AWS Automatizado
+```bash
+# Deploy completo (secrets + build + push + deploy)
+./deploy_scripts/aws/deploy-k8s.sh
+```
+
+O script automaticamente:
+1. Cria secrets dinamicamente via Terraform outputs (RDS endpoints/senhas)
+2. Build de imagens Docker
+3. Push para ECR
+4. Deploy de StatefulSets (MongoDB, RabbitMQ)
+5. Deploy de microserviços (conectados ao RDS)
+6. Aguarda pods ficarem prontos
+7. Mostra URLs LoadBalancer
+
+#### Verificar Status
+```bash
+# Pods
+kubectl get pods
+
+# Services (LoadBalancers)
+kubectl get svc
+
+# Health checks
+kubectl get pods -o wide
+kubectl logs -f <pod-name>
+```
+
+#### URLs de Acesso AWS (Produção)
+```bash
+# Obter URLs dinamicamente
+kubectl get svc clientes-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+kubectl get svc pedidos-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+kubectl get svc cozinha-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+kubectl get svc pagamento-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+
+# Exemplo de uso:
+CLIENTES_URL=$(kubectl get svc clientes-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+curl http://$CLIENTES_URL:8080/actuator/health
+```
+
+**NOTA:** URLs LoadBalancer mudam a cada redeploy. Sempre use os comandos acima para obter URLs atualizadas.
+
+#### Decisões Técnicas AWS
+- **RDS MySQL**: Bancos de produção (Clientes, Pedidos, Cozinha)
+- **MongoDB/RabbitMQ**: Pods com emptyDir (aceita perda de dados)
+- **LoadBalancer Services**: Cada serviço tem seu próprio NLB
+- **Sem OIDC**: Limitação AWS Academy (usa LabRole)
+- **Custo estimado**: ~$30-40/mês
+
+---
+
+## 🧪 TESTES E2E
+
+### Scripts de Teste
+```
+test_scripts/
+├── local/
+│   └── test-e2e.sh          # Testes para Minikube
+└── aws/
+    └── test-e2e.sh          # Testes para AWS EKS
+```
+
+### Executar Testes
+
+#### Local (Minikube)
+```bash
+./test_scripts/local/test-e2e.sh
+```
+
+#### AWS (EKS)
+```bash
+./test_scripts/aws/test-e2e.sh
+```
+
+### O que os Testes Validam
+- ✅ **TESTE 1:** Pedido Anônimo (fluxo completo)
+- ✅ **TESTE 2:** Pedido com CPF (integração Feign Client)
+- ✅ **TESTE 3:** Edge Cases (erros 400/404)
+- ✅ **Pagamento Rejeitado:** Validação de cancelamento
+- ✅ **Integração RabbitMQ:** Propagação de eventos
+- ✅ **Integração REST:** Feign Client (Pedidos → Clientes)
+
+### Resultados Esperados
+```
+===================================================================
+RESUMO GERAL: TODOS OS TESTES E2E
+===================================================================
+
+[OK] TESTE 1: Pedido Anonimo - CONCLUIDO
+[OK] TESTE 2: Pedido com Cliente Identificado - CONCLUIDO
+[OK] TESTE 3: Edge Cases e Validacao de Erros - CONCLUIDO
+
+Todos os testes E2E foram executados com sucesso!
+===================================================================
 ```
 
 ### **CI/CD (GitHub Actions)**

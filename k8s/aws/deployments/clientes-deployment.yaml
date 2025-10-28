@@ -5,7 +5,7 @@ metadata:
   labels:
     app: clientes
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: clientes
@@ -29,46 +29,39 @@ spec:
 
           # Variáveis de ambiente do banco de dados via Secret (RDS)
           env:
-            - name: MYSQL_HOST
+            - name: DB_HOST
               valueFrom:
                 secretKeyRef:
                   name: mysql-clientes-secret
                   key: MYSQL_HOST
-            - name: MYSQL_PORT
+            - name: DB_PORT
               valueFrom:
                 secretKeyRef:
                   name: mysql-clientes-secret
                   key: MYSQL_PORT
-            - name: MYSQL_USER
+            - name: DB_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: mysql-clientes-secret
                   key: MYSQL_USER
-            - name: MYSQL_PASSWORD
+            - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: mysql-clientes-secret
                   key: MYSQL_PASSWORD
-            - name: MYSQL_DATABASE
+            - name: DB_NAME
               valueFrom:
                 secretKeyRef:
                   name: mysql-clientes-secret
                   key: MYSQL_DATABASE
-            - name: SPRING_DATASOURCE_URL
-              value: "jdbc:mysql://$(MYSQL_HOST):$(MYSQL_PORT)/$(MYSQL_DATABASE)?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
-            - name: SPRING_DATASOURCE_USERNAME
-              value: "$(MYSQL_USER)"
-            - name: SPRING_DATASOURCE_PASSWORD
-              value: "$(MYSQL_PASSWORD)"
 
-          # Resources para produção
           resources:
             requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
               memory: "512Mi"
               cpu: "500m"
-            limits:
-              memory: "1Gi"
-              cpu: "1000m"
 
           # Health checks escalonados
           startupProbe:

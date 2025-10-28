@@ -1,6 +1,6 @@
 output "api_gateway_url" {
   description = "URL base do API Gateway"
-  value       = "${aws_api_gateway_rest_api.lanchonete_api.execution_arn}/v1"
+  value       = "https://${aws_api_gateway_rest_api.lanchonete_api.id}.execute-api.${var.regiao}.amazonaws.com/v1"
 }
 
 output "api_gateway_endpoint" {

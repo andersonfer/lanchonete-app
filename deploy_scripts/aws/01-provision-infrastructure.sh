@@ -95,10 +95,36 @@ cd ../..
 echo ""
 
 # ============================================================================
-# PASSO 4: CONFIGURAR KUBECTL
+# PASSO 4: PROVISIONAR BANCOS DE DADOS RDS
 # ============================================================================
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "⚙️  PASSO 4: Configurando kubectl"
+echo "🗄️  PASSO 4: Provisionando Bancos de Dados RDS"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+cd infra/database
+
+echo "🔨 Inicializando Terraform com backend S3..."
+terraform init
+
+echo ""
+echo "🚀 Aplicando configuração (isso pode levar 5-10 minutos)..."
+terraform apply -auto-approve
+
+echo ""
+echo "✅ Bancos RDS provisionados com sucesso!"
+echo ""
+echo "📋 Endpoints criados:"
+terraform output -json all_endpoints | jq -r 'to_entries[] | "  ✅ \(.key): \(.value)"'
+
+cd ../..
+echo ""
+
+# ============================================================================
+# PASSO 5: CONFIGURAR KUBECTL
+# ============================================================================
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "⚙️  PASSO 5: Configurando kubectl"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
@@ -116,6 +142,32 @@ kubectl get nodes
 echo ""
 
 # ============================================================================
+# PASSO 6: PROVISIONAR AWS LOAD BALANCER CONTROLLER
+# ============================================================================
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🔀 PASSO 6: Provisionando AWS Load Balancer Controller"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+cd infra/ingress
+
+echo "🔨 Inicializando Terraform com backend S3..."
+terraform init
+
+echo ""
+echo "🚀 Aplicando configuração (instala AWS Load Balancer Controller via Helm)..."
+terraform apply -auto-approve -var="cluster_name=$CLUSTER_NAME"
+
+echo ""
+echo "✅ AWS Load Balancer Controller provisionado com sucesso!"
+echo ""
+echo "📋 Verificando deployment do controller:"
+kubectl get deployment -n kube-system aws-load-balancer-controller || echo "⚠️  Controller ainda iniciando..."
+
+cd ../..
+echo ""
+
+# ============================================================================
 # RESUMO FINAL
 # ============================================================================
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -127,8 +179,12 @@ echo "  ✅ Backend S3: lanchonete-terraform-state-poc"
 echo "  ✅ DynamoDB: lanchonete-terraform-locks"
 echo "  ✅ ECR: 4 repositórios (clientes, pedidos, cozinha, pagamento)"
 echo "  ✅ Cluster EKS: $CLUSTER_NAME"
+echo "  ✅ RDS MySQL: 3 instâncias (clientes, pedidos, cozinha)"
 echo "  ✅ kubectl configurado"
+echo "  ✅ AWS Load Balancer Controller instalado"
 echo ""
-echo "🚀 Próximo passo:"
-echo "   ./deploy_scripts/aws/deploy.sh"
+echo "🚀 Próximos passos:"
+echo "   1. Deploy dos microserviços: ./deploy_scripts/aws/02-deploy.sh"
+echo "   2. Provisionar autenticação: ./deploy_scripts/aws/03-provision-auth.sh"
+echo "   3. Testes de autenticação: ./deploy_scripts/aws/04-test-auth.sh"
 echo ""

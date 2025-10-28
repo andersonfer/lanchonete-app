@@ -1,8 +1,13 @@
 # Gera senha aleatória para MySQL Cozinha
+# Usa apenas caracteres safe para evitar problemas de parsing/escaping
 resource "random_password" "mysql_cozinha" {
-  length           = 16
+  length           = 20
   special          = true
-  override_special = "!#$%&*()_+=<>?{}|~"
+  override_special = "-_+="
+  min_lower        = 3
+  min_upper        = 3
+  min_numeric      = 3
+  min_special      = 2
 }
 
 # RDS MySQL - Cozinha

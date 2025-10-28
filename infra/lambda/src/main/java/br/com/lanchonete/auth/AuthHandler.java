@@ -183,7 +183,7 @@ public class AuthHandler implements RequestHandler<APIGatewayProxyRequestEvent, 
     private boolean verificarClienteExiste(String cpf, Context context) {
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(config.getAutoatendimentoUrl() + "/clientes/cpf/" + cpf))
+                    .uri(URI.create(config.getClientesServiceUrl() + "/clientes/cpf/" + cpf))
                     .GET()
                     .build();
 
@@ -215,7 +215,7 @@ public class AuthHandler implements RequestHandler<APIGatewayProxyRequestEvent, 
             String jsonBody = objectMapper.writeValueAsString(clienteData);
 
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(config.getAutoatendimentoUrl() + "/clientes"))
+                    .uri(URI.create(config.getClientesServiceUrl() + "/clientes"))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                     .build();

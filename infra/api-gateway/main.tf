@@ -40,24 +40,10 @@ data "terraform_remote_state" "lambda" {
   }
 }
 
-# Buscar ALB do autoatendimento por tags
-data "aws_lb" "autoatendimento" {
-  tags = {
-    "ingress.k8s.aws/stack" = "lanchonete-autoatendimento"
-  }
-}
-
-# Buscar ALB do pagamento por tags
-data "aws_lb" "pagamento" {
-  tags = {
-    "ingress.k8s.aws/stack" = "lanchonete"
-  }
-}
-
 # API Gateway REST API
 resource "aws_api_gateway_rest_api" "lanchonete_api" {
   name        = "${var.nome_projeto}-api"
-  description = "API Gateway para lanchonete com autenticação Cognito"
+  description = "API Gateway para lanchonete com autenticação Cognito - 4 microserviços"
 
   endpoint_configuration {
     types = ["REGIONAL"]
@@ -118,27 +104,27 @@ resource "aws_api_gateway_integration" "identificar_lambda_integration" {
 }
 
 # ================================
-# RECURSOS PROTEGIDOS - AUTOATENDIMENTO
+# MICROSERVIÇO: CLIENTES
 # ================================
 
-# Resource /autoatendimento
-resource "aws_api_gateway_resource" "autoatendimento_resource" {
+# Resource /clientes
+resource "aws_api_gateway_resource" "clientes_resource" {
   rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
   parent_id   = aws_api_gateway_rest_api.lanchonete_api.root_resource_id
-  path_part   = "autoatendimento"
+  path_part   = "clientes"
 }
 
-# Resource /autoatendimento/{proxy+}
-resource "aws_api_gateway_resource" "autoatendimento_proxy" {
+# Resource /clientes/{proxy+}
+resource "aws_api_gateway_resource" "clientes_proxy" {
   rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
-  parent_id   = aws_api_gateway_resource.autoatendimento_resource.id
+  parent_id   = aws_api_gateway_resource.clientes_resource.id
   path_part   = "{proxy+}"
 }
 
-# Method ANY /autoatendimento/{proxy+} (com autorização Cognito)
-resource "aws_api_gateway_method" "autoatendimento_any" {
+# Method ANY /clientes/{proxy+} (com autorização Cognito)
+resource "aws_api_gateway_method" "clientes_any" {
   rest_api_id   = aws_api_gateway_rest_api.lanchonete_api.id
-  resource_id   = aws_api_gateway_resource.autoatendimento_proxy.id
+  resource_id   = aws_api_gateway_resource.clientes_proxy.id
   http_method   = "ANY"
   authorization = "COGNITO_USER_POOLS"
   authorizer_id = aws_api_gateway_authorizer.cognito_authorizer.id
@@ -148,15 +134,15 @@ resource "aws_api_gateway_method" "autoatendimento_any" {
   }
 }
 
-# Integration com ALB Autoatendimento
-resource "aws_api_gateway_integration" "autoatendimento_alb_integration" {
+# Integration com LoadBalancer Clientes
+resource "aws_api_gateway_integration" "clientes_integration" {
   rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
-  resource_id = aws_api_gateway_resource.autoatendimento_proxy.id
-  http_method = aws_api_gateway_method.autoatendimento_any.http_method
+  resource_id = aws_api_gateway_resource.clientes_proxy.id
+  http_method = aws_api_gateway_method.clientes_any.http_method
 
   type                    = "HTTP_PROXY"
   integration_http_method = "ANY"
-  uri                     = "http://${data.aws_lb.autoatendimento.dns_name}/{proxy}"
+  uri                     = "${var.clientes_service_url}/clientes/{proxy}"
 
   request_parameters = {
     "integration.request.path.proxy" = "method.request.path.proxy"
@@ -164,7 +150,99 @@ resource "aws_api_gateway_integration" "autoatendimento_alb_integration" {
 }
 
 # ================================
-# RECURSOS PROTEGIDOS - PAGAMENTO
+# MICROSERVIÇO: PEDIDOS
+# ================================
+
+# Resource /pedidos
+resource "aws_api_gateway_resource" "pedidos_resource" {
+  rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
+  parent_id   = aws_api_gateway_rest_api.lanchonete_api.root_resource_id
+  path_part   = "pedidos"
+}
+
+# Resource /pedidos/{proxy+}
+resource "aws_api_gateway_resource" "pedidos_proxy" {
+  rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
+  parent_id   = aws_api_gateway_resource.pedidos_resource.id
+  path_part   = "{proxy+}"
+}
+
+# Method ANY /pedidos/{proxy+} (com autorização Cognito)
+resource "aws_api_gateway_method" "pedidos_any" {
+  rest_api_id   = aws_api_gateway_rest_api.lanchonete_api.id
+  resource_id   = aws_api_gateway_resource.pedidos_proxy.id
+  http_method   = "ANY"
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = aws_api_gateway_authorizer.cognito_authorizer.id
+
+  request_parameters = {
+    "method.request.path.proxy" = true
+  }
+}
+
+# Integration com LoadBalancer Pedidos
+resource "aws_api_gateway_integration" "pedidos_integration" {
+  rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
+  resource_id = aws_api_gateway_resource.pedidos_proxy.id
+  http_method = aws_api_gateway_method.pedidos_any.http_method
+
+  type                    = "HTTP_PROXY"
+  integration_http_method = "ANY"
+  uri                     = "${var.pedidos_service_url}/pedidos/{proxy}"
+
+  request_parameters = {
+    "integration.request.path.proxy" = "method.request.path.proxy"
+  }
+}
+
+# ================================
+# MICROSERVIÇO: COZINHA
+# ================================
+
+# Resource /cozinha
+resource "aws_api_gateway_resource" "cozinha_resource" {
+  rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
+  parent_id   = aws_api_gateway_rest_api.lanchonete_api.root_resource_id
+  path_part   = "cozinha"
+}
+
+# Resource /cozinha/{proxy+}
+resource "aws_api_gateway_resource" "cozinha_proxy" {
+  rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
+  parent_id   = aws_api_gateway_resource.cozinha_resource.id
+  path_part   = "{proxy+}"
+}
+
+# Method ANY /cozinha/{proxy+} (com autorização Cognito)
+resource "aws_api_gateway_method" "cozinha_any" {
+  rest_api_id   = aws_api_gateway_rest_api.lanchonete_api.id
+  resource_id   = aws_api_gateway_resource.cozinha_proxy.id
+  http_method   = "ANY"
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = aws_api_gateway_authorizer.cognito_authorizer.id
+
+  request_parameters = {
+    "method.request.path.proxy" = true
+  }
+}
+
+# Integration com LoadBalancer Cozinha
+resource "aws_api_gateway_integration" "cozinha_integration" {
+  rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
+  resource_id = aws_api_gateway_resource.cozinha_proxy.id
+  http_method = aws_api_gateway_method.cozinha_any.http_method
+
+  type                    = "HTTP_PROXY"
+  integration_http_method = "ANY"
+  uri                     = "${var.cozinha_service_url}/cozinha/{proxy}"
+
+  request_parameters = {
+    "integration.request.path.proxy" = "method.request.path.proxy"
+  }
+}
+
+# ================================
+# MICROSERVIÇO: PAGAMENTO
 # ================================
 
 # Resource /pagamento
@@ -194,15 +272,15 @@ resource "aws_api_gateway_method" "pagamento_any" {
   }
 }
 
-# Integration com ALB Pagamento
-resource "aws_api_gateway_integration" "pagamento_alb_integration" {
+# Integration com LoadBalancer Pagamento
+resource "aws_api_gateway_integration" "pagamento_integration" {
   rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
   resource_id = aws_api_gateway_resource.pagamento_proxy.id
   http_method = aws_api_gateway_method.pagamento_any.http_method
 
   type                    = "HTTP_PROXY"
   integration_http_method = "ANY"
-  uri                     = "http://${data.aws_lb.pagamento.dns_name}/{proxy}"
+  uri                     = "${var.pagamento_service_url}/pagamento/{proxy}"
 
   request_parameters = {
     "integration.request.path.proxy" = "method.request.path.proxy"
@@ -217,8 +295,10 @@ resource "aws_api_gateway_integration" "pagamento_alb_integration" {
 resource "aws_api_gateway_deployment" "lanchonete_deployment" {
   depends_on = [
     aws_api_gateway_integration.identificar_lambda_integration,
-    aws_api_gateway_integration.autoatendimento_alb_integration,
-    aws_api_gateway_integration.pagamento_alb_integration,
+    aws_api_gateway_integration.clientes_integration,
+    aws_api_gateway_integration.pedidos_integration,
+    aws_api_gateway_integration.cozinha_integration,
+    aws_api_gateway_integration.pagamento_integration,
   ]
 
   rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
@@ -229,14 +309,22 @@ resource "aws_api_gateway_deployment" "lanchonete_deployment" {
       aws_api_gateway_resource.identificar_resource.id,
       aws_api_gateway_method.identificar_post.id,
       aws_api_gateway_integration.identificar_lambda_integration.id,
-      aws_api_gateway_resource.autoatendimento_resource.id,
-      aws_api_gateway_resource.autoatendimento_proxy.id,
-      aws_api_gateway_method.autoatendimento_any.id,
-      aws_api_gateway_integration.autoatendimento_alb_integration.id,
+      aws_api_gateway_resource.clientes_resource.id,
+      aws_api_gateway_resource.clientes_proxy.id,
+      aws_api_gateway_method.clientes_any.id,
+      aws_api_gateway_integration.clientes_integration.id,
+      aws_api_gateway_resource.pedidos_resource.id,
+      aws_api_gateway_resource.pedidos_proxy.id,
+      aws_api_gateway_method.pedidos_any.id,
+      aws_api_gateway_integration.pedidos_integration.id,
+      aws_api_gateway_resource.cozinha_resource.id,
+      aws_api_gateway_resource.cozinha_proxy.id,
+      aws_api_gateway_method.cozinha_any.id,
+      aws_api_gateway_integration.cozinha_integration.id,
       aws_api_gateway_resource.pagamento_resource.id,
       aws_api_gateway_resource.pagamento_proxy.id,
       aws_api_gateway_method.pagamento_any.id,
-      aws_api_gateway_integration.pagamento_alb_integration.id,
+      aws_api_gateway_integration.pagamento_integration.id,
     ]))
   }
 

@@ -498,18 +498,119 @@ Implementar autenticação e identificação de clientes utilizando AWS Cognito,
 
 ## 🔮 BACKLOG FUTURO (Baixa Prioridade)
 
-### 6. Melhorias de Observabilidade
-**Estimativa:** 3-5 dias
-**Ambiente:** ☁️ AWS
+### 6. Implementar Testes BDD com Cucumber
+**Prioridade:** 🟡 MÉDIA
+**Estimativa:** 2-3 dias
+**Ambiente:** 💻 Local + ☁️ AWS
 
-- [ ] Configurar Prometheus para métricas
-- [ ] Configurar Grafana para dashboards
-- [ ] Adicionar distributed tracing (AWS X-Ray)
-- [ ] Configurar alertas CloudWatch (CPU, memória, latência, erros)
-- [ ] Logs centralizados (CloudWatch Logs Insights)
-- [ ] Dashboard de métricas de negócio (pedidos/hora, taxa de aprovação, etc)
+#### 6.1 Setup Cucumber
+- [ ] Adicionar dependências Cucumber ao pom.xml de cada microserviço:
+  - cucumber-java
+  - cucumber-junit-platform-engine
+  - cucumber-spring
+- [ ] Configurar Cucumber properties (cucumber.properties)
+- [ ] Criar estrutura de diretórios `src/test/resources/features/`
+- [ ] Configurar runner JUnit 5 + Cucumber
 
-### 7. Melhorias de Segurança Avançadas
+#### 6.2 Features e Cenários BDD
+- [ ] **Clientes:**
+  - Feature: Identificação de cliente por CPF
+  - Feature: Cadastro de novo cliente
+  - Scenarios: CPF válido, CPF inválido, cliente já cadastrado
+- [ ] **Pedidos:**
+  - Feature: Criar pedido anônimo
+  - Feature: Criar pedido com CPF
+  - Feature: Consultar pedido por ID
+  - Feature: Retirar pedido
+  - Scenarios: Pedido válido, produto inexistente, retirada inválida
+- [ ] **Cozinha:**
+  - Feature: Visualizar fila de pedidos
+  - Feature: Iniciar preparo
+  - Feature: Marcar como pronto
+  - Scenarios: Fluxo normal, pedido inexistente, transições inválidas
+- [ ] **Pagamento:**
+  - Feature: Processar pagamento via evento
+  - Scenarios: Pagamento aprovado, pagamento rejeitado
+
+#### 6.3 Step Definitions
+- [ ] Implementar steps para cada microserviço
+- [ ] Configurar Spring Context em steps
+- [ ] Criar classes helper para chamadas REST
+- [ ] Implementar assertions customizadas
+
+#### 6.4 Integração com CI/CD
+- [ ] Executar testes BDD no pipeline CI
+- [ ] Gerar relatórios Cucumber (JSON/HTML)
+- [ ] Publicar relatórios como artefatos
+- [ ] Falhar build se BDD falhar
+
+**Critérios de Aceite:**
+- Cobertura BDD de cenários principais (happy path + edge cases)
+- Testes BDD executam automaticamente no CI
+- Relatórios legíveis gerados (Cucumber HTML)
+- Linguagem Gherkin clara e compreensível por não-técnicos
+
+---
+
+### 7. Integração SonarQube no CI/CD
+**Prioridade:** 🟡 MÉDIA
+**Estimativa:** 1-2 dias
+**Ambiente:** 💻 Local + ☁️ AWS + GitHub Actions
+
+#### 7.1 Setup SonarCloud/SonarQube
+- [ ] Opção A: Usar SonarCloud (cloud, grátis para open source)
+  - Criar conta SonarCloud
+  - Conectar com repositório GitHub
+  - Obter token de autenticação
+- [ ] Opção B: Self-hosted SonarQube (Docker local)
+  - Deploy SonarQube via Docker Compose
+  - Configurar admin/senha
+  - Criar projeto e token
+
+#### 7.2 Configuração Maven
+- [ ] Adicionar plugin SonarQube aos 4 microserviços:
+  ```xml
+  <plugin>
+    <groupId>org.sonarsource.scanner.maven</groupId>
+    <artifactId>sonar-maven-plugin</artifactId>
+    <version>3.10.0.2594</version>
+  </plugin>
+  ```
+- [ ] Configurar propriedades Sonar (sonar-project.properties)
+- [ ] Configurar exclusões (testes, DTOs, configs)
+
+#### 7.3 Integração CI (GitHub Actions)
+- [ ] Adicionar step Sonar no workflow CI:
+  ```yaml
+  - name: SonarQube Analysis
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    run: mvn sonar:sonar
+  ```
+- [ ] Configurar Quality Gate
+- [ ] Falhar build se Quality Gate falhar
+- [ ] Publicar link do Sonar no PR
+
+#### 7.4 Métricas e Qualidade
+- [ ] Configurar thresholds:
+  - Code Coverage > 80%
+  - Duplicações < 3%
+  - Bugs: 0
+  - Vulnerabilities: 0
+  - Code Smells: Rating A ou B
+- [ ] Configurar análise de branches
+- [ ] Configurar análise de Pull Requests
+
+**Critérios de Aceite:**
+- SonarQube executando em todos os builds
+- Quality Gate configurado e funcionando
+- Badge do SonarQube no README
+- Análise de PRs funcionando
+- Equipe consegue visualizar métricas de código
+
+---
+
+### 8. Melhorias de Segurança Avançadas
 **Estimativa:** 2-3 dias
 **Ambiente:** ☁️ AWS
 
@@ -521,7 +622,7 @@ Implementar autenticação e identificação de clientes utilizando AWS Cognito,
 - [ ] Rotação automática de secrets
 - [ ] Audit logging completo
 
-### 8. Otimizações de Performance
+### 9. Otimizações de Performance
 **Estimativa:** 2-3 dias
 **Ambiente:** ☁️ AWS + Local
 
@@ -532,7 +633,7 @@ Implementar autenticação e identificação de clientes utilizando AWS Cognito,
 - [ ] Configurar HPA (Horizontal Pod Autoscaler) para todos os serviços
 - [ ] Configurar PDB (Pod Disruption Budget)
 
-### 9. Resiliência e Tolerância a Falhas
+### 10. Resiliência e Tolerância a Falhas
 **Estimativa:** 2-3 dias
 **Ambiente:** Local + AWS
 
@@ -544,12 +645,13 @@ Implementar autenticação e identificação de clientes utilizando AWS Cognito,
 - [ ] Graceful shutdown
 - [ ] Chaos Engineering (testes de resiliência)
 
-### 10. Documentação e Governança
+### 11. Documentação e Governança
 **Estimativa:** 2 dias
 **Ambiente:** Local
 
 - [x] Gerar documentação OpenAPI/Swagger para todos os microserviços - `2025-10-23`
-- [ ] Criar diagramas de arquitetura atualizados com Cognito (C4 Model)
+- [x] Criar diagramas de arquitetura AWS atualizados - `2025-10-27`
+- [ ] Criar diagramas C4 Model completos
 - [ ] Documentar contratos de eventos (AsyncAPI)
 - [ ] Guia de contribuição (CONTRIBUTING.md)
 - [ ] ADRs (Architecture Decision Records)
@@ -603,7 +705,7 @@ Implementar autenticação e identificação de clientes utilizando AWS Cognito,
 
 ### Ordem de Implementação e Progresso
 
-**FASE 1 - Local (Sem AWS) - 75% Concluído**
+**FASE 1 - Local (Sem AWS) - ✅ 100% CONCLUÍDO**
 1. ✅ **CONCLUÍDO:** Infraestrutura K8s (MySQL, MongoDB, RabbitMQ) - commit d90b4a9
 2. ✅ **CONCLUÍDO:** Microserviço de Clientes - commit 148c9b2
 3. ✅ **CONCLUÍDO:** Microserviço de Pagamento - commit c67362f
@@ -611,16 +713,24 @@ Implementar autenticação e identificação de clientes utilizando AWS Cognito,
 5. ✅ **CONCLUÍDO:** Microserviço de Cozinha - commit 0582da6
 6. ✅ **CONCLUÍDO:** Integração REST (Pedidos → Clientes) - validado
 7. ✅ **CONCLUÍDO:** Integração RabbitMQ (completa) - validado
-8. ⏳ **EM PROGRESSO:** Testes E2E Local (70% - fluxo básico funcionando)
-9. 🔲 **BLOQUEADO:** Remover Monolito (aguardando testes E2E 100%)
+8. ✅ **CONCLUÍDO:** Testes E2E Local (100% - todos os cenários passando)
+9. ✅ **CONCLUÍDO:** Scripts de deploy local automatizados
 
-**FASE 2 - AWS (Requer AWS) - 0% Concluído**
-10. 🔲 **PENDENTE:** Cognito (implementar autenticação)
-11. 🔲 **PENDENTE:** Ingress EKS (expor serviços na AWS)
-12. 🔲 **PENDENTE:** CI/CD Completo (automatizar deploy)
+**FASE 2 - AWS - ✅ 100% CONCLUÍDO (2025-10-27)**
+10. ✅ **CONCLUÍDO:** Infraestrutura EKS + RDS via Terraform
+11. ✅ **CONCLUÍDO:** Deploy microserviços na AWS (LoadBalancers)
+12. ✅ **CONCLUÍDO:** Testes E2E AWS (100% - todos os cenários passando)
+13. ✅ **CONCLUÍDO:** Scripts de deploy AWS automatizados
+14. ✅ **CONCLUÍDO:** Documentação completa AWS
 
-**FASE 3 - Melhorias (Opcional) - 0% Concluído**
-13-17. 🔲 **BACKLOG:** Observabilidade, Segurança, Performance, Resiliência, Docs
+**FASE 3 - Qualidade e CI/CD (Opcional) - 0% Concluído**
+15. 🔲 **PENDENTE:** Testes BDD com Cucumber (features + scenarios)
+16. 🔲 **PENDENTE:** Integração SonarQube no CI/CD (quality gates)
+17. 🔲 **PENDENTE:** CI/CD completo GitHub Actions (build + test + deploy)
+18. 🔲 **PENDENTE:** Remover aplicação monolítica (limpeza)
+
+**FASE 4 - Melhorias Avançadas (Baixa Prioridade)**
+19-22. 🔲 **BACKLOG:** Cognito, Segurança, Performance, Resiliência, Docs
 
 **Progresso Geral do Projeto:**
 - Microserviços: 4/4 ✅ (100%)

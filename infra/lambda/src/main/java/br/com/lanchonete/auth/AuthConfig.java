@@ -3,19 +3,19 @@ package br.com.lanchonete.auth;
 public class AuthConfig {
     private final String userPoolId;
     private final String clientId;
-    private final String autoatendimentoUrl;
+    private final String clientesServiceUrl;
 
-    public AuthConfig(String userPoolId, String clientId, String autoatendimentoUrl) {
+    public AuthConfig(String userPoolId, String clientId, String clientesServiceUrl) {
         this.userPoolId = userPoolId;
         this.clientId = clientId;
-        this.autoatendimentoUrl = autoatendimentoUrl;
+        this.clientesServiceUrl = clientesServiceUrl;
     }
 
     public static AuthConfig fromEnvironment() {
         return new AuthConfig(
             System.getenv("USER_POOL_ID"),
             System.getenv("CLIENT_ID"),
-            System.getenv("AUTOATENDIMENTO_URL")
+            System.getenv("CLIENTES_SERVICE_URL")
         );
     }
 
@@ -27,7 +27,7 @@ public class AuthConfig {
         return clientId;
     }
 
-    public String getAutoatendimentoUrl() {
-        return autoatendimentoUrl;
+    public String getClientesServiceUrl() {
+        return clientesServiceUrl;
     }
 }

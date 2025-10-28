@@ -13,12 +13,14 @@ metadata:
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
 
-    # Health Check
+    # Health Check - usando path raiz do pod
     alb.ingress.kubernetes.io/healthcheck-path: "/actuator/health"
     alb.ingress.kubernetes.io/healthcheck-interval-seconds: "15"
     alb.ingress.kubernetes.io/healthcheck-timeout-seconds: "5"
     alb.ingress.kubernetes.io/healthy-threshold-count: "2"
     alb.ingress.kubernetes.io/unhealthy-threshold-count: "2"
+    alb.ingress.kubernetes.io/healthcheck-protocol: "HTTP"
+    alb.ingress.kubernetes.io/healthcheck-port: "traffic-port"
 
     # Configurações de Load Balancer
     alb.ingress.kubernetes.io/load-balancer-name: "lanchonete-alb"

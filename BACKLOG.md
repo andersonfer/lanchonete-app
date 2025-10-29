@@ -2,7 +2,7 @@
 
 **Projeto:** Sistema de Lanchonete - Arquitetura de Microserviços
 **Branch Atual:** `feature/migracao-microservicos`
-**Última Atualização:** 2025-10-27 20:30
+**Última Atualização:** 2025-10-29 15:45
 
 ---
 
@@ -181,10 +181,9 @@ Migração completa da arquitetura monolítica para microserviços distribuídos
 
 ## 🚀 EM ANDAMENTO
 
-### 1. Testes E2E Automatizados - CONCLUÍDO ✅
-**Prioridade:** 🔴 ALTA
+### 1. Expandir Cobertura de Testes E2E - 60% Concluído
 **Dependências:** ✅ Todos os 4 microserviços implementados
-**Status:** ✅ 100% Concluído (Local + AWS)
+**Status:** ⏳ 60% Concluído (3 de 5 testes implementados)
 
 **Implementado LOCAL (100%):**
 - [x] Infraestrutura do script `test_scripts/local/test-e2e.sh`
@@ -211,44 +210,236 @@ Migração completa da arquitetura monolítica para microserviços distribuídos
 - [x] Integração RabbitMQ validada (todos os exchanges e bindings)
 - [x] Validação de transições de estado completa
 
-**Implementado AWS (100%):**
-- [x] Script `test_scripts/aws/test-e2e.sh` criado
-- [x] URLs obtidas dinamicamente via kubectl (LoadBalancer)
-- [x] Teste 1: Pedido Anônimo ✅ (todos os passos passaram)
-- [x] Teste 2: Pedido com CPF ✅ (Feign Client validado)
-- [x] Teste 3: Edge Cases ✅ (todos os erros tratados corretamente)
-- [x] Validação de pagamento rejeitado (pedido ID 3 cancelado)
+**Implementado AWS:**
+- [x] Script `test_scripts/aws/test-e2e.sh` criado e funcionando
+  - Testa fluxo completo com cliente **anônimo**
+  - Aguarda processamento de pagamento (assíncrono via RabbitMQ)
+  - Valida fluxo: CRIADO → REALIZADO/CANCELADO → Fila → EM_PREPARO → PRONTO
+  - Trata cenário de pagamento rejeitado (20% dos casos)
+  - Output limpo (1 linha por etapa)
+  - Pode rodar múltiplas vezes sem falhar
+- [x] URLs obtidas dinamicamente via Terraform
 - [x] Integração com RDS MySQL validada
 - [x] Integração RabbitMQ em ambiente AWS validada
 
-**Critérios de Aceite:**
-- ✅ Fluxo básico funcionando (anônimo)
-- ✅ Fluxo com cliente identificado
-- ✅ Validação de erros implementada
-- ✅ 100% dos testes passando automaticamente (Local + AWS)
-- ✅ Documentação de execução atualizada
+**Pendente - Novos Testes E2E (40%):**
+- [ ] **test-e2e-cliente-existente.sh** - Teste com cliente já cadastrado no banco
+  - Autenticar com CPF existente (55555555555 - João da Silva)
+  - Obter token JWT com `tipo: "CLIENTE"` e `clienteId`
+  - Criar pedido com `cpfCliente: "55555555555"`
+  - Validar que `nomeCliente: "João da Silva"` aparece na resposta
+  - Seguir fluxo completo até status PRONTO
+  - Output limpo (mesmo padrão do test-e2e.sh)
+
+- [ ] **test-e2e-cliente-novo.sh** - Teste criando novo cliente
+  - Gerar CPF único (timestamp-based, 11 dígitos)
+  - Criar novo cliente via `POST /clientes` (com token anônimo)
+  - Validar criação (HTTP 201)
+  - Autenticar com o CPF do cliente recém-criado
+  - Obter token JWT com contexto do novo cliente
+  - Criar pedido usando o novo cliente
+  - Validar nome do cliente no pedido
+  - Seguir fluxo completo até status PRONTO
+  - Output limpo (mesmo padrão do test-e2e.sh)
+
+**Critérios de Aceite (Parcialmente atendidos):**
+- ✅ Fluxo básico funcionando (anônimo) - test-e2e.sh
+- ⏳ Fluxo com cliente existente - test-e2e-cliente-existente.sh (PENDENTE)
+- ⏳ Fluxo com cliente novo - test-e2e-cliente-novo.sh (PENDENTE)
+- ✅ Validação de pagamento rejeitado
 - ✅ Validação de todas as integrações (REST + RabbitMQ)
-- ✅ Cobertura de cenários de erro
-- ✅ Suporte a ambos os ambientes (Local Minikube + AWS EKS)
+- ✅ Output limpo e fácil de acompanhar
+- ✅ Scripts podem rodar múltiplas vezes sem falhar
 
-## 📋 PRÓXIMAS TAREFAS - FASE LOCAL
+## 📋 PRÓXIMAS TAREFAS
 
-### 2. Remover Aplicação Monolítica (Autoatendimento)
-**Prioridade:** 🔴 ALTA
-**Estimativa:** 1 dia
-**Dependências:** ✅ Todos os 4 microserviços funcionando | ⏳ Testes E2E completos
-**Ambiente:** 💻 Local / Git
-**Status:** Bloqueada (aguardando testes E2E 100%)
-
-**Análise Atual:**
-- Monolito presente em `app/autoatendimento/` e `app/pagamento/`
-- NodePort 30080 alocado para autoatendimento (conflita com pedidos)
-- Workflows GitHub Actions ainda referenciam monolito
-- README.md contém diagramas com arquitetura antiga
+### 2. Configurar CI/CD Completo no GitHub Actions
+**Estimativa:** 2-3 dias
+**Dependências:** Ingress EKS configurado + Testes E2E locais prontos
+**Ambiente:** ☁️ AWS (EKS) + GitHub Actions
 
 **Checklist:**
-- [x] ✅ Validar que todos os 4 microserviços estão funcionando
-- [ ] ⏳ Executar testes E2E completos e validar 100% sucesso
+
+#### 2.1 Workflow CI (Pull Requests)
+- [ ] Atualizar `ci-app.yml`:
+  - Remover testes do autoatendimento
+  - Adicionar testes dos 4 microserviços (Clientes, Pedidos, Pagamento, Cozinha)
+  - Executar testes E2E locais (com LocalStack para Cognito mock)
+  - Verificar cobertura de código (80%+ mínimo)
+  - Lint/SonarQube (opcional)
+- [ ] Configurar cache de dependências Maven
+- [ ] Configurar matriz de testes (paralelo)
+
+#### 2.2 Workflow CD (Deploy para EKS)
+- [ ] Atualizar `cd-app.yml`:
+  - Build das 4 imagens Docker (Clientes, Pedidos, Pagamento, Cozinha)
+  - Login no ECR
+  - Tag com SHA do commit + latest
+  - Push para ECR (4 repositórios)
+  - Configurar kubectl com EKS
+  - Aplicar secrets
+  - Deploy databases (se necessário)
+  - Deploy dos 4 microserviços
+  - Aplicar Ingress
+  - Aguardar rollout completo
+- [ ] Smoke Tests:
+  - Health check de cada microserviço via ALB
+  - Teste de autenticação (signup/signin)
+  - Teste básico de criação de pedido
+- [ ] Rollback automático em caso de falha
+- [ ] Notificação de sucesso/falha
+
+#### 2.3 Segurança e Configuração
+- [ ] Configurar secrets do GitHub:
+  - AWS_ACCESS_KEY_ID
+  - AWS_SECRET_ACCESS_KEY
+  - AWS_SESSION_TOKEN (se necessário)
+  - Secrets adicionais do Cognito
+- [ ] Configurar proteção de branch (main):
+  - Requer aprovação de PR
+  - Requer CI passando
+  - Não permitir force push
+- [ ] Configurar CODEOWNERS (opcional)
+
+#### 2.4 Notificações e Monitoramento
+- [ ] Configurar notificações Slack/Email em caso de falha
+- [ ] Adicionar badge de status do CI/CD no README
+- [ ] Configurar deploy manual (workflow_dispatch) para ambientes
+
+#### 2.5 Documentação
+- [ ] Documentar processo de CI/CD no README
+- [ ] Criar runbook de troubleshooting de pipeline
+- [ ] Documentar processo de rollback manual
+
+**Critérios de Aceite:**
+- CI executa automaticamente em todos os PRs
+- CD executa automaticamente em push para main
+- Pipeline completo: Build → Test → Push ECR → Deploy EKS → Smoke Test
+- Rollback automático funciona em caso de falha
+- Notificações funcionando
+- Badge de status visível no README
+- Deploy manual disponível via workflow_dispatch
+
+---
+
+## 🔮 BACKLOG FUTURO (Baixa Prioridade)
+
+### 3. Implementar Testes BDD com Cucumber
+**Estimativa:** 2-3 dias
+**Ambiente:** 💻 Local + ☁️ AWS
+
+#### 3.1 Setup Cucumber
+- [ ] Adicionar dependências Cucumber ao pom.xml de cada microserviço:
+  - cucumber-java
+  - cucumber-junit-platform-engine
+  - cucumber-spring
+- [ ] Configurar Cucumber properties (cucumber.properties)
+- [ ] Criar estrutura de diretórios `src/test/resources/features/`
+- [ ] Configurar runner JUnit 5 + Cucumber
+
+#### 3.2 Features e Cenários BDD
+- [ ] **Clientes:**
+  - Feature: Identificação de cliente por CPF
+  - Feature: Cadastro de novo cliente
+  - Scenarios: CPF válido, CPF inválido, cliente já cadastrado
+- [ ] **Pedidos:**
+  - Feature: Criar pedido anônimo
+  - Feature: Criar pedido com CPF
+  - Feature: Consultar pedido por ID
+  - Feature: Retirar pedido
+  - Scenarios: Pedido válido, produto inexistente, retirada inválida
+- [ ] **Cozinha:**
+  - Feature: Visualizar fila de pedidos
+  - Feature: Iniciar preparo
+  - Feature: Marcar como pronto
+  - Scenarios: Fluxo normal, pedido inexistente, transições inválidas
+- [ ] **Pagamento:**
+  - Feature: Processar pagamento via evento
+  - Scenarios: Pagamento aprovado, pagamento rejeitado
+
+#### 3.3 Step Definitions
+- [ ] Implementar steps para cada microserviço
+- [ ] Configurar Spring Context em steps
+- [ ] Criar classes helper para chamadas REST
+- [ ] Implementar assertions customizadas
+
+#### 3.4 Integração com CI/CD
+- [ ] Executar testes BDD no pipeline CI
+- [ ] Gerar relatórios Cucumber (JSON/HTML)
+- [ ] Publicar relatórios como artefatos
+- [ ] Falhar build se BDD falhar
+
+**Critérios de Aceite:**
+- Cobertura BDD de cenários principais (happy path + edge cases)
+- Testes BDD executam automaticamente no CI
+- Relatórios legíveis gerados (Cucumber HTML)
+- Linguagem Gherkin clara e compreensível por não-técnicos
+
+---
+
+### 4. Integração SonarQube no CI/CD
+**Estimativa:** 1-2 dias
+**Ambiente:** 💻 Local + ☁️ AWS + GitHub Actions
+
+#### 4.1 Setup SonarCloud/SonarQube
+- [ ] Opção A: Usar SonarCloud (cloud, grátis para open source)
+  - Criar conta SonarCloud
+  - Conectar com repositório GitHub
+  - Obter token de autenticação
+- [ ] Opção B: Self-hosted SonarQube (Docker local)
+  - Deploy SonarQube via Docker Compose
+  - Configurar admin/senha
+  - Criar projeto e token
+
+#### 4.2 Configuração Maven
+- [ ] Adicionar plugin SonarQube aos 4 microserviços:
+  ```xml
+  <plugin>
+    <groupId>org.sonarsource.scanner.maven</groupId>
+    <artifactId>sonar-maven-plugin</artifactId>
+    <version>3.10.0.2594</version>
+  </plugin>
+  ```
+- [ ] Configurar propriedades Sonar (sonar-project.properties)
+- [ ] Configurar exclusões (testes, DTOs, configs)
+
+#### 4.3 Integração CI (GitHub Actions)
+- [ ] Adicionar step Sonar no workflow CI:
+  ```yaml
+  - name: SonarQube Analysis
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    run: mvn sonar:sonar
+  ```
+- [ ] Configurar Quality Gate
+- [ ] Falhar build se Quality Gate falhar
+- [ ] Publicar link do Sonar no PR
+
+#### 4.4 Métricas e Qualidade
+- [ ] Configurar thresholds:
+  - Code Coverage > 80%
+  - Duplicações < 3%
+  - Bugs: 0
+  - Vulnerabilities: 0
+  - Code Smells: Rating A ou B
+- [ ] Configurar análise de branches
+- [ ] Configurar análise de Pull Requests
+
+**Critérios de Aceite:**
+- SonarQube executando em todos os builds
+- Quality Gate configurado e funcionando
+- Badge do SonarQube no README
+- Análise de PRs funcionando
+- Equipe consegue visualizar métricas de código
+
+---
+
+### 5. Remover Aplicação Monolítica (Autoatendimento)
+**Estimativa:** 1 dia
+**Dependências:** Todos os testes E2E completos
+**Ambiente:** 💻 Local / Git
+
+**Checklist:**
 - [ ] Remover código legado:
   - [ ] Deletar `app/autoatendimento/`
   - [ ] Deletar `app/pagamento/`
@@ -274,389 +465,12 @@ Migração completa da arquitetura monolítica para microserviços distribuídos
   - [ ] Atualizar .gitignore se necessário
 
 **Critérios de Aceite:**
-- [ ] Diretório `app/` completamente removido
-- [ ] Todos os testes E2E passando sem o monolito
-- [ ] Workflows GitHub Actions atualizados e validados
-- [ ] README.md reflete apenas arquitetura de microserviços
-- [ ] Mapa de portas documentado e otimizado
-- [ ] Sem referências ao código legado no repositório
-
-**Bloqueadores:**
-- ⏳ Aguardando conclusão dos Testes E2E (tarefa 1)
-
----
-
-## ☁️ PRÓXIMAS TAREFAS - FASE AWS (Com dependência AWS)
-
-### 3. Implementar Autenticação com AWS Cognito
-**Prioridade:** 🔴 ALTA
-**Estimativa:** 3-4 dias
-**Dependências:** Todos os microserviços implementados
-**Ambiente:** ☁️ AWS (EKS)
-
-**Descrição:**
-Implementar autenticação e identificação de clientes utilizando AWS Cognito, substituindo o modelo atual de identificação simples por CPF.
-
-**Checklist:**
-
-#### 4.1 Infraestrutura Cognito (Terraform)
-- [ ] Criar módulo `infra/cognito/`
-- [ ] Configurar User Pool do Cognito
-- [ ] Configurar App Client (com refresh token)
-- [ ] Definir atributos customizados (CPF, nome, email)
-- [ ] Configurar políticas de senha
-- [ ] Configurar MFA (opcional)
-- [ ] Configurar triggers Lambda (pre-signup, post-confirmation)
-- [ ] Aplicar Terraform e validar recursos criados
-
-#### 4.2 API Gateway ou ALB com autenticação
-- [ ] Decisão arquitetural: API Gateway vs ALB Cognito Integration
-- [ ] Se API Gateway:
-  - Criar API Gateway REST
-  - Configurar Cognito Authorizer
-  - Configurar rotas para cada microserviço
-- [ ] Se ALB:
-  - Configurar ALB Authentication com Cognito
-  - Atualizar Ingress rules
-
-#### 4.3 Serviço de Autenticação
-- [ ] Decisão: novo serviço ou adaptar Clientes
-- [ ] Endpoints:
-  - `POST /auth/signup` - Cadastro de novo cliente
-  - `POST /auth/signin` - Login (retorna JWT)
-  - `POST /auth/refresh` - Refresh token
-  - `POST /auth/signout` - Logout
-  - `GET /auth/me` - Dados do usuário autenticado
-- [ ] Integração com AWS Cognito SDK
-- [ ] Validação de CPF único no signup
-- [ ] Sincronização: Cognito User → Tabela Cliente
-
-#### 4.4 Atualização dos Microserviços
-- [ ] **Clientes:**
-  - Adicionar campo `cognito_user_id` na tabela
-  - Criar endpoint `GET /clientes/me` (requer token)
-  - Manter endpoint `POST /clientes/identificar` para retrocompatibilidade
-- [ ] **Pedidos:**
-  - Adicionar middleware JWT validation
-  - Extrair `sub` (user_id) do token JWT
-  - Buscar cliente via `cognito_user_id` ou CPF (fallback)
-  - Atualizar endpoint `POST /pedidos` para aceitar token
-- [ ] **Cozinha:**
-  - Proteger endpoints administrativos com JWT
-  - Validar roles/grupos do Cognito (ex: grupo "cozinha")
-- [ ] **Pagamento:**
-  - Manter interno (sem autenticação externa)
-
-#### 4.5 Segurança e Validação
-- [ ] Implementar JWT validation em todos os microserviços
-  - Biblioteca: `spring-boot-starter-oauth2-resource-server`
-  - Validar signature usando Cognito JWKS
-  - Validar claims (iss, aud, exp)
-- [ ] Configurar CORS adequadamente
-- [ ] Implementar rate limiting
-- [ ] Adicionar logs de auditoria (login, signup, falhas)
-
-#### 4.6 Testes
-- [ ] Testes unitários dos novos endpoints de auth
-- [ ] Testes de integração com Cognito (LocalStack ou conta AWS dev)
-- [ ] Testes E2E do fluxo completo:
-  - Signup → Signin → Criar Pedido → Logout
-- [ ] Testes de validação de token expirado
-- [ ] Testes de refresh token
-- [ ] Testes de tentativa de acesso sem token (401)
-
-#### 4.7 Documentação
-- [ ] Atualizar diagramas de arquitetura com Cognito
-- [ ] Documentar fluxo de autenticação no README
-- [ ] Criar guia de uso da API com autenticação
-- [ ] Documentar formato do token JWT e claims
-- [ ] Atualizar collection Postman/Insomnia com auth
-
-**Critérios de Aceite:**
-- User Pool criado e configurado no Cognito
-- Clientes conseguem se cadastrar via `/auth/signup`
-- Login retorna token JWT válido
-- Todos os endpoints protegidos validam JWT corretamente
-- Pedidos são criados usando o contexto do usuário autenticado
-- Tokens expirados retornam 401
-- Refresh token funciona corretamente
-- Sincronização Cognito ↔ Tabela Cliente funcionando
-- Testes E2E passando com autenticação
-
-**Decisões Arquiteturais a Documentar:**
-1. API Gateway ou ALB com Cognito Authentication?
-2. Criar novo microserviço "Auth" ou adaptar "Clientes"?
-3. Usar Cognito Hosted UI ou endpoints customizados?
-4. Implementar grupos/roles no Cognito (admin, cliente, cozinha)?
-
----
-
-### 4. Configurar Ingress para AWS EKS
-**Prioridade:** 🔴 ALTA
-**Estimativa:** 1-2 dias
-**Dependências:** Cognito implementado
-**Ambiente:** ☁️ AWS (EKS)
-
-**Checklist:**
-- [ ] Verificar/Instalar AWS Load Balancer Controller no EKS
-- [ ] Criar manifesto `k8s/aws/ingress.yaml`
-- [ ] Definir routing rules:
-  - `/auth/*` → auth-service ou clientes-service
-  - `/clientes/*` → clientes-service:8080
-  - `/pedidos/*` → pedidos-service:8080
-  - `/produtos/*` → pedidos-service:8080
-  - `/cozinha/*` → cozinha-service:8082
-  - (sem rota pública para pagamentos - apenas interno)
-- [ ] Configurar Cognito Authentication no ALB (se não usar API Gateway)
-- [ ] Configurar Health Checks para cada serviço
-- [ ] Configurar HTTPS/TLS com Certificate Manager
-- [ ] Aplicar Ingress no EKS
-- [ ] Aguardar provisionamento do ALB
-- [ ] Testar todos os endpoints via ALB
-- [ ] Configurar DNS (opcional): api.lanchonete.com
-- [ ] Atualizar documentação com URLs do ALB
-
-**Critérios de Aceite:**
-- ALB provisionado e respondendo
-- Routing funcionando para todos os microserviços
-- Autenticação Cognito funcionando via ALB
-- Health checks reportando status correto
-- HTTPS configurado e certificado válido
-- URLs públicas acessíveis e documentadas
-
----
-
-### 5. Configurar CI/CD Completo no GitHub Actions
-**Prioridade:** 🟡 MÉDIA
-**Estimativa:** 2-3 dias
-**Dependências:** Ingress EKS configurado + Testes E2E locais prontos
-**Ambiente:** ☁️ AWS (EKS) + GitHub Actions
-
-**Checklist:**
-
-#### 6.1 Workflow CI (Pull Requests)
-- [ ] Atualizar `ci-app.yml`:
-  - Remover testes do autoatendimento
-  - Adicionar testes dos 4 microserviços (Clientes, Pedidos, Pagamento, Cozinha)
-  - Executar testes E2E locais (com LocalStack para Cognito mock)
-  - Verificar cobertura de código (80%+ mínimo)
-  - Lint/SonarQube (opcional)
-- [ ] Configurar cache de dependências Maven
-- [ ] Configurar matriz de testes (paralelo)
-
-#### 6.2 Workflow CD (Deploy para EKS)
-- [ ] Atualizar `cd-app.yml`:
-  - Build das 4 imagens Docker (Clientes, Pedidos, Pagamento, Cozinha)
-  - Login no ECR
-  - Tag com SHA do commit + latest
-  - Push para ECR (4 repositórios)
-  - Configurar kubectl com EKS
-  - Aplicar secrets
-  - Deploy databases (se necessário)
-  - Deploy dos 4 microserviços
-  - Aplicar Ingress
-  - Aguardar rollout completo
-- [ ] Smoke Tests:
-  - Health check de cada microserviço via ALB
-  - Teste de autenticação (signup/signin)
-  - Teste básico de criação de pedido
-- [ ] Rollback automático em caso de falha
-- [ ] Notificação de sucesso/falha
-
-#### 6.3 Segurança e Configuração
-- [ ] Configurar secrets do GitHub:
-  - AWS_ACCESS_KEY_ID
-  - AWS_SECRET_ACCESS_KEY
-  - AWS_SESSION_TOKEN (se necessário)
-  - Secrets adicionais do Cognito
-- [ ] Configurar proteção de branch (main):
-  - Requer aprovação de PR
-  - Requer CI passando
-  - Não permitir force push
-- [ ] Configurar CODEOWNERS (opcional)
-
-#### 6.4 Notificações e Monitoramento
-- [ ] Configurar notificações Slack/Email em caso de falha
-- [ ] Adicionar badge de status do CI/CD no README
-- [ ] Configurar deploy manual (workflow_dispatch) para ambientes
-
-#### 6.5 Documentação
-- [ ] Documentar processo de CI/CD no README
-- [ ] Criar runbook de troubleshooting de pipeline
-- [ ] Documentar processo de rollback manual
-
-**Critérios de Aceite:**
-- CI executa automaticamente em todos os PRs
-- CD executa automaticamente em push para main
-- Pipeline completo: Build → Test → Push ECR → Deploy EKS → Smoke Test
-- Rollback automático funciona em caso de falha
-- Notificações funcionando
-- Badge de status visível no README
-- Deploy manual disponível via workflow_dispatch
-
----
-
-## 🔮 BACKLOG FUTURO (Baixa Prioridade)
-
-### 6. Implementar Testes BDD com Cucumber
-**Prioridade:** 🟡 MÉDIA
-**Estimativa:** 2-3 dias
-**Ambiente:** 💻 Local + ☁️ AWS
-
-#### 6.1 Setup Cucumber
-- [ ] Adicionar dependências Cucumber ao pom.xml de cada microserviço:
-  - cucumber-java
-  - cucumber-junit-platform-engine
-  - cucumber-spring
-- [ ] Configurar Cucumber properties (cucumber.properties)
-- [ ] Criar estrutura de diretórios `src/test/resources/features/`
-- [ ] Configurar runner JUnit 5 + Cucumber
-
-#### 6.2 Features e Cenários BDD
-- [ ] **Clientes:**
-  - Feature: Identificação de cliente por CPF
-  - Feature: Cadastro de novo cliente
-  - Scenarios: CPF válido, CPF inválido, cliente já cadastrado
-- [ ] **Pedidos:**
-  - Feature: Criar pedido anônimo
-  - Feature: Criar pedido com CPF
-  - Feature: Consultar pedido por ID
-  - Feature: Retirar pedido
-  - Scenarios: Pedido válido, produto inexistente, retirada inválida
-- [ ] **Cozinha:**
-  - Feature: Visualizar fila de pedidos
-  - Feature: Iniciar preparo
-  - Feature: Marcar como pronto
-  - Scenarios: Fluxo normal, pedido inexistente, transições inválidas
-- [ ] **Pagamento:**
-  - Feature: Processar pagamento via evento
-  - Scenarios: Pagamento aprovado, pagamento rejeitado
-
-#### 6.3 Step Definitions
-- [ ] Implementar steps para cada microserviço
-- [ ] Configurar Spring Context em steps
-- [ ] Criar classes helper para chamadas REST
-- [ ] Implementar assertions customizadas
-
-#### 6.4 Integração com CI/CD
-- [ ] Executar testes BDD no pipeline CI
-- [ ] Gerar relatórios Cucumber (JSON/HTML)
-- [ ] Publicar relatórios como artefatos
-- [ ] Falhar build se BDD falhar
-
-**Critérios de Aceite:**
-- Cobertura BDD de cenários principais (happy path + edge cases)
-- Testes BDD executam automaticamente no CI
-- Relatórios legíveis gerados (Cucumber HTML)
-- Linguagem Gherkin clara e compreensível por não-técnicos
-
----
-
-### 7. Integração SonarQube no CI/CD
-**Prioridade:** 🟡 MÉDIA
-**Estimativa:** 1-2 dias
-**Ambiente:** 💻 Local + ☁️ AWS + GitHub Actions
-
-#### 7.1 Setup SonarCloud/SonarQube
-- [ ] Opção A: Usar SonarCloud (cloud, grátis para open source)
-  - Criar conta SonarCloud
-  - Conectar com repositório GitHub
-  - Obter token de autenticação
-- [ ] Opção B: Self-hosted SonarQube (Docker local)
-  - Deploy SonarQube via Docker Compose
-  - Configurar admin/senha
-  - Criar projeto e token
-
-#### 7.2 Configuração Maven
-- [ ] Adicionar plugin SonarQube aos 4 microserviços:
-  ```xml
-  <plugin>
-    <groupId>org.sonarsource.scanner.maven</groupId>
-    <artifactId>sonar-maven-plugin</artifactId>
-    <version>3.10.0.2594</version>
-  </plugin>
-  ```
-- [ ] Configurar propriedades Sonar (sonar-project.properties)
-- [ ] Configurar exclusões (testes, DTOs, configs)
-
-#### 7.3 Integração CI (GitHub Actions)
-- [ ] Adicionar step Sonar no workflow CI:
-  ```yaml
-  - name: SonarQube Analysis
-    env:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-    run: mvn sonar:sonar
-  ```
-- [ ] Configurar Quality Gate
-- [ ] Falhar build se Quality Gate falhar
-- [ ] Publicar link do Sonar no PR
-
-#### 7.4 Métricas e Qualidade
-- [ ] Configurar thresholds:
-  - Code Coverage > 80%
-  - Duplicações < 3%
-  - Bugs: 0
-  - Vulnerabilities: 0
-  - Code Smells: Rating A ou B
-- [ ] Configurar análise de branches
-- [ ] Configurar análise de Pull Requests
-
-**Critérios de Aceite:**
-- SonarQube executando em todos os builds
-- Quality Gate configurado e funcionando
-- Badge do SonarQube no README
-- Análise de PRs funcionando
-- Equipe consegue visualizar métricas de código
-
----
-
-### 8. Melhorias de Segurança Avançadas
-**Estimativa:** 2-3 dias
-**Ambiente:** ☁️ AWS
-
-- [ ] Implementar grupos/roles no Cognito (admin, cliente, cozinha)
-- [ ] Network Policies no Kubernetes
-- [ ] AWS Secrets Manager para secrets sensíveis
-- [ ] Scan de vulnerabilidades nas imagens Docker (Trivy/Snyk)
-- [ ] WAF no ALB
-- [ ] Rotação automática de secrets
-- [ ] Audit logging completo
-
-### 9. Otimizações de Performance
-**Estimativa:** 2-3 dias
-**Ambiente:** ☁️ AWS + Local
-
-- [ ] Implementar cache (Redis/ElastiCache) para tokens JWT
-- [ ] Otimizar queries SQL (índices, explain plan)
-- [ ] Configurar Connection Pool adequadamente
-- [ ] Implementar rate limiting por usuário
-- [ ] Configurar HPA (Horizontal Pod Autoscaler) para todos os serviços
-- [ ] Configurar PDB (Pod Disruption Budget)
-
-### 10. Resiliência e Tolerância a Falhas
-**Estimativa:** 2-3 dias
-**Ambiente:** Local + AWS
-
-- [ ] Implementar Circuit Breaker (Resilience4j)
-- [ ] Configurar Retry policies com backoff exponencial
-- [ ] Implementar fallback para chamadas REST
-- [ ] Dead Letter Queue para RabbitMQ
-- [ ] Health checks avançados (readiness vs liveness)
-- [ ] Graceful shutdown
-- [ ] Chaos Engineering (testes de resiliência)
-
-### 11. Documentação e Governança
-**Estimativa:** 2 dias
-**Ambiente:** Local
-
-- [x] Gerar documentação OpenAPI/Swagger para todos os microserviços - `2025-10-23`
-- [x] Criar diagramas de arquitetura AWS atualizados - `2025-10-27`
-- [ ] Criar diagramas C4 Model completos
-- [ ] Documentar contratos de eventos (AsyncAPI)
-- [ ] Guia de contribuição (CONTRIBUTING.md)
-- [ ] ADRs (Architecture Decision Records)
-- [ ] Documentar políticas de segurança e compliance
-- [ ] Vídeo de demonstração do sistema
+- Diretório `app/` completamente removido
+- Todos os testes E2E passando sem o monolito
+- Workflows GitHub Actions atualizados e validados
+- README.md reflete apenas arquitetura de microserviços
+- Mapa de portas documentado e otimizado
+- Sem referências ao código legado no repositório
 
 ---
 
@@ -770,11 +584,11 @@ Implementar autenticação e identificação de clientes utilizando AWS Cognito,
 
 ---
 
-**Última revisão:** 2025-10-23 16:45
+**Última revisão:** 2025-10-29 15:45
 **Responsável:** Anderson
-**Status Geral:** 🟢 65% Concluído - No prazo
-**Sprint Atual:** Sprint 2 - Concluído com sucesso
-**Próxima Milestone:** Completar Testes E2E + Remover Monolito
+**Status Geral:** 🟢 90% Concluído - Autenticação AWS implementada
+**Sprint Atual:** Sprint 3 - AWS + Autenticação Cognito - Concluído
+**Próxima Milestone:** Expandir Testes E2E (cliente existente + cliente novo)
 
 ---
 
@@ -888,8 +702,8 @@ Implementar autenticação e identificação de clientes utilizando AWS Cognito,
 
 ---
 
-**Última atualização desta sessão:** 2025-10-27 20:30
-**Commits desta sessão:** Múltiplos (deploy AWS, RDS, LoadBalancers, test scripts)
+**Última atualização desta sessão:** 2025-10-29 15:45
+**Commits desta sessão:** Reorganização de scripts, implementação de autenticação Cognito + API Gateway, testes E2E completos
 **Responsável:** Anderson
-**Status Geral:** 🟢 100% Concluído - FASE A COMPLETA ✅
-**Próxima Milestone:** Melhorias opcionais (Cognito, Observabilidade, CI/CD) ou conclusão
+**Status Geral:** 🟢 90% Concluído - AWS + Autenticação implementados ✅
+**Próxima Milestone:** Expandir cobertura de testes E2E (cliente existente + cliente novo)

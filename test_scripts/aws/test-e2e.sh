@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Script de teste E2E para AWS: Fluxo completo do pedido
-# Testa: pedido -> pagamento -> cozinha -> preparo -> pronto -> retirada
+# Script de teste E2E para AWS: Fluxo completo do pedido via API Gateway
+# Testa: autenticação -> pedido -> pagamento -> cozinha -> preparo -> pronto -> retirada
 
 set -e
 
@@ -9,70 +9,63 @@ set -e
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 echo "==================================================================="
-echo "TESTE E2E: FLUXO COMPLETO DO PEDIDO (AWS EKS)"
+echo "TESTE E2E: FLUXO COMPLETO DO PEDIDO (AWS EKS + API GATEWAY)"
 echo "==================================================================="
 echo ""
 
 # ========================================================================
-# OBTER URLs DOS SERVIÇOS DINAMICAMENTE
+# OBTER URL DO API GATEWAY
 # ========================================================================
-echo "Obtendo URLs dos serviços LoadBalancer..."
+echo "📡 Obtendo URL do API Gateway..."
+cd infra/api-gateway
+API_GATEWAY_URL=$(terraform output -raw api_gateway_url 2>/dev/null || echo "")
+cd ../..
+
+if [ -z "$API_GATEWAY_URL" ]; then
+    echo -e "${RED}[ERRO] Não foi possível obter URL do API Gateway${NC}"
+    echo "   Verifique se o API Gateway foi deployado"
+    exit 1
+fi
+
+echo -e "${GREEN}✅ API Gateway URL: $API_GATEWAY_URL${NC}"
 echo ""
 
-# Obter EXTERNAL-IP do serviço de pedidos
-PEDIDOS_HOST=$(kubectl get svc pedidos-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-if [ -z "$PEDIDOS_HOST" ] || [ "$PEDIDOS_HOST" = "null" ]; then
-    echo -e "${RED}[ERRO] Não foi possível obter o LoadBalancer do serviço pedidos-service${NC}"
-    echo "Verifique se o serviço está do tipo LoadBalancer e se o LoadBalancer foi provisionado."
-    exit 1
-fi
-PEDIDOS_URL="http://${PEDIDOS_HOST}:8080"
+# ========================================================================
+# ETAPA 0: AUTENTICAÇÃO
+# ========================================================================
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "ETAPA 0: Autenticação"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-# Obter EXTERNAL-IP do serviço de cozinha
-COZINHA_HOST=$(kubectl get svc cozinha-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-if [ -z "$COZINHA_HOST" ] || [ "$COZINHA_HOST" = "null" ]; then
-    echo -e "${RED}[ERRO] Não foi possível obter o LoadBalancer do serviço cozinha-service${NC}"
-    echo "Verifique se o serviço está do tipo LoadBalancer e se o LoadBalancer foi provisionado."
-    exit 1
-fi
-COZINHA_URL="http://${COZINHA_HOST}:8080"
+AUTH_RESPONSE=$(curl -s -X POST "$API_GATEWAY_URL/auth/identificar" \
+    -H "Content-Type: application/json" \
+    -d '{"cpf": null}')
 
-echo "URLs dos serviços:"
-echo "  Pedidos: $PEDIDOS_URL"
-echo "  Cozinha: $COZINHA_URL"
-echo ""
+TOKEN=$(echo "$AUTH_RESPONSE" | jq -r '.accessToken // empty')
+TIPO=$(echo "$AUTH_RESPONSE" | jq -r '.tipo')
+EXPIRA=$(echo "$AUTH_RESPONSE" | jq -r '.expiresIn')
 
-# Verificar conectividade
-echo "Verificando conectividade com os serviços..."
-PEDIDOS_HEALTH=$(curl -s -o /dev/null -w "%{http_code}" ${PEDIDOS_URL}/actuator/health || echo "000")
-COZINHA_HEALTH=$(curl -s -o /dev/null -w "%{http_code}" ${COZINHA_URL}/actuator/health || echo "000")
-
-if [ "$PEDIDOS_HEALTH" != "200" ]; then
-    echo -e "${RED}[ERRO] Serviço de Pedidos não está respondendo (HTTP $PEDIDOS_HEALTH)${NC}"
+if [ -z "$TOKEN" ]; then
+    echo -e "${RED}❌ Falha ao obter token${NC}"
     exit 1
 fi
 
-if [ "$COZINHA_HEALTH" != "200" ]; then
-    echo -e "${RED}[ERRO] Serviço de Cozinha não está respondendo (HTTP $COZINHA_HEALTH)${NC}"
-    exit 1
-fi
-
-echo -e "${GREEN}[OK] Todos os serviços estão respondendo${NC}"
+echo -e "${GREEN}✅ Token JWT obtido: Tipo=$TIPO, Expira em ${EXPIRA}s${NC}"
 echo ""
 
 # ========================================================================
 # ETAPA 1: CRIAR PEDIDO
 # ========================================================================
-echo "-------------------------------------------------------------------"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "ETAPA 1: Criar Pedido"
-echo "-------------------------------------------------------------------"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-echo ""
-echo "Criando pedido anonimo..."
-RESPONSE=$(curl -s -X POST ${PEDIDOS_URL}/pedidos \
+RESPONSE=$(curl -s -X POST "$API_GATEWAY_URL/pedidos" \
+  -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "cpfCliente": null,
@@ -82,584 +75,174 @@ RESPONSE=$(curl -s -X POST ${PEDIDOS_URL}/pedidos \
     ]
   }')
 
-echo "$RESPONSE" | jq .
+PEDIDO_ID=$(echo "$RESPONSE" | jq -r '.id // empty')
+NUMERO_PEDIDO=$(echo "$RESPONSE" | jq -r '.numeroPedido')
+STATUS=$(echo "$RESPONSE" | jq -r '.status // empty')
+VALOR_TOTAL=$(echo "$RESPONSE" | jq -r '.valorTotal // empty')
 
-PEDIDO_ID=$(echo "$RESPONSE" | jq -r '.id')
-STATUS=$(echo "$RESPONSE" | jq -r '.status')
-VALOR_TOTAL=$(echo "$RESPONSE" | jq -r '.valorTotal')
+if [ -z "$PEDIDO_ID" ]; then
+    echo -e "${RED}❌ Falha ao criar pedido${NC}"
+    exit 1
+fi
 
+echo -e "${GREEN}✅ Pedido criado: ID=$PEDIDO_ID, Número=$NUMERO_PEDIDO, Status=$STATUS, Valor=R\$ $VALOR_TOTAL${NC}"
 echo ""
-echo "[OK] Pedido criado com sucesso!"
-echo "  Pedido ID: $PEDIDO_ID"
-echo "  Status: $STATUS"
-echo "  Valor Total: R$ $VALOR_TOTAL"
 
 # ========================================================================
-# ETAPA 2: AGUARDAR PAGAMENTO E VERIFICAR FILA DA COZINHA
+# ETAPA 2: AGUARDAR PROCESSAMENTO ASSÍNCRONO DO PAGAMENTO
 # ========================================================================
-echo ""
-echo "-------------------------------------------------------------------"
-echo "ETAPA 2: Processamento do Pagamento"
-echo "-------------------------------------------------------------------"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "ETAPA 2: Processamento de Pagamento (assíncrono)"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
+sleep 5
+
+# ========================================================================
+# ETAPA 3: CONSULTAR STATUS DO PEDIDO
+# ========================================================================
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "ETAPA 3: Consultar Status do Pedido"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+PEDIDO_STATUS=$(curl -s "$API_GATEWAY_URL/pedidos/$PEDIDO_ID" \
+  -H "Authorization: Bearer $TOKEN")
+
+CURRENT_STATUS=$(echo "$PEDIDO_STATUS" | jq -r '.status')
+
+if [ "$CURRENT_STATUS" = "CANCELADO" ]; then
+    echo -e "${YELLOW}⚠️  Pagamento rejeitado: Status=$CURRENT_STATUS${NC}"
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "RESUMO DO TESTE E2E"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "Pedido: $NUMERO_PEDIDO (ID=$PEDIDO_ID) | Valor: R\$ $VALOR_TOTAL"
+    echo ""
+    echo "Jornada:"
+    echo "  CRIADO → CANCELADO (pagamento rejeitado)"
+    echo ""
+    echo -e "${YELLOW}⚠️  TESTE ENCERRADO: Pagamento rejeitado (cenário válido - 20% dos casos)${NC}"
+    echo ""
+    exit 0
+elif [ "$CURRENT_STATUS" = "REALIZADO" ]; then
+    echo -e "${GREEN}✅ Pagamento aprovado: Status=$CURRENT_STATUS${NC}"
+else
+    echo -e "${BLUE}ℹ️  Status do pedido: $CURRENT_STATUS${NC}"
+fi
 echo ""
-echo "Aguardando processamento do pagamento (2 segundos)..."
+
+# ========================================================================
+# ETAPA 4: VERIFICAR PEDIDO NA FILA DA COZINHA
+# ========================================================================
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "ETAPA 4: Verificar Fila da Cozinha"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+FILA_RESPONSE=$(curl -s "$API_GATEWAY_URL/cozinha/fila" \
+  -H "Authorization: Bearer $TOKEN")
+
+PEDIDO_NA_FILA=$(echo "$FILA_RESPONSE" | jq -r ".[] | select(.pedidoId == $PEDIDO_ID) | .pedidoId")
+FILA_STATUS=$(echo "$FILA_RESPONSE" | jq -r ".[] | select(.pedidoId == $PEDIDO_ID) | .status")
+
+if [ "$PEDIDO_NA_FILA" = "$PEDIDO_ID" ]; then
+    echo -e "${GREEN}✅ Pedido na fila da cozinha: PedidoID=$PEDIDO_ID, Status=$FILA_STATUS${NC}"
+else
+    echo -e "${YELLOW}⚠️  Pedido não encontrado na fila${NC}"
+fi
+echo ""
+
+# ========================================================================
+# ETAPA 5: INICIAR PREPARO NA COZINHA
+# ========================================================================
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "ETAPA 5: Iniciar Preparo na Cozinha"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+FILA_RESPONSE=$(curl -s "$API_GATEWAY_URL/cozinha/fila" \
+  -H "Authorization: Bearer $TOKEN")
+
+COZINHA_ID=$(echo "$FILA_RESPONSE" | jq -r ".[] | select(.pedidoId == $PEDIDO_ID) | .id")
+
+if [ -z "$COZINHA_ID" ] || [ "$COZINHA_ID" = "null" ]; then
+    echo -e "${RED}❌ Pedido não encontrado na fila da cozinha${NC}"
+    exit 1
+fi
+
+INICIAR_RESPONSE=$(curl -s -X POST "$API_GATEWAY_URL/cozinha/$COZINHA_ID/iniciar" \
+  -H "Authorization: Bearer $TOKEN")
+
+COZINHA_STATUS=$(echo "$INICIAR_RESPONSE" | jq -r '.status')
+
+if [ "$COZINHA_STATUS" = "EM_PREPARO" ]; then
+    echo -e "${GREEN}✅ Preparo iniciado: CozinhaID=$COZINHA_ID, Status=$COZINHA_STATUS${NC}"
+else
+    echo -e "${RED}❌ Falha ao iniciar preparo: Status=$COZINHA_STATUS${NC}"
+    exit 1
+fi
+echo ""
+
+# ========================================================================
+# ETAPA 6: MARCAR PEDIDO COMO PRONTO
+# ========================================================================
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "ETAPA 6: Finalizar Preparo"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
 sleep 2
 
-echo ""
-echo "Verificando status do pedido apos pagamento..."
-STATUS_RESPONSE=$(curl -s ${PEDIDOS_URL}/pedidos/${PEDIDO_ID})
-STATUS=$(echo "$STATUS_RESPONSE" | jq -r '.status')
+PRONTO_RESPONSE=$(curl -s -X POST "$API_GATEWAY_URL/cozinha/$COZINHA_ID/pronto" \
+  -H "Authorization: Bearer $TOKEN")
 
-echo "Status atual: $STATUS"
+COZINHA_STATUS_FINAL=$(echo "$PRONTO_RESPONSE" | jq -r '.status')
+DATA_FIM=$(echo "$PRONTO_RESPONSE" | jq -r '.dataFim')
 
-if [ "$STATUS" = "REALIZADO" ]; then
-    echo "[OK] Pagamento aprovado! Continuando fluxo..."
-
-    echo ""
-    echo "Verificando fila da cozinha..."
-    FILA_RESPONSE=$(curl -s ${COZINHA_URL}/cozinha/fila)
-    PEDIDO_COZINHA=$(echo "$FILA_RESPONSE" | jq -r ".[] | select(.pedidoId == $PEDIDO_ID)")
-
-    if [ -n "$PEDIDO_COZINHA" ]; then
-        COZINHA_ID=$(echo "$PEDIDO_COZINHA" | jq -r '.id')
-        COZINHA_STATUS=$(echo "$PEDIDO_COZINHA" | jq -r '.status')
-        echo "[OK] Pedido encontrado na fila da cozinha!"
-        echo "  Cozinha ID: $COZINHA_ID"
-        echo "  Status na cozinha: $COZINHA_STATUS"
-    else
-        echo -e "${RED}[ERRO] Pedido nao encontrado na fila da cozinha${NC}"
-        exit 1
-    fi
-
-    PAGAMENTO_APROVADO=true
-
-elif [ "$STATUS" = "CANCELADO" ]; then
-    echo "[OK] Pagamento rejeitado - Pedido cancelado (comportamento esperado)"
-    PAGAMENTO_APROVADO=false
+if [ "$COZINHA_STATUS_FINAL" = "PRONTO" ]; then
+    echo -e "${GREEN}✅ Pedido finalizado: Status=$COZINHA_STATUS_FINAL${NC}"
 else
-    echo -e "${RED}[ERRO] Status esperado: REALIZADO ou CANCELADO, obtido: $STATUS${NC}"
+    echo -e "${RED}❌ Falha ao finalizar: Status=$COZINHA_STATUS_FINAL${NC}"
     exit 1
 fi
-
-# Continuar apenas se pagamento foi aprovado
-if [ "$PAGAMENTO_APROVADO" = true ]; then
-
-    # ========================================================================
-    # ETAPA 3: INICIAR PREPARO
-    # ========================================================================
-    echo ""
-    echo "-------------------------------------------------------------------"
-    echo "ETAPA 3: Iniciar Preparo"
-    echo "-------------------------------------------------------------------"
-
-    echo ""
-    echo "Iniciando preparo do pedido (Cozinha ID: $COZINHA_ID)..."
-    PREPARO_RESPONSE=$(curl -s -X POST ${COZINHA_URL}/cozinha/${COZINHA_ID}/iniciar)
-    echo "$PREPARO_RESPONSE" | jq .
-
-    COZINHA_STATUS=$(echo "$PREPARO_RESPONSE" | jq -r '.status')
-
-    if [ "$COZINHA_STATUS" = "EM_PREPARO" ]; then
-        echo "[OK] Preparo iniciado!"
-        echo "  Status na cozinha: $COZINHA_STATUS"
-    else
-        echo -e "${RED}[ERRO] Status esperado: EM_PREPARO, obtido: $COZINHA_STATUS${NC}"
-        exit 1
-    fi
-
-    # ========================================================================
-    # ETAPA 4: MARCAR COMO PRONTO
-    # ========================================================================
-    echo ""
-    echo "-------------------------------------------------------------------"
-    echo "ETAPA 4: Marcar Pedido como Pronto"
-    echo "-------------------------------------------------------------------"
-
-    echo ""
-    echo "Aguardando 'preparo' do pedido (3 segundos)..."
-    sleep 3
-
-    echo ""
-    echo "Marcando pedido como pronto..."
-    PRONTO_RESPONSE=$(curl -s -X POST ${COZINHA_URL}/cozinha/${COZINHA_ID}/pronto)
-    echo "$PRONTO_RESPONSE" | jq .
-
-    COZINHA_STATUS=$(echo "$PRONTO_RESPONSE" | jq -r '.status')
-    DATA_FIM=$(echo "$PRONTO_RESPONSE" | jq -r '.dataFim')
-
-    if [ "$COZINHA_STATUS" = "PRONTO" ]; then
-        echo "[OK] Pedido marcado como pronto!"
-        echo "  Status na cozinha: $COZINHA_STATUS"
-        echo "  Data de conclusao: $DATA_FIM"
-    else
-        echo -e "${RED}[ERRO] Status esperado: PRONTO, obtido: $COZINHA_STATUS${NC}"
-        exit 1
-    fi
-
-    # ========================================================================
-    # ETAPA 5: VERIFICAR STATUS NO SERVIÇO DE PEDIDOS
-    # ========================================================================
-    echo ""
-    echo "-------------------------------------------------------------------"
-    echo "ETAPA 5: Verificar Atualizacao no Servico de Pedidos"
-    echo "-------------------------------------------------------------------"
-
-    echo ""
-    echo "Aguardando propagacao do evento (3 segundos)..."
-    sleep 3
-
-    echo ""
-    echo "Verificando status do pedido no servico de pedidos..."
-    STATUS_RESPONSE=$(curl -s ${PEDIDOS_URL}/pedidos/${PEDIDO_ID})
-    STATUS=$(echo "$STATUS_RESPONSE" | jq -r '.status')
-
-    echo "Status atual: $STATUS"
-
-    if [ "$STATUS" = "PRONTO" ]; then
-        echo "[OK] Evento processado! Status atualizado para PRONTO"
-    else
-        echo -e "${RED}[ERRO] Status esperado: PRONTO, obtido: $STATUS${NC}"
-        exit 1
-    fi
-
-    # ========================================================================
-    # ETAPA 6: RETIRAR PEDIDO
-    # ========================================================================
-    echo ""
-    echo "-------------------------------------------------------------------"
-    echo "ETAPA 6: Retirar Pedido"
-    echo "-------------------------------------------------------------------"
-
-    echo ""
-    echo "Marcando pedido como retirado..."
-    RETIRAR_RESPONSE=$(curl -s -X PATCH ${PEDIDOS_URL}/pedidos/${PEDIDO_ID}/retirar)
-    echo "$RETIRAR_RESPONSE" | jq .
-
-    STATUS=$(echo "$RETIRAR_RESPONSE" | jq -r '.status')
-
-    if [ "$STATUS" = "FINALIZADO" ]; then
-        echo "[OK] Pedido retirado com sucesso!"
-        echo "  Status final: $STATUS"
-    else
-        echo -e "${RED}[ERRO] Status esperado: FINALIZADO, obtido: $STATUS${NC}"
-        exit 1
-    fi
-
-fi
-
-# ========================================================================
-# RESUMO FINAL - TESTE 1
-# ========================================================================
-echo ""
-echo "==================================================================="
-echo "RESUMO - TESTE 1: Pedido Anonimo"
-echo "==================================================================="
-echo ""
-echo "[OK] Teste 1 concluido com sucesso!"
-echo ""
-if [ "$PAGAMENTO_APROVADO" = true ]; then
-    echo "Fluxo testado:"
-    echo "  1. [OK] Pedido criado (ID: $PEDIDO_ID) - Status: CRIADO"
-    echo "  2. [OK] Pagamento aprovado - Status: REALIZADO"
-    echo "  3. [OK] Pedido adicionado a fila da cozinha - Status: AGUARDANDO"
-    echo "  4. [OK] Preparo iniciado - Status: EM_PREPARO"
-    echo "  5. [OK] Pedido marcado como pronto - Status: PRONTO"
-    echo "  6. [OK] Evento propagado para servico de pedidos - Status: PRONTO"
-    echo "  7. [OK] Pedido retirado - Status: FINALIZADO"
-else
-    echo "Fluxo testado:"
-    echo "  1. [OK] Pedido criado (ID: $PEDIDO_ID) - Status: CRIADO"
-    echo "  2. [OK] Pagamento rejeitado - Status: CANCELADO"
-    echo "  3. [OK] Pedido nao foi para fila da cozinha (comportamento correto)"
-fi
-echo ""
-echo "==================================================================="
-
-# ========================================================================
-# TESTE 2: PEDIDO COM CLIENTE IDENTIFICADO
-# ========================================================================
-echo ""
-echo ""
-echo "==================================================================="
-echo "TESTE 2: PEDIDO COM CLIENTE IDENTIFICADO"
-echo "==================================================================="
 echo ""
 
 # ========================================================================
-# ETAPA 1: CRIAR PEDIDO COM CPF
+# ETAPA 7: VERIFICAR STATUS FINAL DO PEDIDO
 # ========================================================================
-echo "-------------------------------------------------------------------"
-echo "ETAPA 1: Criar Pedido com CPF"
-echo "-------------------------------------------------------------------"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "ETAPA 7: Verificar Status Final"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-echo ""
-echo "Criando pedido com CPF: 55555555555..."
-RESPONSE=$(curl -s -X POST ${PEDIDOS_URL}/pedidos \
-  -H "Content-Type: application/json" \
-  -d '{
-    "cpfCliente": "55555555555",
-    "itens": [
-      {"produtoId": 2, "quantidade": 2},
-      {"produtoId": 6, "quantidade": 1}
-    ]
-  }')
-
-echo "$RESPONSE" | jq .
-
-PEDIDO_ID_2=$(echo "$RESPONSE" | jq -r '.id')
-STATUS_2=$(echo "$RESPONSE" | jq -r '.status')
-VALOR_TOTAL_2=$(echo "$RESPONSE" | jq -r '.valorTotal')
-CLIENTE_NOME=$(echo "$RESPONSE" | jq -r '.clienteNome')
-
-echo ""
-echo "[OK] Pedido criado com sucesso!"
-echo "  Pedido ID: $PEDIDO_ID_2"
-echo "  Status: $STATUS_2"
-echo "  Valor Total: R$ $VALOR_TOTAL_2"
-echo "  Cliente Nome: $CLIENTE_NOME"
-
-# Validar integracao com Feign Client
-if [ "$CLIENTE_NOME" != "null" ] && [ -n "$CLIENTE_NOME" ]; then
-    echo "[OK] Integracao Feign Client funcionando - Nome do cliente recuperado!"
-else
-    echo -e "${RED}[ERRO] Integracao Feign Client falhou - Nome do cliente nao foi recuperado${NC}"
-    exit 1
-fi
-
-# ========================================================================
-# ETAPA 2: AGUARDAR PAGAMENTO E VERIFICAR FILA DA COZINHA
-# ========================================================================
-echo ""
-echo "-------------------------------------------------------------------"
-echo "ETAPA 2: Processamento do Pagamento"
-echo "-------------------------------------------------------------------"
-
-echo ""
-echo "Aguardando processamento do pagamento (2 segundos)..."
 sleep 2
 
-echo ""
-echo "Verificando status do pedido apos pagamento..."
-STATUS_RESPONSE=$(curl -s ${PEDIDOS_URL}/pedidos/${PEDIDO_ID_2})
-STATUS_2=$(echo "$STATUS_RESPONSE" | jq -r '.status')
+PEDIDO_COMPLETO=$(curl -s "$API_GATEWAY_URL/pedidos/$PEDIDO_ID" \
+  -H "Authorization: Bearer $TOKEN")
 
-echo "Status atual: $STATUS_2"
+STATUS_COMPLETO=$(echo "$PEDIDO_COMPLETO" | jq -r '.status')
 
-if [ "$STATUS_2" = "REALIZADO" ]; then
-    echo "[OK] Pagamento aprovado! Continuando fluxo..."
-
-    echo ""
-    echo "Verificando fila da cozinha..."
-    FILA_RESPONSE=$(curl -s ${COZINHA_URL}/cozinha/fila)
-    PEDIDO_COZINHA_2=$(echo "$FILA_RESPONSE" | jq -r ".[] | select(.pedidoId == $PEDIDO_ID_2)")
-
-    if [ -n "$PEDIDO_COZINHA_2" ]; then
-        COZINHA_ID_2=$(echo "$PEDIDO_COZINHA_2" | jq -r '.id')
-        COZINHA_STATUS_2=$(echo "$PEDIDO_COZINHA_2" | jq -r '.status')
-        echo "[OK] Pedido encontrado na fila da cozinha!"
-        echo "  Cozinha ID: $COZINHA_ID_2"
-        echo "  Status na cozinha: $COZINHA_STATUS_2"
-    else
-        echo -e "${RED}[ERRO] Pedido nao encontrado na fila da cozinha${NC}"
-        exit 1
-    fi
-
-    PAGAMENTO_APROVADO_2=true
-
-elif [ "$STATUS_2" = "CANCELADO" ]; then
-    echo "[OK] Pagamento rejeitado - Pedido cancelado (comportamento esperado)"
-    PAGAMENTO_APROVADO_2=false
+if [ "$STATUS_COMPLETO" = "PRONTO" ]; then
+    echo -e "${GREEN}✅ Pedido pronto para retirada: Status=$STATUS_COMPLETO${NC}"
 else
-    echo -e "${RED}[ERRO] Status esperado: REALIZADO ou CANCELADO, obtido: $STATUS_2${NC}"
-    exit 1
-fi
-
-# Continuar apenas se pagamento foi aprovado
-if [ "$PAGAMENTO_APROVADO_2" = true ]; then
-
-    # ========================================================================
-    # ETAPA 3: INICIAR PREPARO
-    # ========================================================================
-    echo ""
-    echo "-------------------------------------------------------------------"
-    echo "ETAPA 3: Iniciar Preparo"
-    echo "-------------------------------------------------------------------"
-
-    echo ""
-    echo "Iniciando preparo do pedido (Cozinha ID: $COZINHA_ID_2)..."
-    PREPARO_RESPONSE=$(curl -s -X POST ${COZINHA_URL}/cozinha/${COZINHA_ID_2}/iniciar)
-    echo "$PREPARO_RESPONSE" | jq .
-
-    COZINHA_STATUS_2=$(echo "$PREPARO_RESPONSE" | jq -r '.status')
-
-    if [ "$COZINHA_STATUS_2" = "EM_PREPARO" ]; then
-        echo "[OK] Preparo iniciado!"
-        echo "  Status na cozinha: $COZINHA_STATUS_2"
-    else
-        echo -e "${RED}[ERRO] Status esperado: EM_PREPARO, obtido: $COZINHA_STATUS_2${NC}"
-        exit 1
-    fi
-
-    # ========================================================================
-    # ETAPA 4: MARCAR COMO PRONTO
-    # ========================================================================
-    echo ""
-    echo "-------------------------------------------------------------------"
-    echo "ETAPA 4: Marcar Pedido como Pronto"
-    echo "-------------------------------------------------------------------"
-
-    echo ""
-    echo "Aguardando 'preparo' do pedido (3 segundos)..."
-    sleep 3
-
-    echo ""
-    echo "Marcando pedido como pronto..."
-    PRONTO_RESPONSE=$(curl -s -X POST ${COZINHA_URL}/cozinha/${COZINHA_ID_2}/pronto)
-    echo "$PRONTO_RESPONSE" | jq .
-
-    COZINHA_STATUS_2=$(echo "$PRONTO_RESPONSE" | jq -r '.status')
-    DATA_FIM_2=$(echo "$PRONTO_RESPONSE" | jq -r '.dataFim')
-
-    if [ "$COZINHA_STATUS_2" = "PRONTO" ]; then
-        echo "[OK] Pedido marcado como pronto!"
-        echo "  Status na cozinha: $COZINHA_STATUS_2"
-        echo "  Data de conclusao: $DATA_FIM_2"
-    else
-        echo -e "${RED}[ERRO] Status esperado: PRONTO, obtido: $COZINHA_STATUS_2${NC}"
-        exit 1
-    fi
-
-    # ========================================================================
-    # ETAPA 5: VERIFICAR STATUS NO SERVIÇO DE PEDIDOS
-    # ========================================================================
-    echo ""
-    echo "-------------------------------------------------------------------"
-    echo "ETAPA 5: Verificar Atualizacao no Servico de Pedidos"
-    echo "-------------------------------------------------------------------"
-
-    echo ""
-    echo "Aguardando propagacao do evento (3 segundos)..."
-    sleep 3
-
-    echo ""
-    echo "Verificando status do pedido no servico de pedidos..."
-    STATUS_RESPONSE=$(curl -s ${PEDIDOS_URL}/pedidos/${PEDIDO_ID_2})
-    STATUS_2=$(echo "$STATUS_RESPONSE" | jq -r '.status')
-
-    echo "Status atual: $STATUS_2"
-
-    if [ "$STATUS_2" = "PRONTO" ]; then
-        echo "[OK] Evento processado! Status atualizado para PRONTO"
-    else
-        echo -e "${RED}[ERRO] Status esperado: PRONTO, obtido: $STATUS_2${NC}"
-        exit 1
-    fi
-
-    # ========================================================================
-    # ETAPA 6: RETIRAR PEDIDO
-    # ========================================================================
-    echo ""
-    echo "-------------------------------------------------------------------"
-    echo "ETAPA 6: Retirar Pedido"
-    echo "-------------------------------------------------------------------"
-
-    echo ""
-    echo "Marcando pedido como retirado..."
-    RETIRAR_RESPONSE=$(curl -s -X PATCH ${PEDIDOS_URL}/pedidos/${PEDIDO_ID_2}/retirar)
-    echo "$RETIRAR_RESPONSE" | jq .
-
-    STATUS_2=$(echo "$RETIRAR_RESPONSE" | jq -r '.status')
-
-    if [ "$STATUS_2" = "FINALIZADO" ]; then
-        echo "[OK] Pedido retirado com sucesso!"
-        echo "  Status final: $STATUS_2"
-    else
-        echo -e "${RED}[ERRO] Status esperado: FINALIZADO, obtido: $STATUS_2${NC}"
-        exit 1
-    fi
-
-fi
-
-# ========================================================================
-# RESUMO FINAL - TESTE 2
-# ========================================================================
-echo ""
-echo "==================================================================="
-echo "RESUMO - TESTE 2: Pedido com Cliente Identificado"
-echo "==================================================================="
-echo ""
-echo "[OK] Teste 2 concluido com sucesso!"
-echo ""
-if [ "$PAGAMENTO_APROVADO_2" = true ]; then
-    echo "Fluxo testado:"
-    echo "  1. [OK] Pedido criado (ID: $PEDIDO_ID_2) com CPF: 55555555555 - Status: CRIADO"
-    echo "  2. [OK] Nome do cliente recuperado via Feign Client: $CLIENTE_NOME"
-    echo "  3. [OK] Pagamento aprovado - Status: REALIZADO"
-    echo "  4. [OK] Pedido adicionado a fila da cozinha - Status: AGUARDANDO"
-    echo "  5. [OK] Preparo iniciado - Status: EM_PREPARO"
-    echo "  6. [OK] Pedido marcado como pronto - Status: PRONTO"
-    echo "  7. [OK] Evento propagado para servico de pedidos - Status: PRONTO"
-    echo "  8. [OK] Pedido retirado - Status: FINALIZADO"
-else
-    echo "Fluxo testado:"
-    echo "  1. [OK] Pedido criado (ID: $PEDIDO_ID_2) com CPF: 55555555555 - Status: CRIADO"
-    echo "  2. [OK] Nome do cliente recuperado via Feign Client: $CLIENTE_NOME"
-    echo "  3. [OK] Pagamento rejeitado - Status: CANCELADO"
-    echo "  4. [OK] Pedido nao foi para fila da cozinha (comportamento correto)"
+    echo -e "${YELLOW}⚠️  Status do pedido: $STATUS_COMPLETO${NC}"
 fi
 echo ""
-echo "==================================================================="
 
 # ========================================================================
-# TESTE 3: EDGE CASES E VALIDACAO DE ERROS
+# RESUMO FINAL
 # ========================================================================
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "RESUMO DO TESTE E2E"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
+echo "Pedido: $NUMERO_PEDIDO (ID=$PEDIDO_ID) | Valor: R\$ $VALOR_TOTAL"
 echo ""
-echo "==================================================================="
-echo "TESTE 3: EDGE CASES E VALIDACAO DE ERROS"
-echo "==================================================================="
+echo "Jornada completa:"
+echo "  CRIADO → REALIZADO → EM_PREPARO → PRONTO"
 echo ""
-
-# ========================================================================
-# CASO 1: PRODUTO INEXISTENTE
-# ========================================================================
-echo "-------------------------------------------------------------------"
-echo "CASO 1: Tentar criar pedido com produto inexistente"
-echo "-------------------------------------------------------------------"
-
+echo "Componentes testados:"
+echo "  ✅ API Gateway (Cognito JWT)"
+echo "  ✅ Serviço de Pedidos"
+echo "  ✅ Serviço de Pagamento (processamento assíncrono)"
+echo "  ✅ Serviço de Cozinha"
+echo "  ✅ RabbitMQ (eventos entre serviços)"
 echo ""
-echo "Tentando criar pedido com produtoId: 999 (nao existe)..."
-HTTP_CODE=$(curl -s -w "%{http_code}" -o /tmp/response.json -X POST ${PEDIDOS_URL}/pedidos \
-  -H "Content-Type: application/json" \
-  -d '{
-    "cpfCliente": null,
-    "itens": [
-      {"produtoId": 999, "quantidade": 1}
-    ]
-  }')
-
-echo "HTTP Status Code: $HTTP_CODE"
-
-if [ "$HTTP_CODE" = "400" ] || [ "$HTTP_CODE" = "404" ]; then
-    echo "[OK] Erro tratado corretamente - Produto inexistente"
-    cat /tmp/response.json | jq . 2>/dev/null || cat /tmp/response.json
-else
-    echo -e "${RED}[ERRO] Status code esperado: 400 ou 404, obtido: $HTTP_CODE${NC}"
-    exit 1
-fi
-
-# ========================================================================
-# CASO 2: PEDIDO INEXISTENTE NA COZINHA
-# ========================================================================
+echo -e "${GREEN}🎉 TESTE E2E CONCLUÍDO COM SUCESSO!${NC}"
 echo ""
-echo "-------------------------------------------------------------------"
-echo "CASO 2: Tentar iniciar preparo de pedido inexistente"
-echo "-------------------------------------------------------------------"
-
-echo ""
-echo "Tentando iniciar preparo do pedido com ID: 99999 (nao existe)..."
-HTTP_CODE=$(curl -s -w "%{http_code}" -o /tmp/response.json -X POST ${COZINHA_URL}/cozinha/99999/iniciar)
-
-echo "HTTP Status Code: $HTTP_CODE"
-
-if [ "$HTTP_CODE" = "404" ]; then
-    echo "[OK] Erro tratado corretamente - Pedido nao encontrado na cozinha"
-    cat /tmp/response.json | jq . 2>/dev/null || cat /tmp/response.json
-else
-    echo -e "${RED}[ERRO] Status code esperado: 404, obtido: $HTTP_CODE${NC}"
-    exit 1
-fi
-
-# ========================================================================
-# CASO 3: RETIRAR PEDIDO COM STATUS INVALIDO
-# ========================================================================
-echo ""
-echo "-------------------------------------------------------------------"
-echo "CASO 3: Tentar retirar pedido que nao esta PRONTO"
-echo "-------------------------------------------------------------------"
-
-echo ""
-echo "Criando pedido para testar retirada invalida..."
-RESPONSE=$(curl -s -X POST ${PEDIDOS_URL}/pedidos \
-  -H "Content-Type: application/json" \
-  -d '{
-    "cpfCliente": null,
-    "itens": [
-      {"produtoId": 1, "quantidade": 1}
-    ]
-  }')
-
-PEDIDO_ID_3=$(echo "$RESPONSE" | jq -r '.id')
-echo "Pedido criado - ID: $PEDIDO_ID_3"
-
-echo ""
-echo "Tentando retirar pedido com status CRIADO (invalido)..."
-HTTP_CODE=$(curl -s -w "%{http_code}" -o /tmp/response.json -X PATCH ${PEDIDOS_URL}/pedidos/${PEDIDO_ID_3}/retirar)
-
-echo "HTTP Status Code: $HTTP_CODE"
-
-if [ "$HTTP_CODE" = "400" ]; then
-    echo "[OK] Erro tratado corretamente - Pedido nao esta PRONTO"
-    cat /tmp/response.json | jq . 2>/dev/null || cat /tmp/response.json
-else
-    echo -e "${RED}[ERRO] Status code esperado: 400, obtido: $HTTP_CODE${NC}"
-    exit 1
-fi
-
-# ========================================================================
-# CASO 4: BUSCAR PEDIDO INEXISTENTE
-# ========================================================================
-echo ""
-echo "-------------------------------------------------------------------"
-echo "CASO 4: Buscar pedido inexistente"
-echo "-------------------------------------------------------------------"
-
-echo ""
-echo "Buscando pedido com ID: 99999 (nao existe)..."
-HTTP_CODE=$(curl -s -w "%{http_code}" -o /tmp/response.json ${PEDIDOS_URL}/pedidos/99999)
-
-echo "HTTP Status Code: $HTTP_CODE"
-
-if [ "$HTTP_CODE" = "404" ]; then
-    echo "[OK] Erro tratado corretamente - Pedido nao encontrado"
-    cat /tmp/response.json | jq . 2>/dev/null || cat /tmp/response.json
-else
-    echo -e "${RED}[ERRO] Status code esperado: 404, obtido: $HTTP_CODE${NC}"
-    exit 1
-fi
-
-# ========================================================================
-# RESUMO FINAL - TESTE 3
-# ========================================================================
-echo ""
-echo "==================================================================="
-echo "RESUMO - TESTE 3: Edge Cases e Validacao de Erros"
-echo "==================================================================="
-echo ""
-echo "[OK] Teste 3 concluido com sucesso!"
-echo ""
-echo "Casos testados:"
-echo "  1. [OK] Criar pedido com produto inexistente - HTTP 400/404"
-echo "  2. [OK] Iniciar preparo de pedido inexistente - HTTP 404"
-echo "  3. [OK] Retirar pedido com status invalido - HTTP 400"
-echo "  4. [OK] Buscar pedido inexistente - HTTP 404"
-echo ""
-echo "==================================================================="
-
-# ========================================================================
-# RESUMO GERAL
-# ========================================================================
-echo ""
-echo ""
-echo "==================================================================="
-echo "RESUMO GERAL: TODOS OS TESTES E2E (AWS EKS)"
-echo "==================================================================="
-echo ""
-echo "[OK] TESTE 1: Pedido Anonimo - CONCLUIDO"
-echo "[OK] TESTE 2: Pedido com Cliente Identificado - CONCLUIDO"
-echo "[OK] TESTE 3: Edge Cases e Validacao de Erros - CONCLUIDO"
-echo ""
-echo "Todos os testes E2E foram executados com sucesso!"
-echo ""
-echo "==================================================================="

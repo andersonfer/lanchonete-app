@@ -177,5 +177,5 @@ if [ -n "$API_URL" ]; then
     echo ""
 fi
 echo "🚀 Próximo passo:"
-echo "   Testes de autenticação: ./deploy_scripts/aws/04-test-auth.sh"
+echo "   Testes de autenticação: ./test_scripts/aws/test-auth.sh"
 echo ""

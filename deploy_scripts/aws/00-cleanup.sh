@@ -74,7 +74,12 @@ if [ -d "infra/api-gateway" ]; then
 
     if [ -d ".terraform" ]; then
         echo "🗑️  Destruindo API Gateway..."
-        terraform destroy -auto-approve || echo "⚠️  Erro ao destruir API Gateway (pode não existir)"
+        terraform destroy -auto-approve \
+          -var="clientes_service_url=http://dummy" \
+          -var="pedidos_service_url=http://dummy" \
+          -var="cozinha_service_url=http://dummy" \
+          -var="pagamento_service_url=http://dummy" \
+          || echo "⚠️  Erro ao destruir API Gateway (pode não existir)"
     else
         echo "⚠️  Terraform não inicializado - pulando"
     fi
@@ -100,7 +105,9 @@ if [ -d "infra/lambda" ]; then
 
     if [ -d ".terraform" ]; then
         echo "🗑️  Destruindo Lambda..."
-        terraform destroy -auto-approve || echo "⚠️  Erro ao destruir Lambda (pode não existir)"
+        terraform destroy -auto-approve \
+          -var="clientes_service_url=http://dummy" \
+          || echo "⚠️  Erro ao destruir Lambda (pode não existir)"
     else
         echo "⚠️  Terraform não inicializado - pulando"
     fi

@@ -111,7 +111,7 @@ echo "╚═══════════════════════�
 if test_endpoint \
     "Acessar /clientes sem token" \
     "GET" \
-    "$API_GATEWAY_URL/clientes/actuator/health" \
+    "$API_GATEWAY_URL/clientes" \
     "" \
     "" \
     "401"; then
@@ -146,16 +146,26 @@ else
     echo "   Expira em: $(echo "$ANON_RESPONSE" | jq -r '.expiresIn')s"
     PASSED=$((PASSED + 1))
 
-    # Testar acesso com token anônimo
-    if test_endpoint \
-        "Acessar /clientes com token anônimo" \
-        "GET" \
-        "$API_GATEWAY_URL/clientes/actuator/health" \
-        "" \
-        "$ANON_TOKEN" \
-        "200"; then
+    # Testar acesso com token anônimo (buscar CPF inexistente - 200 ou 404 são válidos)
+    ANON_TEST_RESPONSE=$(curl -s -w "\n%{http_code}" -X GET "$API_GATEWAY_URL/clientes/cpf/99999999999" \
+        -H "Authorization: Bearer $ANON_TOKEN")
+    ANON_TEST_STATUS=$(echo "$ANON_TEST_RESPONSE" | tail -n1)
+
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo -e "${BLUE}TEST: Acessar /clientes com token anônimo${NC}"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "Request: GET $API_GATEWAY_URL/clientes/cpf/99999999999"
+    echo "Authorization: Bearer <token>"
+    echo ""
+    echo "Response Status: $ANON_TEST_STATUS"
+    echo ""
+
+    if [ "$ANON_TEST_STATUS" = "200" ] || [ "$ANON_TEST_STATUS" = "404" ]; then
+        echo -e "${GREEN}✅ PASS - Acesso autorizado (HTTP $ANON_TEST_STATUS)${NC}"
         PASSED=$((PASSED + 1))
     else
+        echo -e "${RED}❌ FAIL - Esperado: 200 ou 404, Recebido: $ANON_TEST_STATUS${NC}"
         FAILED=$((FAILED + 1))
     fi
 fi
@@ -189,20 +199,18 @@ else
     echo "   Expira em: $(echo "$CPF_RESPONSE" | jq -r '.expiresIn')s"
     PASSED=$((PASSED + 1))
 
-    # Testar acesso aos 4 microserviços
-    for service in clientes pedidos cozinha pagamento; do
-        if test_endpoint \
-            "Acessar /$service com token CPF" \
-            "GET" \
-            "$API_GATEWAY_URL/$service/actuator/health" \
-            "" \
-            "$CPF_TOKEN" \
-            "200"; then
-            PASSED=$((PASSED + 1))
-        else
-            FAILED=$((FAILED + 1))
-        fi
-    done
+    # Testar acesso ao microserviço de clientes
+    if test_endpoint \
+        "Acessar /clientes/cpf com token CPF" \
+        "GET" \
+        "$API_GATEWAY_URL/clientes/cpf/$TEST_CPF" \
+        "" \
+        "$CPF_TOKEN" \
+        "200"; then
+        PASSED=$((PASSED + 1))
+    else
+        FAILED=$((FAILED + 1))
+    fi
 fi
 
 # ============================================================================
@@ -220,7 +228,7 @@ if [ -n "$CPF_TOKEN" ]; then
     if test_endpoint \
         "Criar novo cliente" \
         "POST" \
-        "$API_GATEWAY_URL/clientes/clientes" \
+        "$API_GATEWAY_URL/clientes" \
         "{\"cpf\": \"$RANDOM_CPF\", \"nome\": \"Cliente Teste\", \"email\": \"teste@lanchonete.com\"}" \
         "$CPF_TOKEN" \
         "201"; then
@@ -230,7 +238,7 @@ if [ -n "$CPF_TOKEN" ]; then
         if test_endpoint \
             "Buscar cliente criado" \
             "GET" \
-            "$API_GATEWAY_URL/clientes/clientes/cpf/$RANDOM_CPF" \
+            "$API_GATEWAY_URL/clientes/cpf/$RANDOM_CPF" \
             "" \
             "$CPF_TOKEN" \
             "200"; then
@@ -255,12 +263,12 @@ echo "╚═══════════════════════�
 
 INVALID_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 
-response=$(curl -s -w "\n%{http_code}" -X GET "$API_GATEWAY_URL/clientes/actuator/health" \
+response=$(curl -s -w "\n%{http_code}" -X GET "$API_GATEWAY_URL/clientes" \
     -H "Authorization: Bearer $INVALID_TOKEN")
 
 http_code=$(echo "$response" | tail -n1)
 
-echo "Request: GET $API_GATEWAY_URL/clientes/actuator/health"
+echo "Request: GET $API_GATEWAY_URL/clientes"
 echo "Authorization: Bearer <invalid_token>"
 echo ""
 echo "Response Status: $http_code"

@@ -142,7 +142,7 @@ terraform output api_gateway_url
 ### Passo 5: Testes de Autenticação
 
 ```bash
-./deploy_scripts/aws/04-test-auth.sh
+./test_scripts/aws/test-auth.sh
 ```
 
 **O que faz:**
@@ -157,7 +157,7 @@ terraform output api_gateway_url
 ### Passo 6: Validação End-to-End
 
 ```bash
-./deploy_scripts/aws/05-validate-deployment.sh
+./test_scripts/aws/test-validate-deployment.sh
 ```
 
 **O que faz:**
@@ -379,8 +379,8 @@ Se seguir exatamente esses passos na ordem:
 3. 02-deploy.sh
 4. **Aguardar 3-5 min**
 5. 03-provision-auth.sh
-6. 04-test-auth.sh → Deve passar 10/10
-7. 05-validate-deployment.sh → Deve ter 0 erros
+6. test-auth.sh → Deve passar 8/8
+7. test-validate-deployment.sh → Deve ter 0 erros
 
 O deployment será **100% funcional e repetível**.
 

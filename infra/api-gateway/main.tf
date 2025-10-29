@@ -114,6 +114,26 @@ resource "aws_api_gateway_resource" "clientes_resource" {
   path_part   = "clientes"
 }
 
+# Method ANY /clientes (raiz - com autorização Cognito)
+resource "aws_api_gateway_method" "clientes_root_any" {
+  rest_api_id   = aws_api_gateway_rest_api.lanchonete_api.id
+  resource_id   = aws_api_gateway_resource.clientes_resource.id
+  http_method   = "ANY"
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = aws_api_gateway_authorizer.cognito_authorizer.id
+}
+
+# Integration /clientes (raiz) com LoadBalancer Clientes
+resource "aws_api_gateway_integration" "clientes_root_integration" {
+  rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
+  resource_id = aws_api_gateway_resource.clientes_resource.id
+  http_method = aws_api_gateway_method.clientes_root_any.http_method
+
+  type                    = "HTTP_PROXY"
+  integration_http_method = "ANY"
+  uri                     = "${var.clientes_service_url}/clientes"
+}
+
 # Resource /clientes/{proxy+}
 resource "aws_api_gateway_resource" "clientes_proxy" {
   rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
@@ -158,6 +178,26 @@ resource "aws_api_gateway_resource" "pedidos_resource" {
   rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
   parent_id   = aws_api_gateway_rest_api.lanchonete_api.root_resource_id
   path_part   = "pedidos"
+}
+
+# Method ANY /pedidos (raiz - com autorização Cognito)
+resource "aws_api_gateway_method" "pedidos_root_any" {
+  rest_api_id   = aws_api_gateway_rest_api.lanchonete_api.id
+  resource_id   = aws_api_gateway_resource.pedidos_resource.id
+  http_method   = "ANY"
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = aws_api_gateway_authorizer.cognito_authorizer.id
+}
+
+# Integration /pedidos (raiz) com LoadBalancer Pedidos
+resource "aws_api_gateway_integration" "pedidos_root_integration" {
+  rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
+  resource_id = aws_api_gateway_resource.pedidos_resource.id
+  http_method = aws_api_gateway_method.pedidos_root_any.http_method
+
+  type                    = "HTTP_PROXY"
+  integration_http_method = "ANY"
+  uri                     = "${var.pedidos_service_url}/pedidos"
 }
 
 # Resource /pedidos/{proxy+}
@@ -206,6 +246,26 @@ resource "aws_api_gateway_resource" "cozinha_resource" {
   path_part   = "cozinha"
 }
 
+# Method ANY /cozinha (raiz - com autorização Cognito)
+resource "aws_api_gateway_method" "cozinha_root_any" {
+  rest_api_id   = aws_api_gateway_rest_api.lanchonete_api.id
+  resource_id   = aws_api_gateway_resource.cozinha_resource.id
+  http_method   = "ANY"
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = aws_api_gateway_authorizer.cognito_authorizer.id
+}
+
+# Integration /cozinha (raiz) com LoadBalancer Cozinha
+resource "aws_api_gateway_integration" "cozinha_root_integration" {
+  rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
+  resource_id = aws_api_gateway_resource.cozinha_resource.id
+  http_method = aws_api_gateway_method.cozinha_root_any.http_method
+
+  type                    = "HTTP_PROXY"
+  integration_http_method = "ANY"
+  uri                     = "${var.cozinha_service_url}/cozinha"
+}
+
 # Resource /cozinha/{proxy+}
 resource "aws_api_gateway_resource" "cozinha_proxy" {
   rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
@@ -250,6 +310,26 @@ resource "aws_api_gateway_resource" "pagamento_resource" {
   rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
   parent_id   = aws_api_gateway_rest_api.lanchonete_api.root_resource_id
   path_part   = "pagamento"
+}
+
+# Method ANY /pagamento (raiz - com autorização Cognito)
+resource "aws_api_gateway_method" "pagamento_root_any" {
+  rest_api_id   = aws_api_gateway_rest_api.lanchonete_api.id
+  resource_id   = aws_api_gateway_resource.pagamento_resource.id
+  http_method   = "ANY"
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = aws_api_gateway_authorizer.cognito_authorizer.id
+}
+
+# Integration /pagamento (raiz) com LoadBalancer Pagamento
+resource "aws_api_gateway_integration" "pagamento_root_integration" {
+  rest_api_id = aws_api_gateway_rest_api.lanchonete_api.id
+  resource_id = aws_api_gateway_resource.pagamento_resource.id
+  http_method = aws_api_gateway_method.pagamento_root_any.http_method
+
+  type                    = "HTTP_PROXY"
+  integration_http_method = "ANY"
+  uri                     = "${var.pagamento_service_url}/pagamento"
 }
 
 # Resource /pagamento/{proxy+}

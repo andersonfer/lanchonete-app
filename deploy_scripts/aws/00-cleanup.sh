@@ -34,6 +34,14 @@ echo "🧹 PASSO 1: Limpando recursos Kubernetes"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
+# Busca clusters EKS ativos
+CLUSTER_NAME=$(aws eks list-clusters --query 'clusters[0]' --output text 2>/dev/null)
+
+if [ -n "$CLUSTER_NAME" ] && [ "$CLUSTER_NAME" != "None" ]; then
+    echo "📌 Configurando kubectl para cluster $CLUSTER_NAME..."
+    aws eks update-kubeconfig --region us-east-1 --name $CLUSTER_NAME &>/dev/null || true
+fi
+
 # Verifica se kubectl está configurado
 if kubectl cluster-info &>/dev/null; then
     echo "Deletando Ingress..."
@@ -159,7 +167,7 @@ if [ -d "infra/database" ]; then
 
     if [ -d ".terraform" ]; then
         echo "🗑️  Destruindo RDS (isso pode levar 5-10 minutos)..."
-        terraform destroy -auto-approve || echo "⚠️  Erro ao destruir RDS (pode não existir)"
+        terraform destroy -auto-approve -lock=false || echo "⚠️  Erro ao destruir RDS (pode não existir)"
     else
         echo "⚠️  Terraform não inicializado - pulando"
     fi
@@ -185,7 +193,7 @@ if [ -d "infra/kubernetes" ]; then
 
     if [ -d ".terraform" ]; then
         echo "🗑️  Destruindo EKS (isso pode levar 10-15 minutos)..."
-        terraform destroy -auto-approve || echo "⚠️  Erro ao destruir EKS (pode não existir)"
+        terraform destroy -auto-approve -lock=false || echo "⚠️  Erro ao destruir EKS (pode não existir)"
     else
         echo "⚠️  Terraform não inicializado - pulando"
     fi
@@ -236,8 +244,11 @@ if [ -d "infra/backend" ]; then
     cd infra/backend
 
     if [ -d ".terraform" ]; then
+        echo "🧹 Esvaziando bucket S3..."
+        aws s3 rm s3://lanchonete-terraform-state-poc --recursive 2>/dev/null || true
+
         echo "🗑️  Destruindo Backend..."
-        terraform destroy -auto-approve || echo "⚠️  Erro ao destruir Backend (pode não existir)"
+        terraform destroy -auto-approve -lock=false || echo "⚠️  Erro ao destruir Backend (pode não existir)"
     else
         echo "⚠️  Terraform não inicializado - pulando"
     fi

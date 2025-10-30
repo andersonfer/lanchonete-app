@@ -35,7 +35,7 @@ echo "📦 Building and pushing: CLIENTES"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 cd services/clientes
 mvn clean package -DskipTests -q
-docker build -t lanchonete-clientes:latest .
+docker build --network=host -t lanchonete-clientes:latest .
 docker tag lanchonete-clientes:latest $ECR_CLIENTES:latest
 docker push $ECR_CLIENTES:latest
 cd ../..
@@ -47,7 +47,7 @@ echo "📦 Building and pushing: PEDIDOS"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 cd services/pedidos
 mvn clean package -DskipTests -q
-docker build -t lanchonete-pedidos:latest .
+docker build --network=host -t lanchonete-pedidos:latest .
 docker tag lanchonete-pedidos:latest $ECR_PEDIDOS:latest
 docker push $ECR_PEDIDOS:latest
 cd ../..
@@ -59,7 +59,7 @@ echo "📦 Building and pushing: COZINHA"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 cd services/cozinha
 mvn clean package -DskipTests -q
-docker build -t lanchonete-cozinha:latest .
+docker build --network=host -t lanchonete-cozinha:latest .
 docker tag lanchonete-cozinha:latest $ECR_COZINHA:latest
 docker push $ECR_COZINHA:latest
 cd ../..
@@ -71,7 +71,7 @@ echo "📦 Building and pushing: PAGAMENTO"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 cd services/pagamento
 mvn clean package -DskipTests -q
-docker build -t lanchonete-pagamento:latest .
+docker build --network=host -t lanchonete-pagamento:latest .
 docker tag lanchonete-pagamento:latest $ECR_PAGAMENTO:latest
 docker push $ECR_PAGAMENTO:latest
 cd ../..

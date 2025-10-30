@@ -1,24 +1,21 @@
-# Multi-stage build
-FROM maven:3.9-eclipse-temurin-17 AS build
+FROM eclipse-temurin:17-jre
 WORKDIR /app
 
-# Copy pom.xml and download dependencies
-COPY pom.xml .
-RUN mvn dependency:go-offline -B
+# Criar um usuário não-root
+RUN groupadd -r appuser && useradd -r -g appuser appuser
 
-# Copy source code and build
-COPY src ./src
-RUN mvn clean package -DskipTests
+# Copiar o JAR compilado do host (já compilado pelo script com mvn)
+COPY target/*.jar app.jar
 
-# Runtime stage
-FROM eclipse-temurin:17-jre-alpine
-WORKDIR /app
+# Configurar permissões
+RUN chown -R appuser:appuser /app
+USER appuser
 
-# Copy jar from build stage
-COPY --from=build /app/target/*.jar app.jar
-
-# Expose port
+# Expor a porta da aplicação
 EXPOSE 8080
 
-# Run application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Configurar variáveis de ambiente para a JVM
+ENV JAVA_OPTS="-Xms256m -Xmx512m -XX:+UseContainerSupport"
+
+# Executar a aplicação
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

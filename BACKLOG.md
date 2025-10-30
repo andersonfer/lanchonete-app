@@ -275,12 +275,13 @@ Nenhuma tarefa em andamento no momento.
 - Cobertura de cenários: Cliente anônimo, cliente existente, cliente novo
 - Cobertura de integrações: REST (Feign Client) + RabbitMQ (eventos assíncronos)
 
-## 📋 PRÓXIMAS TAREFAS
+## 📋 PRÓXIMAS TAREFAS (OBRIGATÓRIAS)
 
-### 2. Configurar CI/CD Completo no GitHub Actions
-**Estimativa:** 2-3 dias
-**Dependências:** Ingress EKS configurado + Testes E2E locais prontos
-**Ambiente:** ☁️ AWS (EKS) + GitHub Actions
+### 2. Configurar CI/CD Completo no GitHub Actions + SonarQube
+**Estimativa:** 3-4 dias
+**Dependências:** ✅ Ingress EKS configurado + Testes E2E prontos
+**Ambiente:** ☁️ AWS (EKS) + GitHub Actions + SonarCloud
+**Status:** ⏳ Pendente (OBRIGATÓRIO)
 
 **Checklist:**
 
@@ -290,7 +291,7 @@ Nenhuma tarefa em andamento no momento.
   - Adicionar testes dos 4 microserviços (Clientes, Pedidos, Pagamento, Cozinha)
   - Executar testes E2E locais (com LocalStack para Cognito mock)
   - Verificar cobertura de código (80%+ mínimo)
-  - Lint/SonarQube (opcional)
+  - **Integração SonarQube/SonarCloud**
 - [ ] Configurar cache de dependências Maven
 - [ ] Configurar matriz de testes (paralelo)
 
@@ -313,11 +314,32 @@ Nenhuma tarefa em andamento no momento.
 - [ ] Rollback automático em caso de falha
 - [ ] Notificação de sucesso/falha
 
-#### 2.3 Segurança e Configuração
+#### 2.3 Setup SonarCloud/SonarQube
+- [ ] Criar conta SonarCloud (grátis para open source)
+- [ ] Conectar com repositório GitHub
+- [ ] Obter token de autenticação
+- [ ] Configurar plugin SonarQube nos 4 microserviços (pom.xml)
+- [ ] Configurar propriedades Sonar (sonar-project.properties)
+- [ ] Configurar exclusões (testes, DTOs, configs)
+
+#### 2.4 Integração SonarQube no CI
+- [ ] Adicionar step Sonar no workflow CI
+- [ ] Configurar Quality Gate
+- [ ] Falhar build se Quality Gate falhar
+- [ ] Publicar link do Sonar no PR
+- [ ] Configurar thresholds:
+  - Code Coverage > 80%
+  - Duplicações < 3%
+  - Bugs: 0
+  - Vulnerabilities: 0
+  - Code Smells: Rating A ou B
+
+#### 2.5 Segurança e Configuração
 - [ ] Configurar secrets do GitHub:
   - AWS_ACCESS_KEY_ID
   - AWS_SECRET_ACCESS_KEY
   - AWS_SESSION_TOKEN (se necessário)
+  - SONAR_TOKEN
   - Secrets adicionais do Cognito
 - [ ] Configurar proteção de branch (main):
   - Requer aprovação de PR
@@ -325,32 +347,37 @@ Nenhuma tarefa em andamento no momento.
   - Não permitir force push
 - [ ] Configurar CODEOWNERS (opcional)
 
-#### 2.4 Notificações e Monitoramento
+#### 2.6 Notificações e Monitoramento
 - [ ] Configurar notificações Slack/Email em caso de falha
 - [ ] Adicionar badge de status do CI/CD no README
+- [ ] Adicionar badge do SonarQube no README
 - [ ] Configurar deploy manual (workflow_dispatch) para ambientes
 
-#### 2.5 Documentação
+#### 2.7 Documentação
 - [ ] Documentar processo de CI/CD no README
 - [ ] Criar runbook de troubleshooting de pipeline
 - [ ] Documentar processo de rollback manual
+- [ ] Documentar métricas do SonarQube
 
 **Critérios de Aceite:**
 - CI executa automaticamente em todos os PRs
 - CD executa automaticamente em push para main
-- Pipeline completo: Build → Test → Push ECR → Deploy EKS → Smoke Test
+- Pipeline completo: Build → Test → SonarQube → Push ECR → Deploy EKS → Smoke Test
+- SonarQube executando em todos os builds
+- Quality Gate configurado e funcionando
 - Rollback automático funciona em caso de falha
 - Notificações funcionando
-- Badge de status visível no README
+- Badges de status (CI/CD + SonarQube) visíveis no README
 - Deploy manual disponível via workflow_dispatch
+- Equipe consegue visualizar métricas de código
 
 ---
 
-## 🔮 BACKLOG FUTURO (Baixa Prioridade)
-
 ### 3. Implementar Testes BDD com Cucumber
 **Estimativa:** 2-3 dias
+**Dependências:** ✅ Microserviços implementados
 **Ambiente:** 💻 Local + ☁️ AWS
+**Status:** ⏳ Pendente (OBRIGATÓRIO)
 
 #### 3.1 Setup Cucumber
 - [ ] Adicionar dependências Cucumber ao pom.xml de cada microserviço:
@@ -401,67 +428,11 @@ Nenhuma tarefa em andamento no momento.
 
 ---
 
-### 4. Integração SonarQube no CI/CD
-**Estimativa:** 1-2 dias
-**Ambiente:** 💻 Local + ☁️ AWS + GitHub Actions
-
-#### 4.1 Setup SonarCloud/SonarQube
-- [ ] Opção A: Usar SonarCloud (cloud, grátis para open source)
-  - Criar conta SonarCloud
-  - Conectar com repositório GitHub
-  - Obter token de autenticação
-- [ ] Opção B: Self-hosted SonarQube (Docker local)
-  - Deploy SonarQube via Docker Compose
-  - Configurar admin/senha
-  - Criar projeto e token
-
-#### 4.2 Configuração Maven
-- [ ] Adicionar plugin SonarQube aos 4 microserviços:
-  ```xml
-  <plugin>
-    <groupId>org.sonarsource.scanner.maven</groupId>
-    <artifactId>sonar-maven-plugin</artifactId>
-    <version>3.10.0.2594</version>
-  </plugin>
-  ```
-- [ ] Configurar propriedades Sonar (sonar-project.properties)
-- [ ] Configurar exclusões (testes, DTOs, configs)
-
-#### 4.3 Integração CI (GitHub Actions)
-- [ ] Adicionar step Sonar no workflow CI:
-  ```yaml
-  - name: SonarQube Analysis
-    env:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-    run: mvn sonar:sonar
-  ```
-- [ ] Configurar Quality Gate
-- [ ] Falhar build se Quality Gate falhar
-- [ ] Publicar link do Sonar no PR
-
-#### 4.4 Métricas e Qualidade
-- [ ] Configurar thresholds:
-  - Code Coverage > 80%
-  - Duplicações < 3%
-  - Bugs: 0
-  - Vulnerabilities: 0
-  - Code Smells: Rating A ou B
-- [ ] Configurar análise de branches
-- [ ] Configurar análise de Pull Requests
-
-**Critérios de Aceite:**
-- SonarQube executando em todos os builds
-- Quality Gate configurado e funcionando
-- Badge do SonarQube no README
-- Análise de PRs funcionando
-- Equipe consegue visualizar métricas de código
-
----
-
-### 5. Remover Aplicação Monolítica (Autoatendimento)
+### 4. Remover Aplicação Monolítica (Autoatendimento)
 **Estimativa:** 1 dia
-**Dependências:** Todos os testes E2E completos
+**Dependências:** ✅ Todos os testes E2E completos
 **Ambiente:** 💻 Local / Git
+**Status:** ⏳ Pendente (OBRIGATÓRIO - será a última tarefa)
 
 **Checklist:**
 - [ ] Remover código legado:
@@ -581,7 +552,12 @@ Nenhuma tarefa em andamento no momento.
 - Deploy Local (Minikube): 1/1 ✅ (100%)
 - Deploy AWS (EKS): 1/1 ✅ (100%)
 - RDS Databases: 3/3 ✅ (100%)
-- **TOTAL FASE A: 14/14 tarefas (100%) ✅**
+- **FASE 1 (Core + AWS + Testes): 3/3 tarefas (100%) ✅**
+- **FASE 2 (Qualidade + CI/CD): 0/3 tarefas (0%) ⏳**
+  - CI/CD GitHub Actions + SonarQube: ⏳ Pendente (OBRIGATÓRIO)
+  - Testes BDD Cucumber: ⏳ Pendente (OBRIGATÓRIO)
+  - Remover Monolito: ⏳ Pendente (OBRIGATÓRIO)
+- **TOTAL GERAL: 3/6 tarefas principais (50%) ⏳**
 
 ### Regras Gerais
 
@@ -611,11 +587,11 @@ Nenhuma tarefa em andamento no momento.
 
 ---
 
-**Última revisão:** 2025-10-30 13:30
+**Última revisão:** 2025-10-30 16:25
 **Responsável:** Anderson
-**Status Geral:** 🟢 100% Concluído - Testes E2E expandidos ✅
-**Sprint Atual:** Sprint 3 - Concluído (AWS + Autenticação + Testes E2E completos)
-**Próxima Milestone:** CI/CD Completo no GitHub Actions (opcional)
+**Status Geral:** 🟡 50% Concluído - Testes E2E completos, CI/CD pendente
+**Sprint Atual:** Sprint 3 - Concluído (AWS + Autenticação + Testes E2E)
+**Próxima Milestone:** Sprint 4 - CI/CD+SonarQube + BDD + Cleanup (3 tarefas OBRIGATÓRIAS)
 
 ---
 
@@ -783,11 +759,11 @@ Nenhuma tarefa em andamento no momento.
 
 ---
 
-**Última atualização desta sessão:** 2025-10-30 13:30
+**Última atualização desta sessão:** 2025-10-30 16:25
 **Commits desta sessão:** Expansão de testes E2E (cliente existente + cliente novo)
 **Arquivos criados/modificados:**
   - test_scripts/aws/test-e2e-cliente-existente.sh (NOVO)
   - test_scripts/aws/test-e2e-cliente-novo.sh (NOVO)
 **Responsável:** Anderson
-**Status Geral:** 🟢 100% Concluído - Testes E2E completos ✅
-**Próxima Milestone:** CI/CD Completo no GitHub Actions (tarefa opcional)
+**Status Geral:** 🟡 50% Concluído - Fase 1 completa, Fase 2 pendente
+**Próxima Milestone:** Sprint 4 - CI/CD+SonarQube + BDD + Cleanup (3 tarefas OBRIGATÓRIAS)

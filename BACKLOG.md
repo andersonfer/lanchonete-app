@@ -2,7 +2,7 @@
 
 **Projeto:** Sistema de Lanchonete - Arquitetura de Microserviços
 **Branch Atual:** `feature/migracao-microservicos`
-**Última Atualização:** 2025-10-30 13:30
+**Última Atualização:** 2025-11-13 15:00
 
 ---
 
@@ -278,98 +278,220 @@ Nenhuma tarefa em andamento no momento.
 ## 📋 PRÓXIMAS TAREFAS (OBRIGATÓRIAS)
 
 ### 2. Configurar CI/CD Completo no GitHub Actions + SonarQube
-**Estimativa:** 3-4 dias
-**Dependências:** ✅ Ingress EKS configurado + Testes E2E prontos
+**Estimativa:** 8-10 dias (2 dias por serviço × 4 serviços)
+**Dependências:** ✅ Microserviços implementados + Testes E2E prontos
 **Ambiente:** ☁️ AWS (EKS) + GitHub Actions + SonarCloud
-**Status:** ⏳ Pendente (OBRIGATÓRIO)
+**Estratégia:** **Monorepo com pipelines separados por serviço**
+**Status:** ⏳ Em Andamento
 
-**Checklist:**
+**Arquitetura de Pipelines:**
+- 1 pipeline CI por serviço (testes + SonarCloud)
+- 1 pipeline CD por serviço (build + deploy EKS)
+- 4 projetos separados no SonarCloud
+- Triggers baseados em path filters (`services/{servico}/**`)
 
-#### 2.1 Workflow CI (Pull Requests)
-- [ ] Atualizar `ci-app.yml`:
-  - Remover testes do autoatendimento
-  - Adicionar testes dos 4 microserviços (Clientes, Pedidos, Pagamento, Cozinha)
-  - Executar testes E2E locais (com LocalStack para Cognito mock)
-  - Verificar cobertura de código (80%+ mínimo)
-  - **Integração SonarQube/SonarCloud**
-- [ ] Configurar cache de dependências Maven
-- [ ] Configurar matriz de testes (paralelo)
+---
 
-#### 2.2 Workflow CD (Deploy para EKS)
-- [ ] Atualizar `cd-app.yml`:
-  - Build das 4 imagens Docker (Clientes, Pedidos, Pagamento, Cozinha)
-  - Login no ECR
-  - Tag com SHA do commit + latest
-  - Push para ECR (4 repositórios)
-  - Configurar kubectl com EKS
-  - Aplicar secrets
-  - Deploy databases (se necessário)
-  - Deploy dos 4 microserviços
-  - Aplicar Ingress
-  - Aguardar rollout completo
-- [ ] Smoke Tests:
-  - Health check de cada microserviço via ALB
-  - Teste de autenticação (signup/signin)
-  - Teste básico de criação de pedido
-- [ ] Rollback automático em caso de falha
-- [ ] Notificação de sucesso/falha
+### 2.1 🔵 FASE 1: Serviço de Clientes (PRIORIDADE MÁXIMA)
+**Status:** 🚀 Em Andamento | **Estimativa:** 2 dias
 
-#### 2.3 Setup SonarCloud/SonarQube
-- [ ] Criar conta SonarCloud (grátis para open source)
-- [ ] Conectar com repositório GitHub
-- [ ] Obter token de autenticação
-- [ ] Configurar plugin SonarQube nos 4 microserviços (pom.xml)
-- [ ] Configurar propriedades Sonar (sonar-project.properties)
-- [ ] Configurar exclusões (testes, DTOs, configs)
+#### 2.1.1 CD - Clientes (`cd-clientes.yml`)
+**Trigger:** Push em `main` com mudanças em `services/clientes/**`
 
-#### 2.4 Integração SonarQube no CI
-- [ ] Adicionar step Sonar no workflow CI
-- [ ] Configurar Quality Gate
-- [ ] Falhar build se Quality Gate falhar
-- [ ] Publicar link do Sonar no PR
-- [ ] Configurar thresholds:
-  - Code Coverage > 80%
+- [ ] Criar arquivo `.github/workflows/cd-clientes.yml`
+- [ ] Configurar trigger com path filter: `services/clientes/**`
+- [ ] Setup Java 17 + Maven cache
+- [ ] Build da imagem Docker (services/clientes/Dockerfile)
+- [ ] Login no AWS ECR
+- [ ] Tag da imagem: `${GITHUB_SHA}` + `latest`
+- [ ] Push para ECR: `lanchonete-clientes`
+- [ ] Configurar kubectl com EKS (`aws eks update-kubeconfig`)
+- [ ] Aplicar secrets K8s (RDS credentials)
+- [ ] Deploy manifests K8s:
+  - ConfigMap: `k8s_manifests/aws/clientes-configmap.yaml`
+  - Deployment: `k8s_manifests/aws/clientes-deployment.yaml`
+  - Service: `k8s_manifests/aws/clientes-service.yaml`
+- [ ] Aguardar rollout: `kubectl rollout status deployment/clientes`
+- [ ] **Smoke Tests:**
+  - Health check: `GET /actuator/health` → Status `UP`
+  - Criar cliente: `POST /clientes` (HTTP 201)
+  - Buscar cliente: `GET /clientes/{cpf}` (HTTP 200)
+- [ ] Notificar sucesso/falha
+- [ ] Configurar rollback automático em caso de falha
+
+#### 2.1.2 CI - Clientes (`ci-clientes.yml`)
+**Trigger:** Pull Request com mudanças em `services/clientes/**`
+
+- [ ] Criar arquivo `.github/workflows/ci-clientes.yml`
+- [ ] Configurar trigger com path filter: `services/clientes/**`
+- [ ] Setup Java 17 + Maven cache
+- [ ] Executar testes: `mvn clean test -f services/clientes/pom.xml`
+- [ ] Gerar relatório JaCoCo
+- [ ] **Setup SonarCloud:**
+  - [ ] Criar projeto no SonarCloud: `lanchonete-clientes`
+  - [ ] Obter token de autenticação
+  - [ ] Configurar secret GitHub: `SONAR_TOKEN`
+  - [ ] Adicionar plugin sonar-maven no `pom.xml`
+  - [ ] Configurar propriedades Sonar:
+    - `sonar.projectKey=lanchonete-clientes`
+    - `sonar.organization=<sua-org>`
+    - `sonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml`
+- [ ] Executar análise: `mvn sonar:sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}`
+- [ ] **Quality Gates:**
+  - Cobertura > 80% (atual: 85% ✅)
+  - Bugs = 0
+  - Vulnerabilities = 0
+  - Code Smells: Rating A/B
   - Duplicações < 3%
-  - Bugs: 0
-  - Vulnerabilities: 0
-  - Code Smells: Rating A ou B
+- [ ] Publicar comentário no PR com link SonarCloud
+- [ ] Falhar build se Quality Gate falhar
 
-#### 2.5 Segurança e Configuração
+**Critérios de Aceite:**
+- ✅ CD executa automaticamente em push para `main` com mudanças em `services/clientes/`
+- ✅ CI executa automaticamente em PRs com mudanças em `services/clientes/`
+- ✅ Imagem Docker publicada no ECR
+- ✅ Deploy no EKS bem-sucedido
+- ✅ Smoke tests passando
+- ✅ SonarCloud analisando código
+- ✅ Quality Gate configurado e passando
+
+---
+
+### 2.2 🟢 FASE 2: Serviço de Pedidos
+**Status:** ⏳ Pendente | **Estimativa:** 2 dias
+**Dependências:** ✅ Fase 1 (Clientes) concluída
+
+#### 2.2.1 CD - Pedidos (`cd-pedidos.yml`)
+- [ ] Criar arquivo `.github/workflows/cd-pedidos.yml`
+- [ ] Path filter: `services/pedidos/**`
+- [ ] Build + Push para ECR: `lanchonete-pedidos`
+- [ ] Deploy K8s manifests (ConfigMap, Deployment, Service)
+- [ ] Smoke tests:
+  - Health check
+  - Criar pedido anônimo
+  - Buscar pedido por ID
+  - Validar integração com Clientes (Feign Client)
+
+#### 2.2.2 CI - Pedidos (`ci-pedidos.yml`)
+- [ ] Criar arquivo `.github/workflows/ci-pedidos.yml`
+- [ ] Path filter: `services/pedidos/**`
+- [ ] Testes: `mvn clean test -f services/pedidos/pom.xml`
+- [ ] Projeto SonarCloud: `lanchonete-pedidos`
+- [ ] Quality Gates (cobertura atual: 82% ✅)
+
+---
+
+### 2.3 🟡 FASE 3: Serviço de Cozinha
+**Status:** ⏳ Pendente | **Estimativa:** 2 dias
+**Dependências:** ✅ Fase 2 (Pedidos) concluída
+
+#### 2.3.1 CD - Cozinha (`cd-cozinha.yml`)
+- [ ] Criar arquivo `.github/workflows/cd-cozinha.yml`
+- [ ] Path filter: `services/cozinha/**`
+- [ ] Build + Push para ECR: `lanchonete-cozinha`
+- [ ] Deploy K8s manifests
+- [ ] Smoke tests:
+  - Health check
+  - Listar fila de pedidos
+  - Iniciar preparo
+  - Marcar como pronto
+
+#### 2.3.2 CI - Cozinha (`ci-cozinha.yml`)
+- [ ] Criar arquivo `.github/workflows/ci-cozinha.yml`
+- [ ] Path filter: `services/cozinha/**`
+- [ ] Testes: `mvn clean test -f services/cozinha/pom.xml`
+- [ ] Projeto SonarCloud: `lanchonete-cozinha`
+- [ ] Quality Gates (cobertura atual: 83% ✅)
+
+---
+
+### 2.4 🟣 FASE 4: Serviço de Pagamento
+**Status:** ⏳ Pendente | **Estimativa:** 2 dias
+**Dependências:** ✅ Fase 3 (Cozinha) concluída
+
+#### 2.4.1 CD - Pagamento (`cd-pagamento.yml`)
+- [ ] Criar arquivo `.github/workflows/cd-pagamento.yml`
+- [ ] Path filter: `services/pagamento/**`
+- [ ] Build + Push para ECR: `lanchonete-pagamento`
+- [ ] Deploy K8s manifests
+- [ ] Smoke tests:
+  - Health check
+  - Processar pagamento (evento RabbitMQ)
+  - Validar aprovação/rejeição aleatória
+
+#### 2.4.2 CI - Pagamento (`ci-pagamento.yml`)
+- [ ] Criar arquivo `.github/workflows/ci-pagamento.yml`
+- [ ] Path filter: `services/pagamento/**`
+- [ ] Testes: `mvn clean test -f services/pagamento/pom.xml`
+- [ ] Projeto SonarCloud: `lanchonete-pagamento`
+- [ ] Quality Gates (cobertura atual: 80% ✅)
+
+---
+
+### 2.5 🔧 Configurações Globais
+**Status:** ⏳ Pendente
+
 - [ ] Configurar secrets do GitHub:
-  - AWS_ACCESS_KEY_ID
-  - AWS_SECRET_ACCESS_KEY
-  - AWS_SESSION_TOKEN (se necessário)
-  - SONAR_TOKEN
-  - Secrets adicionais do Cognito
-- [ ] Configurar proteção de branch (main):
+  - `AWS_ACCESS_KEY_ID`
+  - `AWS_SECRET_ACCESS_KEY`
+  - `AWS_SESSION_TOKEN` (AWS Academy)
+  - `SONAR_TOKEN`
+- [ ] Configurar proteção de branch (`main`):
   - Requer aprovação de PR
   - Requer CI passando
   - Não permitir force push
-- [ ] Configurar CODEOWNERS (opcional)
+- [ ] Adicionar badges no README:
+  - Status CD (4 badges - um por serviço)
+  - Status CI (4 badges - um por serviço)
+  - SonarCloud Quality Gate (4 badges)
+  - SonarCloud Coverage (4 badges)
+- [ ] Deletar workflows antigos:
+  - `.github/workflows/ci-app.yml` (monolito)
+  - `.github/workflows/cd-app.yml` (monolito)
 
-#### 2.6 Notificações e Monitoramento
-- [ ] Configurar notificações Slack/Email em caso de falha
-- [ ] Adicionar badge de status do CI/CD no README
-- [ ] Adicionar badge do SonarQube no README
-- [ ] Configurar deploy manual (workflow_dispatch) para ambientes
+---
 
-#### 2.7 Documentação
-- [ ] Documentar processo de CI/CD no README
-- [ ] Criar runbook de troubleshooting de pipeline
+### 2.6 📚 Documentação
+- [ ] Documentar estratégia de pipelines no README
+- [ ] Criar tabela de workflows:
+  ```
+  | Serviço    | CI Workflow      | CD Workflow      | SonarCloud Project      |
+  |------------|------------------|------------------|-------------------------|
+  | Clientes   | ci-clientes.yml  | cd-clientes.yml  | lanchonete-clientes     |
+  | Pedidos    | ci-pedidos.yml   | cd-pedidos.yml   | lanchonete-pedidos      |
+  | Cozinha    | ci-cozinha.yml   | cd-cozinha.yml   | lanchonete-cozinha      |
+  | Pagamento  | ci-pagamento.yml | cd-pagamento.yml | lanchonete-pagamento    |
+  ```
+- [ ] Criar runbook de troubleshooting de pipelines
 - [ ] Documentar processo de rollback manual
 - [ ] Documentar métricas do SonarQube
 
-**Critérios de Aceite:**
-- CI executa automaticamente em todos os PRs
-- CD executa automaticamente em push para main
-- Pipeline completo: Build → Test → SonarQube → Push ECR → Deploy EKS → Smoke Test
-- SonarQube executando em todos os builds
-- Quality Gate configurado e funcionando
-- Rollback automático funciona em caso de falha
-- Notificações funcionando
-- Badges de status (CI/CD + SonarQube) visíveis no README
-- Deploy manual disponível via workflow_dispatch
-- Equipe consegue visualizar métricas de código
+---
+
+**Estrutura Final de Arquivos:**
+```
+.github/workflows/
+├── cd-clientes.yml    ✅ Deploy Clientes → EKS
+├── ci-clientes.yml    ✅ Testes Clientes + SonarCloud
+├── cd-pedidos.yml     ⏳ Deploy Pedidos → EKS
+├── ci-pedidos.yml     ⏳ Testes Pedidos + SonarCloud
+├── cd-cozinha.yml     ⏳ Deploy Cozinha → EKS
+├── ci-cozinha.yml     ⏳ Testes Cozinha + SonarCloud
+├── cd-pagamento.yml   ⏳ Deploy Pagamento → EKS
+├── ci-pagamento.yml   ⏳ Testes Pagamento + SonarCloud
+├── cd-app.yml         ❌ DELETAR (monolito antigo)
+└── ci-app.yml         ❌ DELETAR (monolito antigo)
+```
+
+**Critérios de Aceite Globais:**
+- ✅ 8 pipelines funcionando (4 CI + 4 CD)
+- ✅ Cada serviço tem deploy independente
+- ✅ Mudanças em um serviço não triggam pipelines de outros
+- ✅ SonarCloud com 4 projetos separados
+- ✅ Quality Gates configurados e funcionando
+- ✅ Smoke tests passando em todos os serviços
+- ✅ Badges visíveis no README
+- ✅ Documentação completa
 
 ---
 
@@ -532,11 +654,14 @@ Nenhuma tarefa em andamento no momento.
 13. ✅ **CONCLUÍDO:** Scripts de deploy AWS automatizados
 14. ✅ **CONCLUÍDO:** Documentação completa AWS
 
-**FASE 3 - Qualidade e CI/CD (Opcional) - 0% Concluído**
-15. 🔲 **PENDENTE:** Testes BDD com Cucumber (features + scenarios)
-16. 🔲 **PENDENTE:** Integração SonarQube no CI/CD (quality gates)
-17. 🔲 **PENDENTE:** CI/CD completo GitHub Actions (build + test + deploy)
-18. 🔲 **PENDENTE:** Remover aplicação monolítica (limpeza)
+**FASE 3 - Qualidade e CI/CD (Em Andamento) - 0% Concluído**
+15. 🔲 **EM ANDAMENTO:** CI/CD completo GitHub Actions (pipelines separados por serviço)
+   - Fase 1: Clientes (CD + CI + SonarCloud) - 🚀 Iniciando
+   - Fase 2: Pedidos (CD + CI + SonarCloud) - ⏳ Pendente
+   - Fase 3: Cozinha (CD + CI + SonarCloud) - ⏳ Pendente
+   - Fase 4: Pagamento (CD + CI + SonarCloud) - ⏳ Pendente
+16. 🔲 **PENDENTE:** Testes BDD com Cucumber (features + scenarios)
+17. 🔲 **PENDENTE:** Remover aplicação monolítica (limpeza)
 
 **FASE 4 - Melhorias Avançadas (Baixa Prioridade)**
 19-22. 🔲 **BACKLOG:** Cognito, Segurança, Performance, Resiliência, Docs
@@ -587,11 +712,11 @@ Nenhuma tarefa em andamento no momento.
 
 ---
 
-**Última revisão:** 2025-10-30 16:25
+**Última revisão:** 2025-11-13 15:00
 **Responsável:** Anderson
-**Status Geral:** 🟡 50% Concluído - Testes E2E completos, CI/CD pendente
-**Sprint Atual:** Sprint 3 - Concluído (AWS + Autenticação + Testes E2E)
-**Próxima Milestone:** Sprint 4 - CI/CD+SonarQube + BDD + Cleanup (3 tarefas OBRIGATÓRIAS)
+**Status Geral:** 🟡 50% Concluído - Testes E2E completos, CI/CD em andamento
+**Sprint Atual:** Sprint 4 - Fase 1: CI/CD de Clientes (CD + CI + SonarCloud)
+**Próxima Milestone:** Completar CI/CD de todos os 4 serviços + BDD + Cleanup
 
 ---
 
@@ -759,11 +884,11 @@ Nenhuma tarefa em andamento no momento.
 
 ---
 
-**Última atualização desta sessão:** 2025-10-30 16:25
-**Commits desta sessão:** Expansão de testes E2E (cliente existente + cliente novo)
+**Última atualização desta sessão:** 2025-11-13 15:00
+**Commits desta sessão:** Replanejamento de CI/CD (pipelines separados por serviço)
 **Arquivos criados/modificados:**
-  - test_scripts/aws/test-e2e-cliente-existente.sh (NOVO)
-  - test_scripts/aws/test-e2e-cliente-novo.sh (NOVO)
+  - BACKLOG.md (ATUALIZADO - novo planejamento CI/CD)
 **Responsável:** Anderson
-**Status Geral:** 🟡 50% Concluído - Fase 1 completa, Fase 2 pendente
-**Próxima Milestone:** Sprint 4 - CI/CD+SonarQube + BDD + Cleanup (3 tarefas OBRIGATÓRIAS)
+**Status Geral:** 🟡 50% Concluído - Fase 1 e 2 completas, Fase 3 em andamento
+**Próxima Milestone:** Sprint 4 - CI/CD Separado por Serviço (começando por Clientes)
+**Sprint Atual:** Sprint 4 - Fase 1: Clientes (CD + CI + SonarCloud)

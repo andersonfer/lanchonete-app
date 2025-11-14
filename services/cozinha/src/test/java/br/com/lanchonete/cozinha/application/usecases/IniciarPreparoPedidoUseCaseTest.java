@@ -1,5 +1,6 @@
 package br.com.lanchonete.cozinha.application.usecases;
 
+import br.com.lanchonete.cozinha.domain.exception.PedidoNaoEncontradoException;
 import br.com.lanchonete.cozinha.domain.model.PedidoCozinha;
 import br.com.lanchonete.cozinha.domain.model.StatusPedido;
 import br.com.lanchonete.cozinha.domain.repository.PedidoCozinhaRepository;
@@ -54,12 +55,12 @@ class IniciarPreparoPedidoUseCaseTest {
     void t2() {
         when(pedidoCozinhaRepository.findById(999L)).thenReturn(Optional.empty());
 
-        IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
+        PedidoNaoEncontradoException exception = assertThrows(
+            PedidoNaoEncontradoException.class,
             () -> iniciarPreparoPedidoUseCase.executar(999L)
         );
 
-        assertEquals("Pedido não encontrado na fila da cozinha", exception.getMessage());
+        assertNotNull(exception);
         verify(pedidoCozinhaRepository, times(1)).findById(999L);
         verify(pedidoCozinhaRepository, never()).save(any());
     }

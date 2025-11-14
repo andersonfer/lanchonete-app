@@ -12,62 +12,97 @@ import static org.junit.jupiter.api.Assertions.*;
 class PedidoCozinhaResponseTest {
 
     @Test
-    @DisplayName("Deve criar response vazio")
+    @DisplayName("Deve criar response com todos os campos")
     void t1() {
-        PedidoCozinhaResponse response = new PedidoCozinhaResponse();
+        LocalDateTime dataInicio = LocalDateTime.now();
+        LocalDateTime dataFim = LocalDateTime.now().plusHours(1);
+
+        PedidoCozinhaResponse response = new PedidoCozinhaResponse(
+            1L,
+            123L,
+            StatusPedido.EM_PREPARO,
+            dataInicio,
+            dataFim
+        );
 
         assertNotNull(response);
-        assertNull(response.getId());
-        assertNull(response.getPedidoId());
-        assertNull(response.getStatus());
-        assertNull(response.getDataInicio());
-        assertNull(response.getDataFim());
+        assertEquals(1L, response.id());
+        assertEquals(123L, response.pedidoId());
+        assertEquals(StatusPedido.EM_PREPARO, response.status());
+        assertEquals(dataInicio, response.dataInicio());
+        assertEquals(dataFim, response.dataFim());
     }
 
     @Test
-    @DisplayName("Deve definir e obter ID")
+    @DisplayName("Deve criar response com valores nulos")
     void t2() {
-        PedidoCozinhaResponse response = new PedidoCozinhaResponse();
-        response.setId(1L);
+        PedidoCozinhaResponse response = new PedidoCozinhaResponse(
+            null,
+            null,
+            null,
+            null,
+            null
+        );
 
-        assertEquals(1L, response.getId());
+        assertNotNull(response);
+        assertNull(response.id());
+        assertNull(response.pedidoId());
+        assertNull(response.status());
+        assertNull(response.dataInicio());
+        assertNull(response.dataFim());
     }
 
     @Test
-    @DisplayName("Deve definir e obter pedidoId")
+    @DisplayName("Deve criar response a partir do domínio")
     void t3() {
-        PedidoCozinhaResponse response = new PedidoCozinhaResponse();
-        response.setPedidoId(123L);
+        PedidoCozinha pedido = new PedidoCozinha(123L);
+        pedido.setId(1L);
+        pedido.iniciarPreparo();
 
-        assertEquals(123L, response.getPedidoId());
+        PedidoCozinhaResponse response = PedidoCozinhaResponse.fromDomain(pedido);
+
+        assertNotNull(response);
+        assertEquals(1L, response.id());
+        assertEquals(123L, response.pedidoId());
+        assertEquals(StatusPedido.EM_PREPARO, response.status());
+        assertNotNull(response.dataInicio());
+        assertNull(response.dataFim());
     }
 
     @Test
-    @DisplayName("Deve definir e obter status")
+    @DisplayName("Deve criar response a partir do domínio com pedido pronto")
     void t4() {
-        PedidoCozinhaResponse response = new PedidoCozinhaResponse();
-        response.setStatus(StatusPedido.EM_PREPARO);
+        PedidoCozinha pedido = new PedidoCozinha(456L);
+        pedido.setId(2L);
+        pedido.iniciarPreparo();
+        pedido.marcarComoPronto();
 
-        assertEquals(StatusPedido.EM_PREPARO, response.getStatus());
+        PedidoCozinhaResponse response = PedidoCozinhaResponse.fromDomain(pedido);
+
+        assertNotNull(response);
+        assertEquals(2L, response.id());
+        assertEquals(456L, response.pedidoId());
+        assertEquals(StatusPedido.PRONTO, response.status());
+        assertNotNull(response.dataInicio());
+        assertNotNull(response.dataFim());
     }
 
     @Test
-    @DisplayName("Deve definir e obter dataInicio")
+    @DisplayName("Deve permitir acesso aos campos do record")
     void t5() {
-        PedidoCozinhaResponse response = new PedidoCozinhaResponse();
         LocalDateTime now = LocalDateTime.now();
-        response.setDataInicio(now);
+        PedidoCozinhaResponse response = new PedidoCozinhaResponse(
+            10L,
+            999L,
+            StatusPedido.AGUARDANDO,
+            now,
+            null
+        );
 
-        assertEquals(now, response.getDataInicio());
-    }
-
-    @Test
-    @DisplayName("Deve definir e obter dataFim")
-    void t6() {
-        PedidoCozinhaResponse response = new PedidoCozinhaResponse();
-        LocalDateTime now = LocalDateTime.now();
-        response.setDataFim(now);
-
-        assertEquals(now, response.getDataFim());
+        assertEquals(10L, response.id());
+        assertEquals(999L, response.pedidoId());
+        assertEquals(StatusPedido.AGUARDANDO, response.status());
+        assertEquals(now, response.dataInicio());
+        assertNull(response.dataFim());
     }
 }

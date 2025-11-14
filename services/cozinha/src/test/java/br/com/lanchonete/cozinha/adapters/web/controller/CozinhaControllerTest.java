@@ -77,8 +77,8 @@ class CozinhaControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(2, response.getBody().size());
-        assertEquals(1L, response.getBody().get(0).getId());
-        assertEquals(2L, response.getBody().get(1).getId());
+        assertEquals(1L, response.getBody().get(0).id());
+        assertEquals(2L, response.getBody().get(1).id());
         verify(listarPedidosCozinhaUseCase, times(1)).executar();
     }
 
@@ -93,8 +93,8 @@ class CozinhaControllerTest {
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals(1L, response.getBody().getId());
-        assertEquals(StatusPedido.EM_PREPARO, response.getBody().getStatus());
+        assertEquals(1L, response.getBody().id());
+        assertEquals(StatusPedido.EM_PREPARO, response.getBody().status());
         verify(iniciarPreparoPedidoUseCase, times(1)).executar(1L);
     }
 
@@ -111,9 +111,9 @@ class CozinhaControllerTest {
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals(1L, response.getBody().getId());
-        assertEquals(StatusPedido.PRONTO, response.getBody().getStatus());
-        assertNotNull(response.getBody().getDataFim());
+        assertEquals(1L, response.getBody().id());
+        assertEquals(StatusPedido.PRONTO, response.getBody().status());
+        assertNotNull(response.getBody().dataFim());
         verify(marcarPedidoComoProntoUseCase, times(1)).executar(1L);
         verify(pedidoProntoPublisher, times(1)).publicar(1L);
     }

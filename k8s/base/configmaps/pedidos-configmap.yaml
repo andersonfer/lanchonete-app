@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pedidos-config
+data:
+  application.yml: |
+    spring:
+      application:
+        name: pedidos-service
+
+      datasource:
+        url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}
+        username: ${MYSQL_USER}
+        password: ${MYSQL_PASSWORD}
+        driver-class-name: com.mysql.cj.jdbc.Driver
+
+      sql:
+        init:
+          mode: always
+          platform: mysql
+          schema-locations: classpath:schema-mysql.sql
+          data-locations: classpath:data-mysql.sql
+
+      rabbitmq:
+        host: ${RABBITMQ_HOST}
+        port: ${RABBITMQ_PORT}
+        username: ${RABBITMQ_USER}
+        password: ${RABBITMQ_PASSWORD}
+
+    server:
+      port: 8080
+
+    clientes:
+      service:
+        url: ${CLIENTES_SERVICE_URL}
+
+    rabbitmq:
+      exchange:
+        pedido: pedido.events
+        pagamento: pagamento.events
+        cozinha: cozinha.events
+
+      queue:
+        pagamento-aprovado: pedidos.pagamento-aprovado
+        pagamento-rejeitado: pedidos.pagamento-rejeitado
+        pedido-pronto: pedidos.pedido-pronto
+
+      routingkey:
+        pedido-criado: pedido.criado
+        pedido-retirado: pedido.retirado
+        pagamento-aprovado: pagamento.aprovado
+        pagamento-rejeitado: pagamento.rejeitado
+        pedido-pronto: cozinha.pedido-pronto
+
+    management:
+      endpoints:
+        web:
+          exposure:
+            include: health,info
+      endpoint:
+        health:
+          show-details: always

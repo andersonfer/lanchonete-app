@@ -1,0 +1,46 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: cozinha
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:cozinha_db}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  sql:
+    init:
+      mode: always
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:admin}
+    password: ${RABBITMQ_PASSWORD:admin}
+
+# Configurações OpenFeign
+pedidos:
+  service:
+    url: ${PEDIDOS_SERVICE_URL:http://localhost:8080}
+
+# Configurações RabbitMQ
+rabbitmq:
+  exchange:
+    cozinha: cozinha.events
+    pedidos: pedidos.events
+    pagamento: pagamento.events
+  queue:
+    pagamento-aprovado: pagamento.aprovado.queue
+    pedido-retirado: pedido.retirado.queue
+  routingkey:
+    pedido-pronto: cozinha.pedido-pronto
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  health:
+    probes:
+      enabled: true

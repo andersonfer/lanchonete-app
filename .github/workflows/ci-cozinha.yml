@@ -1,0 +1,72 @@
+name: CI - Cozinha
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'services/cozinha/**'
+      - '.github/workflows/ci-cozinha.yml'
+
+jobs:
+  test-and-analyze:
+    name: Testes e Análise SonarCloud
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Shallow clones should be disabled for better analysis
+
+    - name: Setup Java 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Executar testes e gerar relatório JaCoCo
+      run: |
+        cd services/cozinha
+        mvn clean test
+
+    - name: Cache SonarCloud packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.sonar/cache
+        key: ${{ runner.os }}-sonar
+        restore-keys: ${{ runner.os }}-sonar
+
+    - name: Análise SonarCloud
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      run: |
+        cd services/cozinha
+        mvn sonar:sonar \
+          -Dsonar.projectKey=andersonfer_lanchonete-cozinha \
+          -Dsonar.organization=andersonfer \
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+
+    - name: Verificar Quality Gate
+      uses: sonarsource/sonarqube-quality-gate-action@master
+      timeout-minutes: 5
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      with:
+        scanMetadataReportFile: services/cozinha/target/sonar/report-task.txt
+
+    - name: Publicar resumo
+      if: always()
+      run: |
+        echo "## 📊 Resumo CI - Cozinha" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        if [ ${{ job.status }} == 'success' ]; then
+          echo "✅ Testes passaram com sucesso!" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Análise SonarCloud concluída!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 [Ver relatório no SonarCloud](https://sonarcloud.io/project/overview?id=andersonfer_lanchonete-cozinha)" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Falha na execução. Verifique os logs acima." >> $GITHUB_STEP_SUMMARY
+        fi

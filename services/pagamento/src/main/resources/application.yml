@@ -1,0 +1,52 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: pagamento-service
+
+  data:
+    mongodb:
+      host: ${MONGO_HOST:localhost}
+      port: ${MONGO_PORT:27017}
+      database: ${MONGO_DATABASE:pagamentos}
+      username: ${MONGO_USERNAME:pagamento}
+      password: ${MONGO_PASSWORD:pagamento}
+      authentication-database: admin
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+
+rabbitmq:
+  exchange:
+    pedido: pedido.events
+    pagamento: pagamento.events
+  queue:
+    pedido-criado: pagamentos.pedido-criado
+  routing-key:
+    pedido-criado: pedido.criado
+    pagamento-aprovado: pagamento.aprovado
+    pagamento-rejeitado: pagamento.rejeitado
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,metrics"
+  health:
+    readinessstate:
+      enabled: true
+    livenessstate:
+      enabled: true
+    mongo:
+      enabled: true
+    rabbit:
+      enabled: true
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true

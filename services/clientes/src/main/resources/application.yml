@@ -1,0 +1,65 @@
+spring:
+  application:
+    name: clientes-service
+
+  datasource:
+    url: jdbc:mysql://${DB_HOST:mysql-clientes-service}:${DB_PORT:3306}/${DB_NAME:clientes}?useSSL=false&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
+    driverClassName: com.mysql.cj.jdbc.Driver
+    username: ${DB_USERNAME:clientes}
+    password: ${DB_PASSWORD}
+
+  sql:
+    init:
+      mode: always
+      platform: mysql
+      schema-locations: classpath:schema-mysql.sql
+      data-locations: classpath:data-mysql.sql
+
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,metrics,info"
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+      probes:
+        enabled: true
+  health:
+    readinessstate:
+      enabled: true
+    livenessstate:
+      enabled: true
+    db:
+      enabled: true
+    diskspace:
+      enabled: true
+  server:
+    port: ${SERVER_PORT:8080}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    config-url: /v3/api-docs/swagger-config
+    url: /v3/api-docs
+    display-request-duration: true
+    display-operation-id: true
+
+logging:
+  level:
+    br.com.lanchonete.clientes: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

@@ -1,0 +1,100 @@
+---
+# PersistentVolumeClaim para MySQL Clientes
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: clientes-mysql-pvc
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: standard
+
+---
+# Service para MySQL Clientes (Headless Service)
+apiVersion: v1
+kind: Service
+metadata:
+  name: clientes-mysql-service
+  namespace: default
+  labels:
+    app: clientes-mysql
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3306
+      targetPort: 3306
+      protocol: TCP
+      name: mysql
+  selector:
+    app: clientes-mysql
+  clusterIP: None  # Headless service para StatefulSet
+
+---
+# StatefulSet para MySQL Clientes
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: clientes-mysql-statefulset
+  namespace: default
+  labels:
+    app: clientes-mysql
+spec:
+  serviceName: clientes-mysql-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: clientes-mysql
+  template:
+    metadata:
+      labels:
+        app: clientes-mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:8.0
+        ports:
+        - containerPort: 3306
+          name: mysql
+        envFrom:
+        - secretRef:
+            name: mysql-clientes-secret
+        env:
+        - name: MYSQL_ROOT_HOST
+          value: "%"
+        volumeMounts:
+        - name: mysql-data
+          mountPath: /var/lib/mysql
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          exec:
+            command:
+            - mysqladmin
+            - ping
+            - -h
+            - localhost
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          exec:
+            command:
+            - bash
+            - -c
+            - mysql -h localhost -u root -p$MYSQL_ROOT_PASSWORD -e 'SELECT 1'
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 2
+      volumes:
+      - name: mysql-data
+        persistentVolumeClaim:
+          claimName: clientes-mysql-pvc

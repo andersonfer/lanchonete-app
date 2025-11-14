@@ -1,0 +1,59 @@
+spring:
+  application:
+    name: pedidos-service
+
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:pedidos_db}
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  sql:
+    init:
+      mode: always
+      platform: mysql
+      schema-locations: classpath:schema-mysql.sql
+      data-locations: classpath:data-mysql.sql
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+
+server:
+  port: 8080
+
+# Feign Clients
+clientes:
+  service:
+    url: ${CLIENTES_SERVICE_URL:http://clientes-service:8080}
+
+# RabbitMQ Configuration
+rabbitmq:
+  exchange:
+    pedido: pedido.events
+    pagamento: pagamento.events
+    cozinha: cozinha.events
+
+  queue:
+    pagamento-aprovado: pedidos.pagamento-aprovado
+    pagamento-rejeitado: pedidos.pagamento-rejeitado
+    pedido-pronto: pedidos.pedido-pronto
+
+  routingkey:
+    pedido-criado: pedido.criado
+    pedido-retirado: pedido.retirado
+    pagamento-aprovado: pagamento.aprovado
+    pagamento-rejeitado: pagamento.rejeitado
+    pedido-pronto: cozinha.pedido-pronto
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always

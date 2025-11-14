@@ -1,0 +1,17 @@
+# Service ClusterIP para Clientes
+apiVersion: v1
+kind: Service
+metadata:
+  name: clientes-service
+  labels:
+    app: clientes
+    component: service
+spec:
+  type: ClusterIP
+  selector:
+    app: clientes
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP

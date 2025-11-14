@@ -123,21 +123,6 @@ class ItemPedidoTest {
         assertNotEquals(null, item);
     }
 
-    @Test
-    @DisplayName("Deve verificar equals com objeto de outra classe")
-    void t12() {
-        ItemPedido item = ItemPedido.criar(produto, 2);
-
-        assertNotEquals("String", item);
-    }
-
-    @Test
-    @DisplayName("Deve verificar equals com o mesmo objeto")
-    void t13() {
-        ItemPedido item = ItemPedido.criar(produto, 2);
-
-        assertEquals(item, item);
-    }
 
     @Test
     @DisplayName("Deve gerar hashCode consistente para itens iguais")

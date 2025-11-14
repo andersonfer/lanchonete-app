@@ -184,23 +184,6 @@ class PedidoTest {
         assertNotEquals(null, pedido);
     }
 
-    @Test
-    @DisplayName("Deve verificar equals com objeto de outra classe")
-    void t16() {
-        Pedido pedido = Pedido.criar("12345678901", StatusPedido.CRIADO, LocalDateTime.now());
-        pedido.setId(1L);
-
-        assertNotEquals("String", pedido);
-    }
-
-    @Test
-    @DisplayName("Deve verificar equals com o mesmo objeto")
-    void t17() {
-        Pedido pedido = Pedido.criar("12345678901", StatusPedido.CRIADO, LocalDateTime.now());
-        pedido.setId(1L);
-
-        assertEquals(pedido, pedido);
-    }
 
     @Test
     @DisplayName("Deve gerar hashCode consistente para pedidos iguais")

@@ -54,19 +54,23 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2
 
-    # 6. BUILD E PUSH DOCKER (apenas :latest)
+    # 6. BUILD E PUSH DOCKER (versionado com SHA)
     - name: Build e Push Docker
       working-directory: services/clientes
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        IMAGE_TAG: latest
+        IMAGE_TAG: ${{ github.sha }}
       run: |
         IMAGE_URI=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        IMAGE_LATEST=$ECR_REGISTRY/$ECR_REPOSITORY:latest
 
-        docker build -t $IMAGE_URI .
+        docker build -t $IMAGE_URI -t $IMAGE_LATEST .
         docker push $IMAGE_URI
+        docker push $IMAGE_LATEST
 
-        echo "✅ Imagem publicada: $IMAGE_URI"
+        echo "✅ Imagens publicadas:"
+        echo "   - $IMAGE_URI"
+        echo "   - $IMAGE_LATEST"
 
     # 7. CONFIGURAR KUBECTL
     - name: Configurar kubectl
@@ -79,6 +83,7 @@ jobs:
     - name: Deploy no EKS
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
       run: |
         # Aplicar ConfigMap
         kubectl apply -f k8s/base/configmaps/clientes-configmap.yaml
@@ -86,8 +91,8 @@ jobs:
         # Aplicar Service
         kubectl apply -f k8s/base/services/clientes-service.yaml
 
-        # Aplicar Deployment (substituir placeholder)
-        sed "s|{{ECR_CLIENTES}}|$ECR_REGISTRY/$ECR_REPOSITORY:latest|g" \
+        # Aplicar Deployment (substituir placeholder com tag SHA)
+        sed "s|{{ECR_CLIENTES}}|$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|g" \
           k8s/aws/deployments/clientes-deployment.yaml | kubectl apply -f -
 
         # Aplicar Ingress
@@ -152,15 +157,18 @@ jobs:
       if: always()
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
       run: |
         echo "## 🚀 Deploy Clientes - Resumo" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "**📦 Imagem:**" >> $GITHUB_STEP_SUMMARY
+        echo "**📦 Imagens:**" >> $GITHUB_STEP_SUMMARY
+        echo "- \`$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG\` (deployed)" >> $GITHUB_STEP_SUMMARY
         echo "- \`$ECR_REGISTRY/$ECR_REPOSITORY:latest\`" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "**⚙️ Kubernetes:**" >> $GITHUB_STEP_SUMMARY
         echo "- Cluster: \`$EKS_CLUSTER_NAME\`" >> $GITHUB_STEP_SUMMARY
         echo "- Namespace: \`$K8S_NAMESPACE\`" >> $GITHUB_STEP_SUMMARY
+        echo "- Image Tag: \`${IMAGE_TAG:0:7}\`" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "**📊 Status dos Pods:**" >> $GITHUB_STEP_SUMMARY
         echo '```' >> $GITHUB_STEP_SUMMARY

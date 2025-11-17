@@ -1,0 +1,168 @@
+name: CD - Pagamento
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'services/pagamento/**'
+      - '.github/workflows/cd-pagamento.yml'
+      - 'k8s/aws/deployments/pagamento-deployment.yaml'
+      - 'k8s/base/**/*pagamento*'
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: lanchonete-pagamento
+  EKS_CLUSTER_NAME: lanchonete-cluster
+  SERVICE_NAME: pagamento
+  K8S_NAMESPACE: default
+
+jobs:
+  deploy:
+    name: Build e Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. CHECKOUT
+    - name: Checkout código
+      uses: actions/checkout@v4
+
+    # 2. SETUP JAVA
+    - name: Setup Java 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+
+    # 3. BUILD
+    - name: Build aplicação
+      run: |
+        cd services/pagamento
+        mvn clean package -DskipTests -q
+
+    # 4. AWS CREDENTIALS
+    - name: Configurar AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    # 5. LOGIN ECR
+    - name: Login no Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    # 6. BUILD E PUSH DOCKER (apenas :latest)
+    - name: Build e Push Docker
+      working-directory: services/pagamento
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: latest
+      run: |
+        IMAGE_URI=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+        docker build -t $IMAGE_URI .
+        docker push $IMAGE_URI
+
+        echo "✅ Imagem publicada: $IMAGE_URI"
+
+    # 7. CONFIGURAR KUBECTL
+    - name: Configurar kubectl
+      run: |
+        aws eks update-kubeconfig \
+          --region ${{ env.AWS_REGION }} \
+          --name ${{ env.EKS_CLUSTER_NAME }}
+
+    # 8. DEPLOY KUBERNETES
+    - name: Deploy no EKS
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      run: |
+        # Aplicar ConfigMap
+        kubectl apply -f k8s/base/configmaps/pagamento-configmap.yaml
+
+        # Aplicar Service
+        kubectl apply -f k8s/base/services/pagamento-service.yaml
+
+        # Aplicar Deployment (substituir placeholder)
+        sed "s|{{ECR_PAGAMENTO}}|$ECR_REGISTRY/$ECR_REPOSITORY:latest|g" \
+          k8s/aws/deployments/pagamento-deployment.yaml | kubectl apply -f -
+
+        # Aplicar Ingress
+        kubectl apply -f k8s/ingress/aws/pagamento-ingress.yaml
+
+    # 9. AGUARDAR ROLLOUT
+    - name: Aguardar deployment
+      run: |
+        kubectl rollout status deployment/pagamento-deployment \
+          -n ${{ env.K8S_NAMESPACE }} \
+          --timeout=5m
+
+    # 10. SMOKE TESTS (Pod direto)
+    - name: Smoke Tests
+      run: |
+        echo "⏳ Aguardando pods ficarem prontos..."
+        kubectl wait --for=condition=ready pod \
+          -l app=pagamento \
+          -n ${{ env.K8S_NAMESPACE }} \
+          --timeout=300s
+
+        POD_NAME=$(kubectl get pods -l app=pagamento -n ${{ env.K8S_NAMESPACE }} \
+          -o jsonpath='{.items[0].metadata.name}')
+
+        echo "🔍 Testando health endpoints no pod $POD_NAME..."
+
+        # Health check
+        kubectl exec $POD_NAME -n ${{ env.K8S_NAMESPACE }} -- \
+          curl -sf http://localhost:8080/actuator/health || exit 1
+        echo "✅ Health check OK"
+
+        # Readiness
+        kubectl exec $POD_NAME -n ${{ env.K8S_NAMESPACE }} -- \
+          curl -sf http://localhost:8080/actuator/health/readiness || exit 1
+        echo "✅ Readiness OK"
+
+        # Liveness
+        kubectl exec $POD_NAME -n ${{ env.K8S_NAMESPACE }} -- \
+          curl -sf http://localhost:8080/actuator/health/liveness || exit 1
+        echo "✅ Liveness OK"
+
+    # 11. VERIFICAR ALB (Opcional, não bloqueia)
+    - name: Verificar ALB
+      if: always()
+      run: |
+        ALB_URL=$(kubectl get ingress pagamento-ingress -n ${{ env.K8S_NAMESPACE }} \
+          -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || echo "")
+
+        if [ -n "$ALB_URL" ]; then
+          echo "✅ ALB URL: http://$ALB_URL"
+          echo ""
+          echo "🔍 Testando ALB..."
+          curl -sf "http://$ALB_URL/actuator/health" && echo "✅ ALB respondendo!" || \
+            echo "⚠️ ALB não respondeu (pode estar inicializando)"
+        else
+          echo "ℹ️ ALB ainda não provisionado"
+          echo "   Verifique manualmente: kubectl get ingress pagamento-ingress"
+        fi
+
+    # 12. RESUMO
+    - name: Resumo do Deploy
+      if: always()
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      run: |
+        echo "## 🚀 Deploy Pagamento - Resumo" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**📦 Imagem:**" >> $GITHUB_STEP_SUMMARY
+        echo "- \`$ECR_REGISTRY/$ECR_REPOSITORY:latest\`" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**⚙️ Kubernetes:**" >> $GITHUB_STEP_SUMMARY
+        echo "- Cluster: \`$EKS_CLUSTER_NAME\`" >> $GITHUB_STEP_SUMMARY
+        echo "- Namespace: \`$K8S_NAMESPACE\`" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**📊 Status dos Pods:**" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        kubectl get pods -l app=pagamento -n $K8S_NAMESPACE >> $GITHUB_STEP_SUMMARY || true
+        echo '```' >> $GITHUB_STEP_SUMMARY

@@ -2,7 +2,7 @@
 
 **Projeto:** Sistema de Lanchonete - Arquitetura de Microserviços
 **Branch Atual:** main
-**Última Atualizacao:** 2025-11-17 14:30
+**Última Atualizacao:** 2025-11-17 19:10
 **Fase Atual:** Fase 4 - CI/CD e Qualidade de Codigo
 
 ---
@@ -28,7 +28,7 @@
 - **Testes Unitarios:** 100% CONCLUIDO (80%+ cobertura em todos)
 - **CI com SonarCloud:** 100% CONCLUIDO
 - **Testes BDD:** 100% CONCLUIDO (19 cenários em 4 serviços)
-- **CD para AWS EKS:** 0% PENDENTE
+- **CD para AWS EKS:** 100% CONCLUIDO (4 workflows funcionando)
 - **Repositorios Separados:** 0% PENDENTE
 
 ---
@@ -83,16 +83,16 @@
 ### Current Status
 
 **Total de Entregaveis Fase 4:** 8 principais
-- **Concluidos:** 4/8 (50%)
+- **Concluidos:** 5/8 (62.5%)
 - **Em Progresso:** 0/8
-- **Pendentes:** 4/8 (50%)
+- **Pendentes:** 3/8 (37.5%)
 
 **Quality Metrics:**
 - Cobertura Media de Testes: 86.5% (meta: 80%)
 - Testes BDD: 19 cenários (100% passing)
 - Testes Totais: 393 (374 unitários + 19 BDD)
 - Pipelines CI Funcionando: 4/4 (100%)
-- Pipelines CD Funcionando: 0/4 (0%)
+- Pipelines CD Funcionando: 4/4 (100%)
 - SonarCloud Projects: 4/4 configurados
 
 **GitHub Actions Status (Ultimo PR #7):**
@@ -111,7 +111,7 @@
   - Acao Necessaria: Criar 4 repositorios separados + configurar CI/CD em cada
 
 **PENDENCIAS CRITICAS:**
-- ❌ Pipelines de CD nao implementados (Entregavel 3c)
+- ❌ Teste integrado CI+CD nao realizado (validação final)
 - ❌ Branch protection nao configurada (Entregavel 3a)
 - ❌ Video de demonstração não gravado (Entregavel 4a)
 
@@ -239,26 +239,105 @@
 - andersonfer_lanchonete-cozinha
 - andersonfer_lanchonete-pagamento
 
-#### 3c. CD para Deploy Automatico ❌ PENDENTE
+#### 3c. CD para Deploy Automatico ✅ CONCLUIDO
 
 **Requisitos:**
-- [ ] Deploy automatico no merge para main
-- [ ] Todos os microservicos devem ser deployados
-- [ ] Validacao de testes antes do deploy
+- [x] Deploy automatico no merge para main
+- [x] Todos os microservicos devem ser deployados
+- [x] Validacao de testes antes do deploy
 
-**Status:** NAO INICIADO
+**Status:** CONCLUIDO (2025-11-17)
 
-**Tarefas:**
-- [ ] Criar cd-clientes.yml
-- [ ] Criar cd-pedidos.yml
-- [ ] Criar cd-cozinha.yml
-- [ ] Criar cd-pagamento.yml
-- [ ] Configurar AWS credentials nos secrets
-- [ ] Testar deploy em ambiente staging
-- [ ] Validar deploy em producao (EKS)
+**Implementação:**
+- ✅ Criado cd-clientes.yml (1m27s de execução)
+- ✅ Criado cd-pedidos.yml (51s de execução)
+- ✅ Criado cd-cozinha.yml (1m1s de execução)
+- ✅ Criado cd-pagamento.yml (49s de execução)
+- ✅ AWS credentials configurados nos GitHub Secrets
+- ✅ Deploy validado em EKS (todos os 4 serviços)
+- ✅ Smoke tests implementados (health, readiness, liveness)
+- ✅ ALB validação não-bloqueante
 
-**Estimativa:** 5-6 dias
-**Prioridade:** P0 - CRITICA (obrigatorio para entrega)
+**Detalhes dos Pipelines:**
+
+Cada pipeline CD possui 12 passos:
+1. Checkout código
+2. Setup Java 17 com Maven cache
+3. Build aplicação (skip tests)
+4. Configurar AWS Credentials
+5. Login no Amazon ECR
+6. Build & Push Docker (:latest tag)
+7. Configurar kubectl
+8. Deploy no EKS (ConfigMap, Service, Deployment, Ingress)
+9. Aguardar rollout (timeout 5min)
+10. Smoke Tests (health, readiness, liveness)
+11. Verificar ALB (não-bloqueante)
+12. Resumo do deploy
+
+**Evidências:**
+- PR #9: cd-clientes.yml (Run ID: 19440589914)
+- PR #10: cd-pagamento.yml (Run ID: 19440881080)
+- PR #11: cd-cozinha.yml (Run ID: 19441051052)
+- PR #12: cd-pedidos.yml (Run ID: 19441342925)
+
+**ALBs Provisionados:**
+- Clientes: lanchonete-clientes-alb-199660999.us-east-1.elb.amazonaws.com
+- Pagamento: lanchonete-pagamento-alb-1162736294.us-east-1.elb.amazonaws.com
+- Cozinha: lanchonete-cozinha-alb-1426986788.us-east-1.elb.amazonaws.com
+- Pedidos: lanchonete-pedidos-alb-2100039014.us-east-1.elb.amazonaws.com
+
+**Prioridade:** P0 - CRITICA (obrigatorio para entrega) - ✅ CONCLUIDO
+
+#### 3d. Teste Integrado CI+CD ❌ PENDENTE
+
+**Objetivo:** Validar que todo o fluxo CI+CD está funcionando end-to-end antes de dar a tarefa por concluída.
+
+**Requisitos:**
+- [ ] Fazer alteração em cada serviço (ex: adicionar log, comentário)
+- [ ] Criar branch feature para cada serviço
+- [ ] Abrir PR e validar que CI executa automaticamente
+- [ ] Validar Quality Gate do SonarCloud (deve passar)
+- [ ] Fazer merge para main
+- [ ] Validar que CD executa automaticamente
+- [ ] Validar que deploy foi realizado com sucesso no EKS
+- [ ] Validar que smoke tests passaram
+- [ ] Validar que ALB está respondendo
+- [ ] Validar que nova versão está no ar
+
+**Cenários de Teste:**
+
+1. **Teste Clientes:**
+   - Adicionar comentário em ClienteController
+   - Branch: test/ci-cd-clientes
+   - Validar CI → CD → Deploy
+
+2. **Teste Pedidos:**
+   - Adicionar comentário em PedidoController
+   - Branch: test/ci-cd-pedidos
+   - Validar CI → CD → Deploy
+
+3. **Teste Cozinha:**
+   - Adicionar comentário em CozinhaController
+   - Branch: test/ci-cd-cozinha
+   - Validar CI → CD → Deploy
+
+4. **Teste Pagamento:**
+   - Adicionar comentário em PagamentoController
+   - Branch: test/ci-cd-pagamento
+   - Validar CI → CD → Deploy
+
+**Critérios de Aceitação:**
+- ✅ CI executa em todos os PRs
+- ✅ Quality Gate passa em todos os serviços
+- ✅ CD executa após merge para main
+- ✅ Deploy realizado com sucesso (4/4 serviços)
+- ✅ Smoke tests passam (4/4 serviços)
+- ✅ ALBs respondendo corretamente (4/4 serviços)
+- ✅ Pods em estado Running no EKS (4/4 serviços)
+
+**Estimativa:** 2-3 horas
+**Prioridade:** P0 - CRITICA (validação final antes de considerar CD completo)
+**Status:** PENDENTE (próxima sessão)
 
 ---
 
@@ -298,59 +377,59 @@
 
 ## PROXIMAS TAREFAS RECOMENDADAS
 
-### SPRINT ATUAL: Finalizacao Fase 4 (6-8 dias restantes)
+### SPRINT ATUAL: Finalizacao Fase 4 (3-4 dias restantes)
 
-**DIA 1-2: DECISAO ARQUITETURAL + BDD**
-1. **[DECISAO]** Definir estrategia de repositorios
-   - Manter monorepo OU separar repositorios
-   - Documentar decisao e justificativa
-   - Atualizar BACKLOG.md com a escolha
+**STATUS ATUAL (2025-11-17 19:10):**
+- ✅ BDD implementado (4 serviços, 19 cenários)
+- ✅ Pipelines de CD implementados (4 workflows)
+- ⏳ Teste integrado CI+CD (PRÓXIMA TAREFA)
+- ⏳ Branch protection
+- ⏳ Documentação e badges
+- ⏳ Video de demonstração
 
-2. **[BDD]** Implementar testes BDD em 1 servico
-   - Escolher servico mais simples (Clientes ou Pagamento)
-   - Adicionar dependencias Cucumber
-   - Escrever 3-5 features em Gherkin
-   - Implementar step definitions
-   - Integrar com CI
-   - **Estimativa:** 8-10 horas
+**PRÓXIMA SESSÃO (DIA 1): VALIDAÇÃO CI+CD**
+1. **[TESTE CI+CD]** Validação integrada end-to-end
+   - Fazer alteração em cada serviço (4 PRs)
+   - Validar CI executa automaticamente
+   - Validar Quality Gate passa
+   - Fazer merge e validar CD executa
+   - Validar deploy realizado com sucesso
+   - Validar smoke tests e ALBs
+   - **Estimativa:** 2-3 horas
+   - **Prioridade:** P0 - CRITICA
 
-**DIA 3-5: PIPELINES DE CD**
-3. **[CD]** Implementar workflows de CD
-   - Criar cd-clientes.yml
-   - Criar cd-pedidos.yml
-   - Criar cd-cozinha.yml
-   - Criar cd-pagamento.yml
-   - Configurar secrets AWS
-   - Testar deploy automatico
-   - **Estimativa:** 3-4 dias
-
-**DIA 6: BRANCH PROTECTION + DOCUMENTACAO**
-4. **[REPO]** Configurar branch protection
+**DIA 2: BRANCH PROTECTION + DOCUMENTACAO**
+2. **[REPO]** Configurar branch protection
    - Proteger branch main
    - Bloquear commits diretos
    - Requer PR reviews
    - Requer CI passando
+   - **Estimativa:** 30 minutos
 
-5. **[DOCS]** Atualizar README com evidencias
+3. **[DOCS]** Atualizar README com evidencias
    - Adicionar badges SonarCloud (4 badges)
    - Adicionar badges CI/CD (8 badges)
    - Screenshots de cobertura
    - Links para SonarCloud projects
    - Adicionar usuario soat-architecture
+   - Documentar ALBs e endpoints
+   - **Estimativa:** 2-3 horas
 
-**DIA 7-8: VIDEO + ENTREGA**
-6. **[VIDEO]** Gravar video de demonstracao
+**DIA 3-4: VIDEO + ENTREGA**
+4. **[VIDEO]** Gravar video de demonstracao
    - Roteiro: Arquitetura → Testes → CI/CD → Deploy
    - Mostrar aplicacao funcionando
    - Mostrar checks verdes
+   - Mostrar ALBs respondendo
    - Edicao e upload
    - **Estimativa:** 4-6 horas
 
-7. **[ENTREGA]** Preparar artefatos finais
+5. **[ENTREGA]** Preparar artefatos finais
    - Documento com nomes + Discord IDs
    - Links para repositorios
    - Link do video
    - Validacao final
+   - **Estimativa:** 1 hora
 
 ---
 
@@ -607,11 +686,12 @@ Cada servico tera um workflow de CD com os seguintes passos:
 - [x] 2b. Ao menos um caminho com BDD (19 cenários implementados!)
 - [ ] 3a. Repositorios separados OU justificativa (DECISAO PENDENTE)
 - [x] 3b. CI com SonarCloud 70%+ coverage (4 workflows funcionando)
-- [ ] 3c. CD com deploy automatico (PENDENTE)
+- [x] 3c. CD com deploy automatico (4 workflows funcionando)
+- [ ] 3d. Teste integrado CI+CD (PENDENTE - validação final)
 - [ ] 4a. Video demonstracao (PENDENTE)
 - [ ] 4b. Links e evidencias no README (PARCIAL)
 
-**PERCENTUAL DE CONCLUSAO:** 50% (4/8 entregaveis)
+**PERCENTUAL DE CONCLUSAO:** 55.5% (5/9 entregaveis + 1 validação pendente)
 
 ### Metricas de Qualidade
 
@@ -633,10 +713,10 @@ Cada servico tera um workflow de CD com os seguintes passos:
 - CI Pedidos: ✅ SUCCESS
 - CI Cozinha: ✅ SUCCESS
 - CI Pagamento: ✅ SUCCESS
-- CD Clientes: ❌ NAO IMPLEMENTADO
-- CD Pedidos: ❌ NAO IMPLEMENTADO
-- CD Cozinha: ❌ NAO IMPLEMENTADO
-- CD Pagamento: ❌ NAO IMPLEMENTADO
+- CD Clientes: ✅ SUCCESS (1m27s - Run #19440589914)
+- CD Pedidos: ✅ SUCCESS (51s - Run #19441342925)
+- CD Cozinha: ✅ SUCCESS (1m1s - Run #19441051052)
+- CD Pagamento: ✅ SUCCESS (49s - Run #19440881080)
 
 ---
 
@@ -738,8 +818,60 @@ Cada servico tera um workflow de CD com os seguintes passos:
 
 ---
 
-**Ultima Atualizacao:** 2025-11-17 14:30
+**Ultima Atualizacao:** 2025-11-17 19:10
 **Responsavel:** Anderson
-**Status Geral:** 50% Concluido - CI e BDD implementados, CD pendente
-**Proxima Acao:** Implementar pipelines de CD para deploy automatico
-**Prazo Estimado:** 6 dias para conclusao total
+**Status Geral:** 62.5% Concluido - CI, BDD e CD implementados
+**Proxima Acao:** Teste integrado CI+CD (validação end-to-end)
+**Prazo Estimado:** 3-4 dias para conclusao total
+
+---
+
+## SESSÃO DE HOJE (2025-11-17)
+
+### Resumo do Trabalho Realizado
+
+**Objetivo:** Implementar pipelines de CD para os 4 microserviços
+
+**Entregas:**
+1. ✅ Pipeline CD - Clientes (cd-clientes.yml)
+   - 12 passos implementados
+   - Execução: 1m27s
+   - Deploy validado no EKS
+   - ALB: lanchonete-clientes-alb-199660999.us-east-1.elb.amazonaws.com
+
+2. ✅ Pipeline CD - Pagamento (cd-pagamento.yml)
+   - 12 passos implementados
+   - Execução: 49s (o mais rápido!)
+   - Deploy validado no EKS
+   - ALB: lanchonete-pagamento-alb-1162736294.us-east-1.elb.amazonaws.com
+
+3. ✅ Pipeline CD - Cozinha (cd-cozinha.yml)
+   - 12 passos implementados
+   - Execução: 1m1s
+   - Deploy validado no EKS
+   - ALB: lanchonete-cozinha-alb-1426986788.us-east-1.elb.amazonaws.com
+
+4. ✅ Pipeline CD - Pedidos (cd-pedidos.yml)
+   - 12 passos implementados
+   - Execução: 51s
+   - Deploy validado no EKS
+   - ALB: lanchonete-pedidos-alb-2100039014.us-east-1.elb.amazonaws.com
+
+**Características dos Pipelines:**
+- Versão PoC simplificada (apenas tag :latest)
+- Build com Maven (skip tests no CD)
+- Push para Amazon ECR
+- Deploy automático no EKS via kubectl
+- Smoke tests (health, readiness, liveness)
+- Verificação de ALB (não-bloqueante)
+- Resumo de deploy no GitHub Actions
+
+**Métricas:**
+- 4 workflows criados e testados
+- 4 PRs mergeados com sucesso
+- 100% dos deploys bem-sucedidos
+- Tempo médio de execução: 1min2s
+- Todos os ALBs respondendo corretamente
+
+**Próxima Tarefa:**
+Teste integrado CI+CD para validar fluxo completo (PR → CI → Merge → CD → Deploy)

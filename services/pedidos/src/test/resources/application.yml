@@ -14,3 +14,37 @@ spring:
       platform: h2
       schema-locations: classpath:schema-test.sql
       data-locations: classpath:data-test.sql
+      continue-on-error: true
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            connectTimeout: 5000
+            readTimeout: 5000
+
+# URLs dos serviços externos (mock para testes)
+clientes:
+  service:
+    url: localhost:8081
+
+rabbitmq:
+  exchange:
+    pedido: pedido.events.test
+    pagamento: pagamento.events.test
+    cozinha: cozinha.events.test
+  queue:
+    pagamento-aprovado: pedidos.pagamento-aprovado.test
+    pagamento-rejeitado: pedidos.pagamento-rejeitado.test
+    pedido-pronto: pedidos.pedido-pronto.test
+  routingkey:
+    pedido-criado: pedido.criado.test
+    pedido-retirado: pedido.retirado.test
+    pagamento-aprovado: pagamento.aprovado.test
+    pagamento-rejeitado: pagamento.rejeitado.test
+    pedido-pronto: cozinha.pedido-pronto.test

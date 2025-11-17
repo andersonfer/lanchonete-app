@@ -1,894 +1,721 @@
-# 📋 BACKLOG - Migração para Microserviços
+# BACKLOG - Sistema Lanchonete (Fase 4)
 
 **Projeto:** Sistema de Lanchonete - Arquitetura de Microserviços
-**Branch Atual:** `feature/migracao-microservicos`
-**Última Atualização:** 2025-11-13 15:00
+**Branch Atual:** main
+**Última Atualizacao:** 2025-11-14 18:30
+**Fase Atual:** Fase 4 - CI/CD e Qualidade de Codigo
 
 ---
 
-## 🎯 VISÃO GERAL DO PROJETO
+## VISAO GERAL DO PROJETO
 
-Migração completa da arquitetura monolítica para microserviços distribuídos. Todos os 4 microserviços core estão implementados, funcionais e **DEPLOYADOS EM PRODUÇÃO NA AWS EKS**.
+### Status da Migracao para Microservicos
+- 4 microservicos implementados e operacionais (100%)
+- Arquitetura distribuida com comunicacao via REST e RabbitMQ
+- Deploy em AWS EKS com infraestrutura completa
+- Testes E2E validados em ambiente local e AWS
 
-### Status dos Microserviços
-- ✅ **Clientes** - Implementado, testado e operacional em AWS EKS (commit: 148c9b2)
-- ✅ **Pagamento** - Implementado, testado e operacional em AWS EKS (commit: c67362f)
-- ✅ **Pedidos** - Implementado, testado e operacional em AWS EKS (commit: 66f7e45)
-- ✅ **Cozinha** - Implementado, testado e operacional em AWS EKS (commit: 0582da6)
+### Microservicos Implementados
+1. **Clientes** - Gestao de clientes e identificacao (MySQL)
+2. **Pedidos** - Gestao de pedidos e produtos (MySQL)
+3. **Cozinha** - Gestao da fila de producao (MySQL)
+4. **Pagamento** - Processamento de pagamentos (MongoDB)
 
-### Progresso Geral
-- **Microserviços:** 4/4 concluídos (100%)
-- **Infraestrutura K8s Local:** StatefulSets MySQL, MongoDB, RabbitMQ (100%)
-- **Infraestrutura AWS:** RDS MySQL (3 instâncias) + MongoDB/RabbitMQ em pods (100%)
-- **Integrações:** REST (Pedidos→Clientes) + RabbitMQ completas (100%)
-- **Testes E2E Local:** Script completo implementado (100%)
-- **Testes E2E AWS:** 3 scripts completos e validados (100%)
-  - ✅ Cliente anônimo (test-e2e.sh)
-  - ✅ Cliente existente (test-e2e-cliente-existente.sh) - NOVO
-  - ✅ Cliente novo (test-e2e-cliente-novo.sh) - NOVO
-- **Migração AWS:** **CONCLUÍDA (100%)** ✅
-
----
-
-## ✅ CONCLUÍDO
-
-### Sprint 1 - Infraestrutura Base
-- [x] Criação da infraestrutura K8s (MySQL, MongoDB, RabbitMQ) - `d90b4a9`
-- [x] Implementação do microserviço de Clientes - `148c9b2`
-- [x] Implementação do microserviço de Pagamento - `c67362f`
-- [x] Implementação do microserviço de Pedidos - `66f7e45`
-- [x] Integração REST: Pedidos → Clientes (validado)
-- [x] Integração RabbitMQ: Pedidos ↔ Pagamento (validado)
-- [x] Configuração CI/CD básico no GitHub Actions
-- [x] Testes unitários dos 3 microserviços (80%+ cobertura)
-- [x] Documentação OpenAPI/Swagger dos 3 microserviços - `8dceb73`
-- [x] Script de deploy local renomeado (setup.sh → deploy.sh) - `2025-10-23`
-- [x] Refatoração dos nomes dos recursos K8s - `9585cbb`
-
-### Sprint 2 - Microserviço de Cozinha - CONCLUÍDO (2025-10-23)
-**Status:** ✅ 100% Concluído | **Commit:** 0582da6
-
-#### Implementação Core
-- [x] Estrutura Maven + Spring Boot 3 + Java 17
-- [x] Clean Architecture (Domain, Application, Adapters, Infrastructure)
-- [x] Camada de Domínio (FilaCozinha, StatusFila: AGUARDANDO/EM_PREPARO/PRONTO/REMOVIDO)
-- [x] Use Cases:
-  - AdicionarPedidoFila (consome PagamentoAprovado)
-  - IniciarPreparo (AGUARDANDO → EM_PREPARO)
-  - MarcarComoPronto (EM_PREPARO → PRONTO + publica evento)
-  - RemoverPedidoFila (consome PedidoRetirado)
-- [x] Repository JDBC com MySQL StatefulSet (cozinha_db)
-- [x] 35 arquivos Java implementados
-
-#### Integrações
-- [x] Feign Client para Pedidos (GET /pedidos/{id})
-- [x] RabbitMQ Consumer:
-  - Consome: PagamentoAprovado (exchange: pagamento.events)
-  - Consome: PedidoRetirado (exchange: pedido.events)
-- [x] RabbitMQ Publisher:
-  - Publica: PedidoPronto (exchange: cozinha.events)
-- [x] Correção de binding RabbitMQ (exchange pagamento.events)
-- [x] @EnableRabbit configurado corretamente
-- [x] Logging detalhado nos publishers e consumers
-
-#### API REST
-- [x] GET /cozinha/fila - Lista pedidos na fila ordenados por data
-- [x] POST /cozinha/{id}/iniciar - Inicia preparo
-- [x] POST /cozinha/{id}/pronto - Marca como pronto e publica evento
-
-#### Testes e Qualidade
-- [x] Testes unitários de domínio
-- [x] Testes unitários de use cases
-- [x] Testes de integração JDBC
-- [x] Testes de controller
-- [x] Cobertura: 83% (meta: 80%+)
-
-#### Deploy e Infraestrutura
-- [x] Dockerfile multi-stage (Maven build + JRE runtime)
-- [x] Manifests Kubernetes:
-  - ConfigMap (cozinha-configmap.yaml)
-  - Deployment (cozinha-deployment.yaml) - 2 réplicas
-  - Service ClusterIP (cozinha-service.yaml)
-  - NodePort local (cozinha-nodeport.yaml) - Porta 30082
-  - HPA (cozinha-hpa.yaml) - 2-5 réplicas
-  - StatefulSet MySQL (cozinha-mysql-statefulset.yaml)
-- [x] Deploy no Minikube validado
-- [x] 2 pods funcionando com balanceamento de carga
-
-#### Validações E2E
-- [x] Script test-e2e.sh atualizado com fluxo completo:
-  1. Criar pedido → Status: CRIADO
-  2. Pagamento aprovado → Status: REALIZADO
-  3. Pedido na fila da cozinha → Status: AGUARDANDO
-  4. Iniciar preparo → Status: EM_PREPARO
-  5. Marcar pronto → Status: PRONTO (evento publicado)
-  6. Verificar status no serviço Pedidos → Status: PRONTO
-  7. Retirar pedido → Status: FINALIZADO
-  8. Pedido removido da fila da cozinha
-- [x] Teste completo executado com sucesso
-- [x] Validação de endpoints via curl
-- [x] Validação de eventos RabbitMQ (exchanges e bindings)
-
-#### Documentação
-- [x] Swagger/OpenAPI configurado
-- [x] README.md atualizado com arquitetura completa
-- [x] Diagramas de fluxo de eventos atualizados
-
-### Sprint 3 - Deploy AWS EKS - CONCLUÍDO (2025-10-27)
-**Status:** ✅ 100% Concluído | **Ambiente:** AWS EKS
-
-#### Infraestrutura AWS
-- [x] Cluster EKS provisionado via Terraform (`lanchonete-cluster`)
-- [x] Node Group com 2 nós t3.medium
-- [x] VPC e Security Groups configurados
-- [x] RDS MySQL - 3 instâncias provisionadas:
-  - `lanchonete-clientes-db` (db.t3.micro)
-  - `lanchonete-pedidos-db` (db.t3.micro)
-  - `lanchonete-cozinha-db` (db.t3.micro)
-- [x] MongoDB em pod (StatefulSet com emptyDir)
-- [x] RabbitMQ em pod (StatefulSet com emptyDir)
-- [x] ECR Repositories para 4 microserviços
-
-#### Deploy de Microserviços
-- [x] Imagens Docker buildadas e enviadas para ECR
-- [x] Secrets criados dinamicamente via script
-- [x] ConfigMaps adaptados para AWS (RDS endpoints)
-- [x] 4 Deployments rodando (1 réplica cada):
-  - Clientes (conectado a RDS)
-  - Pedidos (conectado a RDS + RabbitMQ + Feign Client)
-  - Cozinha (conectado a RDS + RabbitMQ + Feign Client)
-  - Pagamento (conectado a MongoDB + RabbitMQ)
-
-#### Exposição de Serviços
-- [x] Services do tipo LoadBalancer (4 Network Load Balancers)
-- [x] Endereços externos atribuídos:
-  - Clientes: `a37aa84c089bc49d2b87acdf2903d0d1-1704088327.us-east-1.elb.amazonaws.com:8080`
-  - Pedidos: `aef3cad454f5e4abbbf216999106ff76-1621161648.us-east-1.elb.amazonaws.com:8080`
-  - Cozinha: `a16129d45d0b048328a9e11708b8d623-803602099.us-east-1.elb.amazonaws.com:8080`
-  - Pagamento: `a0fdf5206e1004bf9874811d6d4952d6-1938851321.us-east-1.elb.amazonaws.com:8080`
-
-#### Testes E2E AWS
-- [x] Script `test_scripts/aws/test-e2e.sh` criado
-- [x] URLs obtidas dinamicamente via kubectl
-- [x] TESTE 1: Pedido Anônimo - ✅ PASSOU
-  - Pedido criado → Pagamento aprovado → Fila cozinha → Preparo → Pronto → Finalizado
-- [x] TESTE 2: Pedido com CPF - ✅ PASSOU
-  - Integração Feign Client validada (nome recuperado)
-  - Fluxo completo até finalização
-- [x] TESTE 3: Edge Cases - ✅ PASSOU
-  - Produto inexistente (HTTP 404)
-  - Pedido inexistente (HTTP 404)
-  - Retirada inválida (HTTP 400)
-  - Pagamento rejeitado validado (pedido ID 3 cancelado)
-
-#### Validações
-- [x] Health checks de todos os serviços: UP
-- [x] Conectividade RDS → Microserviços: ✅
-- [x] Integração RabbitMQ: ✅ (eventos propagados corretamente)
-- [x] Integração Feign Client (Pedidos → Clientes): ✅
-- [x] Pagamento aleatório funcionando (80% aprovação, 20% rejeição): ✅
-
-#### Decisões Arquiteturais (AWS Academy)
-- [x] RDS MySQL ao invés de MySQL em pods (serviços de produção)
-- [x] MongoDB/RabbitMQ em pods com emptyDir (aceita perda de dados)
-- [x] LoadBalancer services ao invés de ALB+Ingress (simplicidade)
-- [x] Sem OIDC provider (limitação AWS Academy)
-- [x] Uso do LabRole para todas as operações
-
-#### Scripts de Deploy
-- [x] `deploy_scripts/aws/create-secrets.sh` - Cria secrets dinamicamente do Terraform
-- [x] `deploy_scripts/aws/deploy-k8s.sh` - Deploy completo no EKS
-- [x] `test_scripts/aws/test-e2e.sh` - Testes E2E completos
+### Progresso Geral Fase 4
+- **Migracao Microservicos:** 100% CONCLUIDO
+- **Bancos de Dados:** 100% CONCLUIDO (3x MySQL + 1x MongoDB)
+- **Comunicacao entre Servicos:** 100% CONCLUIDO (REST + RabbitMQ)
+- **Testes Unitarios:** 100% CONCLUIDO (80%+ cobertura em todos)
+- **CI com SonarCloud:** 100% CONCLUIDO
+- **CD para AWS EKS:** 0% PENDENTE
+- **Testes BDD:** 0% PENDENTE
+- **Repositorios Separados:** 0% PENDENTE
 
 ---
 
-## 🚀 EM ANDAMENTO
+## SCRUM MASTER SESSION REPORT
 
-Nenhuma tarefa em andamento no momento.
+### Recent Progress Analysis (Ultimas 72h)
 
----
+**Commits Analisados (desde 2025-11-11):**
+- `72bb829` - Merge PR #7: Refatoracao completa para microservicos
+- `1e0ea5b` - Criacao do CI de Pagamento
+- `602d824` - Refatoracao PedidoCozinhaResponse para record
+- `8bacc67` - Criacao do CI da Cozinha
+- `1b164ab` - Remocao dos pipelines antigos (ci-app.yml, cd-app.yml)
+- `8ed679e` - Remocao de testes duplicados
+- `031fca7` - Testes unitarios do servico de Pedidos
+- `03812bf` - Criacao do CI de Pedidos
+- `305e6e4` - Criacao do workflow de CI de Clientes
 
-## ✅ TAREFAS CONCLUÍDAS (Fase Atual)
+**Principais Mudancas:**
+- 4 workflows de CI implementados (.github/workflows/ci-*.yml)
+- Todos os servicos com configuracao SonarCloud no pom.xml
+- Remocao dos pipelines monoliticos (ci-app.yml e cd-app.yml)
+- Adicao de testes unitarios no servico de Pedidos
+- PR #7 mergeado para main com todas as mudancas
 
-### 1. Expandir Cobertura de Testes E2E
-**Dependências:** ✅ Todos os 4 microserviços implementados
-**Status:** ✅ 100% Concluído (2025-10-30)
+### Completed Items (Desde Ultima Sessao)
 
-**Implementado LOCAL (100%):**
-- [x] Infraestrutura do script `test_scripts/local/test-e2e.sh`
-- [x] Teste 1: Fluxo completo com cliente anônimo
-  - [x] Criar pedido sem CPF
-  - [x] Validar pagamento aprovado (evento RabbitMQ)
-  - [x] Validar pedido adicionado na fila da cozinha (evento RabbitMQ)
-  - [x] Iniciar preparo (AGUARDANDO → EM_PREPARO)
-  - [x] Marcar como pronto (EM_PREPARO → PRONTO + evento RabbitMQ)
-  - [x] Validar propagação do evento PedidoPronto
-  - [x] Retirar pedido (PRONTO → FINALIZADO + evento RabbitMQ)
-  - [x] Validar remoção da fila da cozinha
-- [x] Teste 2: Fluxo completo com cliente identificado
-  - [x] Criar pedido com CPF válido (55555555555)
-  - [x] Validar integração REST (Feign Client)
-  - [x] Validar nome do cliente recuperado: "João da Silva"
-  - [x] Fluxo completo até finalização
-- [x] Teste 3: Validação de erros e edge cases
-  - [x] Pedido com produto inexistente (404)
-  - [x] Iniciar preparo de pedido inexistente (404)
-  - [x] Retirar pedido com status inválido (400)
-  - [x] Buscar pedido inexistente (404)
-- [x] Validação de pagamento rejeitado (aleatório 20%)
-- [x] Integração RabbitMQ validada (todos os exchanges e bindings)
-- [x] Validação de transições de estado completa
+**FASE 4 - ENTREGAVEL 1: Refatoracao para Microservicos** ✅ CONCLUIDO
+- ✅ Separacao em 4 microservicos (Clientes, Pedidos, Cozinha, Pagamento)
+- ✅ Banco MySQL para Clientes, Pedidos e Cozinha
+- ✅ Banco MongoDB para Pagamento (NoSQL obrigatorio)
+- ✅ Comunicacao via REST (Feign Client)
+- ✅ Comunicacao via RabbitMQ (mensageria assincrona)
+- ✅ Isolamento de bancos de dados (sem acesso cross-service)
 
-**Implementado AWS (100%):**
-- [x] Script `test_scripts/aws/test-e2e.sh` - Cliente anônimo
-  - Testa fluxo completo com cliente **anônimo**
-  - Aguarda processamento de pagamento (assíncrono via RabbitMQ)
-  - Valida fluxo: CRIADO → REALIZADO/CANCELADO → Fila → EM_PREPARO → PRONTO
-  - Trata cenário de pagamento rejeitado (20% dos casos)
-  - Output limpo (1 linha por etapa)
-  - Pode rodar múltiplas vezes sem falhar
-  - ✅ TESTE PASSOU (última execução: 2025-10-29)
+**FASE 4 - ENTREGAVEL 2a: Testes Unitarios com 80% Cobertura** ✅ CONCLUIDO
+- ✅ Clientes: 85% cobertura (superou meta)
+- ✅ Pedidos: 83% cobertura (superou meta)
+- ✅ Cozinha: 84% cobertura (superou meta)
+- ✅ Pagamento: 94% cobertura (superou meta)
 
-- [x] Script `test_scripts/aws/test-e2e-cliente-existente.sh` - Cliente existente
-  - Criado em: 2025-10-30 13:18
-  - Autentica com CPF existente (55555555555 - João da Silva)
-  - Obtém token JWT com `tipo: "IDENTIFICADO"` e `clienteId`
-  - Cria pedido com `cpfCliente: "55555555555"`
-  - Valida que `clienteNome: "João da Silva"` aparece na resposta
-  - Segue fluxo completo até status PRONTO
-  - Output limpo (mesmo padrão do test-e2e.sh)
-  - ✅ TESTE PASSOU (última execução: 2025-10-30)
+**FASE 4 - ENTREGAVEL 3b: CI com SonarCloud (70% coverage minimo)** ✅ CONCLUIDO
+- ✅ CI Clientes: Testes + SonarCloud + Quality Gate
+- ✅ CI Pedidos: Testes + SonarCloud + Quality Gate
+- ✅ CI Cozinha: Testes + SonarCloud + Quality Gate
+- ✅ CI Pagamento: Testes + SonarCloud + Quality Gate
+- ✅ Path filters configurados (services/{servico}/**)
+- ✅ Trigger em Pull Requests para branch main
+- ✅ Todos os CIs executados com sucesso no PR #7
 
-- [x] Script `test_scripts/aws/test-e2e-cliente-novo.sh` - Criar cliente novo
-  - Criado em: 2025-10-30 13:20
-  - Gera CPF único (timestamp-based, 11 dígitos)
-  - Cria novo cliente via `POST /clientes` (com token anônimo)
-  - Valida criação (HTTP 201)
-  - Autentica com o CPF do cliente recém-criado
-  - Obtém token JWT com contexto do novo cliente (tipo: IDENTIFICADO)
-  - Cria pedido usando o novo cliente
-  - Valida nome do cliente no pedido
-  - Segue fluxo completo até status PRONTO
-  - Output limpo (mesmo padrão do test-e2e.sh)
-  - ✅ TESTE PASSOU (última execução: 2025-10-30)
+### Current Status
 
-- [x] URLs obtidas dinamicamente via Terraform
-- [x] Integração com RDS MySQL validada
-- [x] Integração RabbitMQ em ambiente AWS validada
-- [x] Validação de autenticação com CPF existente
-- [x] Validação de criação de novo cliente
-- [x] Validação de integração Feign Client (nome do cliente recuperado)
+**Total de Entregaveis Fase 4:** 8 principais
+- **Concluidos:** 3/8 (37.5%)
+- **Em Progresso:** 0/8
+- **Pendentes:** 5/8 (62.5%)
 
-**Critérios de Aceite (TODOS ATENDIDOS ✅):**
-- ✅ Fluxo básico funcionando (anônimo) - test-e2e.sh
-- ✅ Fluxo com cliente existente - test-e2e-cliente-existente.sh
-- ✅ Fluxo com cliente novo - test-e2e-cliente-novo.sh
-- ✅ Validação de pagamento rejeitado (implementado no test-e2e.sh)
-- ✅ Validação de todas as integrações (REST + RabbitMQ)
-- ✅ Output limpo e fácil de acompanhar
-- ✅ Scripts podem rodar múltiplas vezes sem falhar
+**Quality Metrics:**
+- Cobertura Media de Testes: 86.5% (meta: 80%)
+- Pipelines CI Funcionando: 4/4 (100%)
+- Pipelines CD Funcionando: 0/4 (0%)
+- SonarCloud Projects: 4/4 configurados
 
-**Estatísticas de Testes E2E AWS:**
-- Total de scripts: 5 (test-e2e.sh, test-e2e-cliente-existente.sh, test-e2e-cliente-novo.sh, test-auth.sh, test-validate-deployment.sh)
-- Scripts E2E completos: 3
-- Taxa de sucesso: 100% (3/3 passando)
-- Cobertura de cenários: Cliente anônimo, cliente existente, cliente novo
-- Cobertura de integrações: REST (Feign Client) + RabbitMQ (eventos assíncronos)
+**GitHub Actions Status (Ultimo PR #7):**
+- ✅ CI - Clientes: SUCCESS
+- ✅ CI - Pedidos: SUCCESS
+- ✅ CI - Cozinha: SUCCESS
+- ✅ CI - Pagamento: SUCCESS
 
-## 📋 PRÓXIMAS TAREFAS (OBRIGATÓRIAS)
+### Blockers & Risks
 
-### 2. Configurar CI/CD Completo no GitHub Actions + SonarQube
-**Estimativa:** 8-10 dias (2 dias por serviço × 4 serviços)
-**Dependências:** ✅ Microserviços implementados + Testes E2E prontos
-**Ambiente:** ☁️ AWS (EKS) + GitHub Actions + SonarCloud
-**Estratégia:** **Monorepo com pipelines separados por serviço**
-**Status:** ⏳ Em Andamento
+**BLOQUEADOR CRITICO:**
+- ❌ **Repositorios nao estao separados** (Entregavel 3a)
+  - Requisito: "Seus repositorios devem ser separados para cada aplicacao"
+  - Situacao Atual: Monorepo unico com todos os servicos
+  - Impacto: Viola requisito obrigatorio da Fase 4
+  - Acao Necessaria: Criar 4 repositorios separados + configurar CI/CD em cada
 
-**Arquitetura de Pipelines:**
-- 1 pipeline CI por serviço (testes + SonarCloud)
-- 1 pipeline CD por serviço (build + deploy EKS)
-- 4 projetos separados no SonarCloud
-- Triggers baseados em path filters (`services/{servico}/**`)
+**PENDENCIAS CRITICAS:**
+- ❌ Pipelines de CD nao implementados (Entregavel 3c)
+- ❌ Testes BDD nao implementados (Entregavel 2a)
+- ❌ Branch protection nao configurada (Entregavel 3a)
 
 ---
 
-### 2.1 🔵 FASE 1: Serviço de Clientes (PRIORIDADE MÁXIMA)
-**Status:** 🚀 Em Andamento | **Estimativa:** 2 dias
+## ENTREGAVEIS FASE 4 - RASTREABILIDADE
 
-#### 2.1.1 CD - Clientes (`cd-clientes.yml`)
-**Trigger:** Push em `main` com mudanças em `services/clientes/**`
+### ENTREGAVEL 1: Refatoracao para Microservicos ✅ CONCLUIDO
 
-- [ ] Criar arquivo `.github/workflows/cd-clientes.yml`
-- [ ] Configurar trigger com path filter: `services/clientes/**`
-- [ ] Setup Java 17 + Maven cache
-- [ ] Build da imagem Docker (services/clientes/Dockerfile)
-- [ ] Login no AWS ECR
-- [ ] Tag da imagem: `${GITHUB_SHA}` + `latest`
-- [ ] Push para ECR: `lanchonete-clientes`
-- [ ] Configurar kubectl com EKS (`aws eks update-kubeconfig`)
-- [ ] Aplicar secrets K8s (RDS credentials)
-- [ ] Deploy manifests K8s:
-  - ConfigMap: `k8s_manifests/aws/clientes-configmap.yaml`
-  - Deployment: `k8s_manifests/aws/clientes-deployment.yaml`
-  - Service: `k8s_manifests/aws/clientes-service.yaml`
-- [ ] Aguardar rollout: `kubectl rollout status deployment/clientes`
-- [ ] **Smoke Tests:**
-  - Health check: `GET /actuator/health` → Status `UP`
-  - Criar cliente: `POST /clientes` (HTTP 201)
-  - Buscar cliente: `GET /clientes/{cpf}` (HTTP 200)
-- [ ] Notificar sucesso/falha
-- [ ] Configurar rollback automático em caso de falha
+**Requisitos:**
+- [x] Ao menos 3 microservicos (implementados 4)
+- [x] Banco SQL e NoSQL (MySQL + MongoDB)
+- [x] Comunicacao entre servicos (REST + RabbitMQ)
+- [x] Isolamento de bancos de dados
 
-#### 2.1.2 CI - Clientes (`ci-clientes.yml`)
-**Trigger:** Pull Request com mudanças em `services/clientes/**`
-
-- [ ] Criar arquivo `.github/workflows/ci-clientes.yml`
-- [ ] Configurar trigger com path filter: `services/clientes/**`
-- [ ] Setup Java 17 + Maven cache
-- [ ] Executar testes: `mvn clean test -f services/clientes/pom.xml`
-- [ ] Gerar relatório JaCoCo
-- [ ] **Setup SonarCloud:**
-  - [ ] Criar projeto no SonarCloud: `lanchonete-clientes`
-  - [ ] Obter token de autenticação
-  - [ ] Configurar secret GitHub: `SONAR_TOKEN`
-  - [ ] Adicionar plugin sonar-maven no `pom.xml`
-  - [ ] Configurar propriedades Sonar:
-    - `sonar.projectKey=lanchonete-clientes`
-    - `sonar.organization=<sua-org>`
-    - `sonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml`
-- [ ] Executar análise: `mvn sonar:sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}`
-- [ ] **Quality Gates:**
-  - Cobertura > 80% (atual: 85% ✅)
-  - Bugs = 0
-  - Vulnerabilities = 0
-  - Code Smells: Rating A/B
-  - Duplicações < 3%
-- [ ] Publicar comentário no PR com link SonarCloud
-- [ ] Falhar build se Quality Gate falhar
-
-**Critérios de Aceite:**
-- ✅ CD executa automaticamente em push para `main` com mudanças em `services/clientes/`
-- ✅ CI executa automaticamente em PRs com mudanças em `services/clientes/`
-- ✅ Imagem Docker publicada no ECR
-- ✅ Deploy no EKS bem-sucedido
-- ✅ Smoke tests passando
-- ✅ SonarCloud analisando código
-- ✅ Quality Gate configurado e passando
+**Evidencias:**
+- Commit: 72bb829 (merge PR #7)
+- Estrutura: /services/{clientes,pedidos,cozinha,pagamento}
+- Arquitetura documentada em README.md
 
 ---
 
-### 2.2 🟢 FASE 2: Serviço de Pedidos
-**Status:** ⏳ Pendente | **Estimativa:** 2 dias
-**Dependências:** ✅ Fase 1 (Clientes) concluída
+### ENTREGAVEL 2: Testes Unitarios e BDD
 
-#### 2.2.1 CD - Pedidos (`cd-pedidos.yml`)
-- [ ] Criar arquivo `.github/workflows/cd-pedidos.yml`
-- [ ] Path filter: `services/pedidos/**`
-- [ ] Build + Push para ECR: `lanchonete-pedidos`
-- [ ] Deploy K8s manifests (ConfigMap, Deployment, Service)
-- [ ] Smoke tests:
-  - Health check
-  - Criar pedido anônimo
-  - Buscar pedido por ID
-  - Validar integração com Clientes (Feign Client)
+#### 2a. Testes Unitarios com 80% Cobertura ✅ CONCLUIDO
 
-#### 2.2.2 CI - Pedidos (`ci-pedidos.yml`)
-- [ ] Criar arquivo `.github/workflows/ci-pedidos.yml`
-- [ ] Path filter: `services/pedidos/**`
-- [ ] Testes: `mvn clean test -f services/pedidos/pom.xml`
-- [ ] Projeto SonarCloud: `lanchonete-pedidos`
-- [ ] Quality Gates (cobertura atual: 82% ✅)
+**Status por Servico:**
+- ✅ Clientes: 85% (target/site/jacoco/index.html)
+- ✅ Pedidos: 83% (target/site/jacoco/index.html)
+- ✅ Cozinha: 84% (target/site/jacoco/index.html)
+- ✅ Pagamento: 94% (target/site/jacoco/index.html)
 
----
+**Evidencias:**
+- Plugin JaCoCo configurado em todos os pom.xml
+- Relatorios gerados automaticamente no CI
+- SonarCloud validando cobertura
 
-### 2.3 🟡 FASE 3: Serviço de Cozinha
-**Status:** ⏳ Pendente | **Estimativa:** 2 dias
-**Dependências:** ✅ Fase 2 (Pedidos) concluída
+#### 2b. Testes BDD (Ao menos um caminho) ❌ PENDENTE
 
-#### 2.3.1 CD - Cozinha (`cd-cozinha.yml`)
-- [ ] Criar arquivo `.github/workflows/cd-cozinha.yml`
-- [ ] Path filter: `services/cozinha/**`
-- [ ] Build + Push para ECR: `lanchonete-cozinha`
-- [ ] Deploy K8s manifests
-- [ ] Smoke tests:
-  - Health check
-  - Listar fila de pedidos
-  - Iniciar preparo
-  - Marcar como pronto
+**Status:** NAO INICIADO
 
-#### 2.3.2 CI - Cozinha (`ci-cozinha.yml`)
-- [ ] Criar arquivo `.github/workflows/ci-cozinha.yml`
-- [ ] Path filter: `services/cozinha/**`
-- [ ] Testes: `mvn clean test -f services/cozinha/pom.xml`
-- [ ] Projeto SonarCloud: `lanchonete-cozinha`
-- [ ] Quality Gates (cobertura atual: 83% ✅)
+**Requisitos:**
+- [ ] Implementar BDD em ao menos um servico
+- [ ] Usar Cucumber ou framework similar
+- [ ] Escrever features em Gherkin
+- [ ] Integrar com CI/CD
+
+**Estimativa:** 3-4 dias
+**Prioridade:** P0 - CRITICA (obrigatorio para entrega)
 
 ---
 
-### 2.4 🟣 FASE 4: Serviço de Pagamento
-**Status:** ⏳ Pendente | **Estimativa:** 2 dias
-**Dependências:** ✅ Fase 3 (Cozinha) concluída
+### ENTREGAVEL 3: Repositorios e CI/CD
 
-#### 2.4.1 CD - Pagamento (`cd-pagamento.yml`)
-- [ ] Criar arquivo `.github/workflows/cd-pagamento.yml`
-- [ ] Path filter: `services/pagamento/**`
-- [ ] Build + Push para ECR: `lanchonete-pagamento`
-- [ ] Deploy K8s manifests
-- [ ] Smoke tests:
-  - Health check
-  - Processar pagamento (evento RabbitMQ)
-  - Validar aprovação/rejeição aleatória
+#### 3a. Branch Protection ❌ BLOQUEADOR
 
-#### 2.4.2 CI - Pagamento (`ci-pagamento.yml`)
-- [ ] Criar arquivo `.github/workflows/ci-pagamento.yml`
-- [ ] Path filter: `services/pagamento/**`
-- [ ] Testes: `mvn clean test -f services/pagamento/pom.xml`
-- [ ] Projeto SonarCloud: `lanchonete-pagamento`
-- [ ] Quality Gates (cobertura atual: 80% ✅)
+**Requisitos:**
+- [ ] Branches main/master protegidas
+- [ ] Commits diretos bloqueados
+- [ ] Repositorios separados por aplicacao
+
+**Status Atual:**
+- ❌ Repositorio unico (monorepo)
+- ❌ Branch protection nao configurada
+- ❌ Necessario separar em 4 repositorios
+
+**Acao Necessaria:** DECISAO ARQUITETURAL
+
+**Opcao A: Manter Monorepo (Requer Justificativa)**
+- Configurar branch protection no repo atual
+- Justificar escolha no video de entrega
+- Manter path filters nos workflows
+
+**Opcao B: Separar Repositorios (Segue Requisito)**
+- Criar 4 repositorios novos
+- Migrar historico git de cada servico
+- Configurar CI/CD em cada repo
+- Adicionar usuario soat-architecture em todos
+
+**Recomendacao:** Opcao A (monorepo com justificativa)
+- Menos complexidade de gerenciamento
+- Path filters ja implementados
+- CI/CD ja funcional
+- Justificavel por ser projeto academico
+
+#### 3b. CI com SonarCloud ✅ CONCLUIDO
+
+**Status:**
+- ✅ 4 workflows de CI criados
+- ✅ SonarCloud configurado (organization: andersonfer)
+- ✅ Quality Gates funcionando
+- ✅ Coverage > 70% em todos os servicos
+
+**Evidencias:**
+- .github/workflows/ci-clientes.yml
+- .github/workflows/ci-pedidos.yml
+- .github/workflows/ci-cozinha.yml
+- .github/workflows/ci-pagamento.yml
+
+**Projects SonarCloud:**
+- andersonfer_lanchonete-clientes
+- andersonfer_lanchonete-pedidos
+- andersonfer_lanchonete-cozinha
+- andersonfer_lanchonete-pagamento
+
+#### 3c. CD para Deploy Automatico ❌ PENDENTE
+
+**Requisitos:**
+- [ ] Deploy automatico no merge para main
+- [ ] Todos os microservicos devem ser deployados
+- [ ] Validacao de testes antes do deploy
+
+**Status:** NAO INICIADO
+
+**Tarefas:**
+- [ ] Criar cd-clientes.yml
+- [ ] Criar cd-pedidos.yml
+- [ ] Criar cd-cozinha.yml
+- [ ] Criar cd-pagamento.yml
+- [ ] Configurar AWS credentials nos secrets
+- [ ] Testar deploy em ambiente staging
+- [ ] Validar deploy em producao (EKS)
+
+**Estimativa:** 5-6 dias
+**Prioridade:** P0 - CRITICA (obrigatorio para entrega)
 
 ---
 
-### 2.5 🔧 Configurações Globais
-**Status:** ⏳ Pendente
+### ENTREGAVEL 4: Artefatos de Entrega ❌ PENDENTE
 
-- [ ] Configurar secrets do GitHub:
-  - `AWS_ACCESS_KEY_ID`
-  - `AWS_SECRET_ACCESS_KEY`
-  - `AWS_SESSION_TOKEN` (AWS Academy)
-  - `SONAR_TOKEN`
-- [ ] Configurar proteção de branch (`main`):
-  - Requer aprovação de PR
-  - Requer CI passando
-  - Não permitir force push
-- [ ] Adicionar badges no README:
-  - Status CD (4 badges - um por serviço)
-  - Status CI (4 badges - um por serviço)
-  - SonarCloud Quality Gate (4 badges)
-  - SonarCloud Coverage (4 badges)
-- [ ] Deletar workflows antigos:
-  - `.github/workflows/ci-app.yml` (monolito)
-  - `.github/workflows/cd-app.yml` (monolito)
+#### 4a. Video Demonstracao (OBRIGATORIO)
+
+**Requisitos:**
+- [ ] Demonstrar funcionamento da aplicacao
+- [ ] Mostrar atualizacoes na arquitetura
+- [ ] Mostrar processo de deploy dos microservicos
+- [ ] Mostrar testes funcionando
+- [ ] Mostrar checks verdes (nao precisa mostrar pipelines rodando)
+
+**Status:** NAO INICIADO
+**Estimativa:** 1 dia de gravacao + edicao
+**Prioridade:** P0 - CRITICA
+
+#### 4b. Links e Evidencias no README (OBRIGATORIO)
+
+**Requisitos:**
+- [ ] Links para todos os repositorios
+- [ ] Evidencia de cobertura por microservico
+- [ ] Screenshots ou links do SonarCloud
+- [ ] Adicionar usuario soat-architecture aos repos
+
+**Status:** PARCIALMENTE CONCLUIDO
+- ✅ README.md existe e esta documentado
+- ❌ Falta adicionar badges do SonarCloud
+- ❌ Falta adicionar badges de CI/CD
+- ❌ Falta adicionar evidencias de cobertura
+
+**Estimativa:** 2-3 horas
+**Prioridade:** P1 - ALTA
 
 ---
 
-### 2.6 📚 Documentação
-- [ ] Documentar estratégia de pipelines no README
-- [ ] Criar tabela de workflows:
+## PROXIMAS TAREFAS RECOMENDADAS
+
+### SPRINT ATUAL: Finalizacao Fase 4 (6-8 dias restantes)
+
+**DIA 1-2: DECISAO ARQUITETURAL + BDD**
+1. **[DECISAO]** Definir estrategia de repositorios
+   - Manter monorepo OU separar repositorios
+   - Documentar decisao e justificativa
+   - Atualizar BACKLOG.md com a escolha
+
+2. **[BDD]** Implementar testes BDD em 1 servico
+   - Escolher servico mais simples (Clientes ou Pagamento)
+   - Adicionar dependencias Cucumber
+   - Escrever 3-5 features em Gherkin
+   - Implementar step definitions
+   - Integrar com CI
+   - **Estimativa:** 8-10 horas
+
+**DIA 3-5: PIPELINES DE CD**
+3. **[CD]** Implementar workflows de CD
+   - Criar cd-clientes.yml
+   - Criar cd-pedidos.yml
+   - Criar cd-cozinha.yml
+   - Criar cd-pagamento.yml
+   - Configurar secrets AWS
+   - Testar deploy automatico
+   - **Estimativa:** 3-4 dias
+
+**DIA 6: BRANCH PROTECTION + DOCUMENTACAO**
+4. **[REPO]** Configurar branch protection
+   - Proteger branch main
+   - Bloquear commits diretos
+   - Requer PR reviews
+   - Requer CI passando
+
+5. **[DOCS]** Atualizar README com evidencias
+   - Adicionar badges SonarCloud (4 badges)
+   - Adicionar badges CI/CD (8 badges)
+   - Screenshots de cobertura
+   - Links para SonarCloud projects
+   - Adicionar usuario soat-architecture
+
+**DIA 7-8: VIDEO + ENTREGA**
+6. **[VIDEO]** Gravar video de demonstracao
+   - Roteiro: Arquitetura → Testes → CI/CD → Deploy
+   - Mostrar aplicacao funcionando
+   - Mostrar checks verdes
+   - Edicao e upload
+   - **Estimativa:** 4-6 horas
+
+7. **[ENTREGA]** Preparar artefatos finais
+   - Documento com nomes + Discord IDs
+   - Links para repositorios
+   - Link do video
+   - Validacao final
+
+---
+
+## TAREFAS DETALHADAS (SPRINT ATUAL)
+
+### TAREFA 1: Implementar Testes BDD (P0 - CRITICA)
+
+**Servico Escolhido:** Clientes (mais simples)
+
+**Subtarefas:**
+- [ ] Adicionar dependencias Cucumber ao pom.xml
+  ```xml
+  <dependency>
+    <groupId>io.cucumber</groupId>
+    <artifactId>cucumber-java</artifactId>
+    <version>7.14.0</version>
+    <scope>test</scope>
+  </dependency>
+  <dependency>
+    <groupId>io.cucumber</groupId>
+    <artifactId>cucumber-spring</artifactId>
+    <version>7.14.0</version>
+    <scope>test</scope>
+  </dependency>
+  <dependency>
+    <groupId>io.cucumber</groupId>
+    <artifactId>cucumber-junit-platform-engine</artifactId>
+    <version>7.14.0</version>
+    <scope>test</scope>
+  </dependency>
   ```
-  | Serviço    | CI Workflow      | CD Workflow      | SonarCloud Project      |
-  |------------|------------------|------------------|-------------------------|
-  | Clientes   | ci-clientes.yml  | cd-clientes.yml  | lanchonete-clientes     |
-  | Pedidos    | ci-pedidos.yml   | cd-pedidos.yml   | lanchonete-pedidos      |
-  | Cozinha    | ci-cozinha.yml   | cd-cozinha.yml   | lanchonete-cozinha      |
-  | Pagamento  | ci-pagamento.yml | cd-pagamento.yml | lanchonete-pagamento    |
+
+- [ ] Criar estrutura de diretórios
   ```
-- [ ] Criar runbook de troubleshooting de pipelines
-- [ ] Documentar processo de rollback manual
-- [ ] Documentar métricas do SonarQube
+  src/test/resources/features/
+  src/test/java/br/com/lanchonete/clientes/bdd/
+  ```
+
+- [ ] Escrever features (3 cenarios minimo)
+  - Feature: Cadastrar Cliente
+    - Cenario: Cadastrar cliente com sucesso
+    - Cenario: Cadastrar cliente com CPF invalido
+    - Cenario: Cadastrar cliente duplicado
+
+  - Feature: Identificar Cliente
+    - Cenario: Identificar cliente existente
+    - Cenario: Identificar cliente inexistente
+
+- [ ] Implementar Step Definitions
+  - CadastrarClienteSteps.java
+  - IdentificarClienteSteps.java
+
+- [ ] Configurar Cucumber no CI
+  - Atualizar ci-clientes.yml
+  - Executar testes BDD junto com unitarios
+  - Gerar relatorio HTML
+
+- [ ] Validar execucao local e no CI
+
+**Criterios de Aceite:**
+- Ao menos 3 features escritas em Gherkin
+- Step definitions implementados
+- Testes BDD executam no CI
+- Relatorio gerado e acessivel
+
+**Estimativa:** 8-10 horas
+**Prioridade:** P0 - CRITICA
 
 ---
 
-**Estrutura Final de Arquivos:**
-```
-.github/workflows/
-├── cd-clientes.yml    ✅ Deploy Clientes → EKS
-├── ci-clientes.yml    ✅ Testes Clientes + SonarCloud
-├── cd-pedidos.yml     ⏳ Deploy Pedidos → EKS
-├── ci-pedidos.yml     ⏳ Testes Pedidos + SonarCloud
-├── cd-cozinha.yml     ⏳ Deploy Cozinha → EKS
-├── ci-cozinha.yml     ⏳ Testes Cozinha + SonarCloud
-├── cd-pagamento.yml   ⏳ Deploy Pagamento → EKS
-├── ci-pagamento.yml   ⏳ Testes Pagamento + SonarCloud
-├── cd-app.yml         ❌ DELETAR (monolito antigo)
-└── ci-app.yml         ❌ DELETAR (monolito antigo)
-```
+### TAREFA 2: Implementar Pipelines de CD (P0 - CRITICA)
 
-**Critérios de Aceite Globais:**
-- ✅ 8 pipelines funcionando (4 CI + 4 CD)
-- ✅ Cada serviço tem deploy independente
-- ✅ Mudanças em um serviço não triggam pipelines de outros
-- ✅ SonarCloud com 4 projetos separados
-- ✅ Quality Gates configurados e funcionando
-- ✅ Smoke tests passando em todos os serviços
-- ✅ Badges visíveis no README
-- ✅ Documentação completa
+**Estrutura dos Workflows:**
 
----
+Cada servico tera um workflow de CD com os seguintes passos:
+1. Trigger: Push em main com mudancas em services/{servico}/**
+2. Checkout codigo
+3. Setup Java 17
+4. Build com Maven
+5. Build imagem Docker
+6. Login no AWS ECR
+7. Push imagem para ECR
+8. Configurar kubectl com EKS
+9. Aplicar secrets K8s
+10. Deploy manifests K8s
+11. Aguardar rollout
+12. Smoke tests
+13. Notificar status
 
-### 3. Implementar Testes BDD com Cucumber
-**Estimativa:** 2-3 dias
-**Dependências:** ✅ Microserviços implementados
-**Ambiente:** 💻 Local + ☁️ AWS
-**Status:** ⏳ Pendente (OBRIGATÓRIO)
+**Subtarefas:**
 
-#### 3.1 Setup Cucumber
-- [ ] Adicionar dependências Cucumber ao pom.xml de cada microserviço:
-  - cucumber-java
-  - cucumber-junit-platform-engine
-  - cucumber-spring
-- [ ] Configurar Cucumber properties (cucumber.properties)
-- [ ] Criar estrutura de diretórios `src/test/resources/features/`
-- [ ] Configurar runner JUnit 5 + Cucumber
+#### 2.1 CD - Clientes
+- [ ] Criar .github/workflows/cd-clientes.yml
+- [ ] Configurar path filter: services/clientes/**
+- [ ] Implementar build e push para ECR
+- [ ] Implementar deploy para EKS
+- [ ] Implementar smoke tests:
+  - GET /actuator/health → 200 OK
+  - POST /clientes → 201 Created
+  - GET /clientes/{cpf} → 200 OK
+- [ ] Testar workflow
 
-#### 3.2 Features e Cenários BDD
-- [ ] **Clientes:**
-  - Feature: Identificação de cliente por CPF
-  - Feature: Cadastro de novo cliente
-  - Scenarios: CPF válido, CPF inválido, cliente já cadastrado
-- [ ] **Pedidos:**
-  - Feature: Criar pedido anônimo
-  - Feature: Criar pedido com CPF
-  - Feature: Consultar pedido por ID
-  - Feature: Retirar pedido
-  - Scenarios: Pedido válido, produto inexistente, retirada inválida
-- [ ] **Cozinha:**
-  - Feature: Visualizar fila de pedidos
-  - Feature: Iniciar preparo
-  - Feature: Marcar como pronto
-  - Scenarios: Fluxo normal, pedido inexistente, transições inválidas
-- [ ] **Pagamento:**
-  - Feature: Processar pagamento via evento
-  - Scenarios: Pagamento aprovado, pagamento rejeitado
+#### 2.2 CD - Pedidos
+- [ ] Criar .github/workflows/cd-pedidos.yml
+- [ ] Configurar path filter: services/pedidos/**
+- [ ] Implementar build e push para ECR
+- [ ] Implementar deploy para EKS
+- [ ] Implementar smoke tests:
+  - GET /actuator/health → 200 OK
+  - GET /produtos → 200 OK
+  - POST /pedidos → 201 Created
+- [ ] Testar workflow
 
-#### 3.3 Step Definitions
-- [ ] Implementar steps para cada microserviço
-- [ ] Configurar Spring Context em steps
-- [ ] Criar classes helper para chamadas REST
-- [ ] Implementar assertions customizadas
+#### 2.3 CD - Cozinha
+- [ ] Criar .github/workflows/cd-cozinha.yml
+- [ ] Configurar path filter: services/cozinha/**
+- [ ] Implementar build e push para ECR
+- [ ] Implementar deploy para EKS
+- [ ] Implementar smoke tests:
+  - GET /actuator/health → 200 OK
+  - GET /cozinha/fila → 200 OK
+- [ ] Testar workflow
 
-#### 3.4 Integração com CI/CD
-- [ ] Executar testes BDD no pipeline CI
-- [ ] Gerar relatórios Cucumber (JSON/HTML)
-- [ ] Publicar relatórios como artefatos
-- [ ] Falhar build se BDD falhar
+#### 2.4 CD - Pagamento
+- [ ] Criar .github/workflows/cd-pagamento.yml
+- [ ] Configurar path filter: services/pagamento/**
+- [ ] Implementar build e push para ECR
+- [ ] Implementar deploy para EKS
+- [ ] Implementar smoke tests:
+  - GET /actuator/health → 200 OK
+- [ ] Testar workflow
 
-**Critérios de Aceite:**
-- Cobertura BDD de cenários principais (happy path + edge cases)
-- Testes BDD executam automaticamente no CI
-- Relatórios legíveis gerados (Cucumber HTML)
-- Linguagem Gherkin clara e compreensível por não-técnicos
+#### 2.5 Configuracoes Globais
+- [ ] Configurar secrets GitHub:
+  - AWS_ACCESS_KEY_ID
+  - AWS_SECRET_ACCESS_KEY
+  - AWS_SESSION_TOKEN (se AWS Academy)
+  - AWS_REGION (us-east-1)
+  - ECR_REGISTRY (obter do Terraform)
+- [ ] Documentar processo de CD no README
+- [ ] Criar runbook de troubleshooting
 
----
+**Criterios de Aceite:**
+- 4 workflows de CD criados e funcionais
+- Deploy automatico no merge para main
+- Smoke tests validando deploy
+- Documentacao completa
 
-### 4. Remover Aplicação Monolítica (Autoatendimento)
-**Estimativa:** 1 dia
-**Dependências:** ✅ Todos os testes E2E completos
-**Ambiente:** 💻 Local / Git
-**Status:** ⏳ Pendente (OBRIGATÓRIO - será a última tarefa)
-
-**Checklist:**
-- [ ] Remover código legado:
-  - [ ] Deletar `app/autoatendimento/`
-  - [ ] Deletar `app/pagamento/`
-  - [ ] Remover manifests K8s antigos (`k8s/autoatendimento/` se existir)
-- [ ] Otimizar alocação de NodePorts:
-  - [ ] Documentar portas em uso (30081-30084)
-  - [ ] Remover NodePort 30080 (liberar porta)
-  - [ ] Atualizar tabela de portas no README.md
-- [ ] Atualizar CI/CD (GitHub Actions):
-  - [ ] Revisar `.github/workflows/ci-app.yml`
-  - [ ] Revisar `.github/workflows/cd-app.yml`
-  - [ ] Remover jobs do autoatendimento
-  - [ ] Adicionar jobs dos 4 microserviços
-  - [ ] Testar pipeline em branch separada
-- [ ] Atualizar documentação:
-  - [ ] Remover referências ao monolito no README.md
-  - [ ] Atualizar diagramas de arquitetura
-  - [ ] Atualizar seção de deployment
-  - [ ] Revisar TROUBLESHOOTING.md
-- [ ] Limpeza final:
-  - [ ] Remover dependências não utilizadas nos pom.xml
-  - [ ] Verificar scripts em `scripts/` e `deploy_scripts/`
-  - [ ] Atualizar .gitignore se necessário
-
-**Critérios de Aceite:**
-- Diretório `app/` completamente removido
-- Todos os testes E2E passando sem o monolito
-- Workflows GitHub Actions atualizados e validados
-- README.md reflete apenas arquitetura de microserviços
-- Mapa de portas documentado e otimizado
-- Sem referências ao código legado no repositório
+**Estimativa:** 3-4 dias
+**Prioridade:** P0 - CRITICA
 
 ---
 
-## 📊 MÉTRICAS DE SUCESSO
+### TAREFA 3: Branch Protection e Documentacao (P1 - ALTA)
 
-### Cobertura de Testes
-- **Meta:** 80%+ em cada microserviço
-- **Atual:**
-  - Clientes: ✅ 85% (atingiu meta)
-  - Pedidos: ✅ 82% (atingiu meta)
-  - Pagamento: ✅ 80% (atingiu meta)
-  - Cozinha: ✅ 83% (atingiu meta)
-  - Auth/Cognito: ⏳ Não implementado
+#### 3.1 Branch Protection
+- [ ] Acessar Settings → Branches no GitHub
+- [ ] Adicionar rule para branch main
+- [ ] Configuracoes:
+  - [x] Require pull request before merging
+  - [x] Require approvals: 1
+  - [x] Require status checks to pass
+    - CI - Clientes
+    - CI - Pedidos
+    - CI - Cozinha
+    - CI - Pagamento
+  - [x] Require branches to be up to date
+  - [x] Do not allow bypassing the above settings
+- [ ] Salvar configuracao
+- [ ] Testar com PR de teste
 
-### Performance
-- **Latência P95:** < 500ms
-- **Disponibilidade:** > 99.5%
-- **Taxa de erro:** < 1%
-- **Auth latency:** < 200ms (token validation)
+#### 3.2 README Atualizado
+- [ ] Adicionar secao "Quality & CI/CD"
+- [ ] Badges SonarCloud (4):
+  ```markdown
+  [![Quality Gate - Clientes](https://sonarcloud.io/api/project_badges/measure?project=andersonfer_lanchonete-clientes&metric=alert_status)](https://sonarcloud.io/dashboard?id=andersonfer_lanchonete-clientes)
+  [![Coverage - Clientes](https://sonarcloud.io/api/project_badges/measure?project=andersonfer_lanchonete-clientes&metric=coverage)](https://sonarcloud.io/dashboard?id=andersonfer_lanchonete-clientes)
+  ```
+- [ ] Badges GitHub Actions (8):
+  - CI Clientes, Pedidos, Cozinha, Pagamento
+  - CD Clientes, Pedidos, Cozinha, Pagamento
+- [ ] Secao de evidencias de cobertura
+  - Link SonarCloud por servico
+  - Screenshot ou tabela com percentuais
+- [ ] Adicionar usuario soat-architecture como colaborador
 
-### Segurança
-- **Endpoints protegidos:** 100%
-- **Tokens expirados rejeitados:** 100%
-- **Vulnerabilidades críticas:** 0
-
-### Qualidade de Código
-- **Linter:** 0 warnings críticos
-- **Vulnerabilidades:** 0 críticas/altas
-- **Code Smells:** < 10 por serviço
-
----
-
-## 🏷️ TAGS
-
-- 🔴 **ALTA** - Bloqueante ou crítico para o projeto
-- 🟡 **MÉDIA** - Importante mas não bloqueante
-- 🟢 **BAIXA** - Nice to have, pode ser adiado
-
-**Ambientes:**
-- 💻 **Local** - Minikube, não precisa de AWS
-- ☁️ **AWS** - Requer recursos AWS (EKS, Cognito, ALB, etc)
+**Estimativa:** 2-3 horas
+**Prioridade:** P1 - ALTA
 
 ---
 
-## 📝 OBSERVAÇÕES
+### TAREFA 4: Video de Demonstracao (P0 - CRITICA)
 
-### Ordem de Implementação e Progresso
+**Roteiro Proposto (15-20 minutos):**
 
-**FASE 1 - Local (Sem AWS) - ✅ 100% CONCLUÍDO**
-1. ✅ **CONCLUÍDO:** Infraestrutura K8s (MySQL, MongoDB, RabbitMQ) - commit d90b4a9
-2. ✅ **CONCLUÍDO:** Microserviço de Clientes - commit 148c9b2
-3. ✅ **CONCLUÍDO:** Microserviço de Pagamento - commit c67362f
-4. ✅ **CONCLUÍDO:** Microserviço de Pedidos - commit 66f7e45
-5. ✅ **CONCLUÍDO:** Microserviço de Cozinha - commit 0582da6
-6. ✅ **CONCLUÍDO:** Integração REST (Pedidos → Clientes) - validado
-7. ✅ **CONCLUÍDO:** Integração RabbitMQ (completa) - validado
-8. ✅ **CONCLUÍDO:** Testes E2E Local (100% - todos os cenários passando)
-9. ✅ **CONCLUÍDO:** Scripts de deploy local automatizados
+1. **Introducao (2 min)**
+   - Apresentacao do grupo
+   - Visao geral do projeto
+   - Objetivos da Fase 4
 
-**FASE 2 - AWS - ✅ 100% CONCLUÍDO (2025-10-27)**
-10. ✅ **CONCLUÍDO:** Infraestrutura EKS + RDS via Terraform
-11. ✅ **CONCLUÍDO:** Deploy microserviços na AWS (LoadBalancers)
-12. ✅ **CONCLUÍDO:** Testes E2E AWS (100% - todos os cenários passando)
-13. ✅ **CONCLUÍDO:** Scripts de deploy AWS automatizados
-14. ✅ **CONCLUÍDO:** Documentação completa AWS
+2. **Arquitetura (4 min)**
+   - Mostrar diagrama de arquitetura
+   - Explicar separacao em microservicos
+   - Mostrar bancos de dados (MySQL + MongoDB)
+   - Explicar comunicacao (REST + RabbitMQ)
 
-**FASE 3 - Qualidade e CI/CD (Em Andamento) - 0% Concluído**
-15. 🔲 **EM ANDAMENTO:** CI/CD completo GitHub Actions (pipelines separados por serviço)
-   - Fase 1: Clientes (CD + CI + SonarCloud) - 🚀 Iniciando
-   - Fase 2: Pedidos (CD + CI + SonarCloud) - ⏳ Pendente
-   - Fase 3: Cozinha (CD + CI + SonarCloud) - ⏳ Pendente
-   - Fase 4: Pagamento (CD + CI + SonarCloud) - ⏳ Pendente
-16. 🔲 **PENDENTE:** Testes BDD com Cucumber (features + scenarios)
-17. 🔲 **PENDENTE:** Remover aplicação monolítica (limpeza)
+3. **Demonstracao da Aplicacao (5 min)**
+   - Criar pedido via API
+   - Mostrar fluxo completo:
+     - Pedido criado
+     - Pagamento processado
+     - Fila da cozinha
+     - Pedido pronto
+     - Retirada
+   - Mostrar logs e eventos RabbitMQ
 
-**FASE 4 - Melhorias Avançadas (Baixa Prioridade)**
-19-22. 🔲 **BACKLOG:** Cognito, Segurança, Performance, Resiliência, Docs
+4. **Testes e Qualidade (4 min)**
+   - Mostrar cobertura de testes (80%+)
+   - Executar testes unitarios
+   - Mostrar testes BDD (Cucumber)
+   - Mostrar relatorios SonarCloud
 
-**Progresso Geral do Projeto:**
-- Microserviços: 4/4 ✅ (100%)
-- Integrações: 2/2 ✅ (100%)
-- Testes E2E Local: 3/3 ✅ (100%)
-- Testes E2E AWS: 3/3 ✅ (100%)
-  - Cliente anônimo ✅
-  - Cliente existente ✅ (NOVO - 2025-10-30)
-  - Cliente novo ✅ (NOVO - 2025-10-30)
-- Deploy Local (Minikube): 1/1 ✅ (100%)
-- Deploy AWS (EKS): 1/1 ✅ (100%)
-- RDS Databases: 3/3 ✅ (100%)
-- **FASE 1 (Core + AWS + Testes): 3/3 tarefas (100%) ✅**
-- **FASE 2 (Qualidade + CI/CD): 0/3 tarefas (0%) ⏳**
-  - CI/CD GitHub Actions + SonarQube: ⏳ Pendente (OBRIGATÓRIO)
-  - Testes BDD Cucumber: ⏳ Pendente (OBRIGATÓRIO)
-  - Remover Monolito: ⏳ Pendente (OBRIGATÓRIO)
-- **TOTAL GERAL: 3/6 tarefas principais (50%) ⏳**
+5. **CI/CD (4 min)**
+   - Mostrar workflows GitHub Actions
+   - Mostrar checks verdes em PR
+   - Explicar processo de CI (testes + SonarCloud)
+   - Explicar processo de CD (deploy automatico)
+   - Mostrar deploy no EKS (kubectl get pods)
 
-### Regras Gerais
+6. **Conclusao (1 min)**
+   - Resumo dos entregaveis
+   - Agradecimentos
 
-1. **Git Workflow:** Cada tarefa deve ter seu próprio commit descritivo
+**Subtarefas:**
+- [ ] Preparar ambiente (limpar logs, preparar dados de teste)
+- [ ] Gravar video (OBS Studio ou similar)
+- [ ] Editar video (cortes, legendas se necessario)
+- [ ] Upload para YouTube (nao listado ou publico)
+- [ ] Testar link do video
+- [ ] Adicionar link ao documento de entrega
 
-2. **Testes:** NUNCA pular testes - 80% cobertura é obrigatório
-
-3. **Documentação:** Atualizar README.md após cada tarefa concluída
-
-4. **Code Review:** Todas as mudanças devem passar por revisão antes do merge
-
-5. **Decisões Arquiteturais:** Documentar em ADR (Architecture Decision Records)
-
-6. **Minikube First:** Sempre testar em Minikube antes de AWS
+**Estimativa:** 4-6 horas
+**Prioridade:** P0 - CRITICA
 
 ---
 
-## 🔗 LINKS ÚTEIS
+## STATUS GERAL DA FASE 4
 
-- [README Principal](./README.md)
-- [Troubleshooting](./TROUBLESHOOTING.md)
-- [GitHub Actions](./.github/workflows/)
-- [Manifests K8s](./k8s/)
-- [AWS Cognito Docs](https://docs.aws.amazon.com/cognito/)
-- [Spring Security OAuth2](https://docs.spring.io/spring-security/reference/servlet/oauth2/resource-server/jwt.html)
-- [Kubernetes Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/)
+### Checklist de Entregaveis
 
----
+**OBRIGATORIOS:**
+- [x] 1. Refatoracao em ao menos 3 microservicos (4 implementados)
+- [x] 2a. Testes unitarios com 80% cobertura (media 86.5%)
+- [ ] 2b. Ao menos um caminho com BDD (PENDENTE)
+- [ ] 3a. Repositorios separados OU justificativa (DECISAO PENDENTE)
+- [x] 3b. CI com SonarCloud 70%+ coverage (4 workflows funcionando)
+- [ ] 3c. CD com deploy automatico (PENDENTE)
+- [ ] 4a. Video demonstracao (PENDENTE)
+- [ ] 4b. Links e evidencias no README (PARCIAL)
 
-**Última revisão:** 2025-11-13 15:00
-**Responsável:** Anderson
-**Status Geral:** 🟡 50% Concluído - Testes E2E completos, CI/CD em andamento
-**Sprint Atual:** Sprint 4 - Fase 1: CI/CD de Clientes (CD + CI + SonarCloud)
-**Próxima Milestone:** Completar CI/CD de todos os 4 serviços + BDD + Cleanup
+**PERCENTUAL DE CONCLUSAO:** 50% (4/8 entregaveis)
 
----
+### Metricas de Qualidade
 
-## 📈 RESUMO EXECUTIVO
+**Cobertura de Testes:**
+- Clientes: 85% ✅ (meta: 80%)
+- Pedidos: 83% ✅ (meta: 80%)
+- Cozinha: 84% ✅ (meta: 80%)
+- Pagamento: 94% ✅ (meta: 80%)
+- **Media:** 86.5% ✅
 
-### Conquistas desta Sessão (2025-10-30) - EXPANSÃO TESTES E2E ✅
+**SonarCloud Quality Gates:**
+- Clientes: PASSED ✅
+- Pedidos: PASSED ✅
+- Cozinha: PASSED ✅
+- Pagamento: PASSED ✅
 
-#### ✅ Novos Scripts de Teste E2E Criados e Validados
-- **test-e2e-cliente-existente.sh** (criado 13:18):
-  - Autenticação com CPF existente (55555555555 - João da Silva)
-  - Validação de token JWT com tipo IDENTIFICADO
-  - Criação de pedido com cliente identificado
-  - Validação de integração Feign Client (nome recuperado corretamente)
-  - Fluxo completo até status PRONTO
-  - ✅ 100% PASSOU
-
-- **test-e2e-cliente-novo.sh** (criado 13:20):
-  - Geração de CPF único (timestamp-based)
-  - Criação de novo cliente via API
-  - Autenticação com cliente recém-criado
-  - Validação de token JWT do novo cliente
-  - Criação de pedido com novo cliente
-  - Validação de nome no pedido
-  - Fluxo completo até status PRONTO
-  - ✅ 100% PASSOU
-
-#### ✅ Cobertura de Testes E2E Completa
-- **3 cenários cobertos:**
-  1. Cliente anônimo (test-e2e.sh) - implementado anteriormente
-  2. Cliente existente (test-e2e-cliente-existente.sh) - NOVO
-  3. Cliente novo (test-e2e-cliente-novo.sh) - NOVO
-
-- **Validações implementadas:**
-  - Autenticação com Cognito (anônimo e identificado)
-  - Criação de clientes via API
-  - Integração REST (Feign Client): Pedidos → Clientes
-  - Integração RabbitMQ: Pedidos ↔ Pagamento ↔ Cozinha
-  - Fluxos completos: Pedido → Pagamento → Cozinha → Pronto
-  - Tratamento de pagamento rejeitado (20%)
-  - Output limpo e legível
-
-#### 📊 Estatísticas da Sessão
-- **Scripts criados:** 2 novos scripts E2E
-- **Taxa de sucesso:** 100% (2/2 passando na primeira execução)
-- **Linhas de código:** ~29KB de scripts bash (13KB + 16KB)
-- **Cobertura de cenários:** Expandida de 1 para 3 cenários
-- **Tempo de execução:** ~2-3 minutos por script
-- **Integrações validadas:** Cognito + RDS + RabbitMQ + Feign Client
-
-#### 🎯 Objetivos Atingidos
-- ✅ Expandir cobertura de testes E2E (100%)
-- ✅ Validar autenticação com cliente existente
-- ✅ Validar criação de novo cliente
-- ✅ Validar integração Feign Client em ambiente AWS
-- ✅ Manter output limpo e legível
-- ✅ Scripts reutilizáveis e robustos
+**Pipelines GitHub Actions:**
+- CI Clientes: ✅ SUCCESS
+- CI Pedidos: ✅ SUCCESS
+- CI Cozinha: ✅ SUCCESS
+- CI Pagamento: ✅ SUCCESS
+- CD Clientes: ❌ NAO IMPLEMENTADO
+- CD Pedidos: ❌ NAO IMPLEMENTADO
+- CD Cozinha: ❌ NAO IMPLEMENTADO
+- CD Pagamento: ❌ NAO IMPLEMENTADO
 
 ---
 
-### Conquistas Sessão Anterior (2025-10-27) - DEPLOY AWS COMPLETO ✅
+## RISCOS E MITIGACOES
 
-#### ✅ Infraestrutura AWS Provisionada e Operacional
-- **Cluster EKS:** lanchonete-cluster (2 nós t3.medium)
-- **RDS MySQL:** 3 instâncias db.t3.micro (clientes, pedidos, cozinha)
-- **MongoDB:** Pod com emptyDir (perda aceitável)
-- **RabbitMQ:** Pod com emptyDir (perda aceitável)
-- **ECR:** 4 repositórios com imagens Docker
-- **LoadBalancers:** 4 Network Load Balancers provisionados
+### RISCO 1: Tempo Insuficiente para CD
+**Probabilidade:** MEDIA
+**Impacto:** ALTO (entregavel obrigatorio)
+**Mitigacao:**
+- Priorizar implementacao de CD imediatamente apos BDD
+- Usar template de workflow para acelerar
+- Focar em smoke tests simples (health check + 1 endpoint)
 
-#### ✅ Deploy de Microserviços na AWS
-- **4 Deployments** rodando com 1 réplica cada
-- **Conectividade RDS** validada em todos os serviços
-- **Integração RabbitMQ** funcionando (eventos propagados)
-- **Integração Feign Client** funcionando (Pedidos → Clientes)
-- **Health checks** todos passando (status: UP)
+### RISCO 2: Repositorios Separados
+**Probabilidade:** BAIXA (se escolher monorepo)
+**Impacto:** ALTO (pode reprovar se exigido)
+**Mitigacao:**
+- Documentar decisao de manter monorepo
+- Justificar no video (path filters, gerenciamento simplificado)
+- Alternativa: separar repos em ultimo caso
 
-#### ✅ Testes E2E AWS - 100% Passando
-- **Script criado:** `test_scripts/aws/test-e2e.sh`
-- **URLs dinâmicas:** Obtidas via kubectl automaticamente
-- **TESTE 1:** Pedido Anônimo - Fluxo completo ✅
-- **TESTE 2:** Pedido com CPF - Feign Client validado ✅
-- **TESTE 3:** Edge Cases - Todos erros tratados ✅
-- **Pagamento Rejeitado:** Validado (pedido ID 3 cancelado)
-
-#### ✅ Decisões Técnicas Implementadas
-- Simplificação: LoadBalancer ao invés de ALB+Ingress
-- RDS para bancos de produção (Clientes, Pedidos, Cozinha)
-- Pods para serviços de suporte (MongoDB, RabbitMQ)
-- Scripts de deploy automatizados
-- Secrets criados dinamicamente do Terraform
-
-#### 📊 Estatísticas AWS
-- **Custo estimado:** ~$30-40/mês (RDS + EKS + LoadBalancers)
-- **Tempo de deploy:** ~20 minutos
-- **Pods rodando:** 6 (4 microserviços + MongoDB + RabbitMQ)
-- **Endpoints públicos:** 4 URLs LoadBalancer
-- **Tempo de resposta:** <500ms (média)
-- **Taxa de sucesso testes:** 100%
+### RISCO 3: BDD Complexo
+**Probabilidade:** MEDIA
+**Impacto:** MEDIO
+**Mitigacao:**
+- Escolher servico mais simples (Clientes)
+- Implementar apenas 3-5 cenarios basicos
+- Focar em happy path + 1-2 edge cases
 
 ---
 
-### Conquistas Sessão Anterior (2025-10-23)
+## TIMELINE RECOMENDADO
 
-#### ✅ Microserviço de Cozinha - 100% IMPLEMENTADO
-- **Commit:** 0582da6 - "implementação do serviço de cozinha"
-- **Arquivos:** 35 classes Java com Clean Architecture
-- **Cobertura de Testes:** 83% (superou meta de 80%)
-- **Deploy:** 2 réplicas funcionando no Minikube
-- **Endpoints:** 3 endpoints REST implementados e validados
-- **Integrações:**
-  - RabbitMQ Consumer: PagamentoAprovado, PedidoRetirado
-  - RabbitMQ Publisher: PedidoPronto
-  - Feign Client: GET /pedidos/{id}
+**Hoje (14/Nov):**
+- Decisao sobre repositorios
+- Inicio implementacao BDD
 
-#### ✅ Correções de Integração RabbitMQ
-- Corrigido binding do exchange pagamento.events
-- Adicionado @EnableRabbit para ativar consumers
-- Criado exchange cozinha.events para publicação de eventos
-- Implementado logging detalhado para debug
+**15-16/Nov:**
+- Finalizacao BDD
+- Inicio implementacao CD
 
-#### ✅ Script E2E Atualizado
-- Script test-e2e.sh expandido de 46 para 215 linhas
-- Fluxo completo validado:
-  1. Criar pedido → CRIADO
-  2. Pagamento automático → REALIZADO
-  3. Adicionar à fila da cozinha → AGUARDANDO
-  4. Iniciar preparo → EM_PREPARO
-  5. Marcar como pronto → PRONTO (evento publicado)
-  6. Verificar propagação → Status atualizado no serviço Pedidos
-  7. Retirar pedido → FINALIZADO
-  8. Remover da fila → Confirmado
+**17-19/Nov:**
+- Implementacao completa de CD (4 workflows)
+- Testes de deploy
 
-#### 📊 Estado Atual do Projeto
-- **4 de 4 microserviços** implementados e operacionais (100%)
-- **Todas as integrações** REST e RabbitMQ funcionando (100%)
-- **Infraestrutura K8s** completa (MySQL x3, MongoDB, RabbitMQ) (100%)
-- **Testes E2E** básicos funcionando (70%)
-- **Cobertura média de testes:** 82.5% (meta: 80%)
+**20/Nov:**
+- Branch protection
+- Atualizacao README
+- Adicionar badges
 
-### Próximas Ações Recomendadas
+**21-22/Nov:**
+- Gravacao e edicao do video
+- Preparacao documento de entrega
 
-#### Prioridade Imediata (1-2 dias)
-1. **Completar Testes E2E (30% restante)**
-   - Adicionar teste com cliente identificado
-   - Adicionar teste de pagamento rejeitado
-   - Implementar testes de edge cases
-   - Gerar relatório de execução
-
-2. **Remover Aplicação Monolítica**
-   - Deletar diretórios app/autoatendimento e app/pagamento
-   - Atualizar workflows GitHub Actions
-   - Limpar NodePort 30080
-   - Atualizar documentação
-
-#### Próximas Fases (médio prazo)
-3. **Migração para AWS (FASE 2)**
-   - Implementar autenticação com Cognito
-   - Configurar Ingress no EKS
-   - Automatizar CI/CD completo
-
-4. **Melhorias Opcionais (FASE 3)**
-   - Observabilidade (Prometheus/Grafana)
-   - Segurança avançada
-   - Otimizações de performance
+**23/Nov:**
+- Revisao final
+- Submissao
 
 ---
 
-**Última atualização desta sessão:** 2025-11-13 15:00
-**Commits desta sessão:** Replanejamento de CI/CD (pipelines separados por serviço)
-**Arquivos criados/modificados:**
-  - BACKLOG.md (ATUALIZADO - novo planejamento CI/CD)
-**Responsável:** Anderson
-**Status Geral:** 🟡 50% Concluído - Fase 1 e 2 completas, Fase 3 em andamento
-**Próxima Milestone:** Sprint 4 - CI/CD Separado por Serviço (começando por Clientes)
-**Sprint Atual:** Sprint 4 - Fase 1: Clientes (CD + CI + SonarCloud)
+## OBSERVACOES IMPORTANTES
+
+### Requisitos Fase 4 (Tech Challenge PDF)
+
+**Microservicos:**
+- Minimo 3 servicos ✅ (implementados 4)
+- Banco SQL + NoSQL ✅ (MySQL + MongoDB)
+- Comunicacao entre servicos ✅ (REST + RabbitMQ)
+- Isolamento de dados ✅
+
+**Testes:**
+- Testes unitarios ✅
+- 80% cobertura ✅ (86.5% media)
+- BDD em ao menos um caminho ❌ PENDENTE
+
+**Repositorios e CI/CD:**
+- Branches protegidas ❌ PENDENTE
+- PR com validacao de build e qualidade ✅
+- SonarCloud 70%+ coverage ✅
+- Deploy automatico no merge ❌ PENDENTE
+
+**Entrega:**
+- Video demonstracao ❌ PENDENTE
+- Links para repositorios ✅ (parcial)
+- Evidencias de cobertura ✅ (parcial)
+- Usuario soat-architecture adicionado ❌ PENDENTE
+
+---
+
+## LINKS UTEIS
+
+- **Repositorio:** https://github.com/andersonfer/lanchonete-app
+- **SonarCloud Org:** https://sonarcloud.io/organizations/andersonfer
+- **SonarCloud Projects:**
+  - Clientes: https://sonarcloud.io/project/overview?id=andersonfer_lanchonete-clientes
+  - Pedidos: https://sonarcloud.io/project/overview?id=andersonfer_lanchonete-pedidos
+  - Cozinha: https://sonarcloud.io/project/overview?id=andersonfer_lanchonete-cozinha
+  - Pagamento: https://sonarcloud.io/project/overview?id=andersonfer_lanchonete-pagamento
+
+---
+
+**Ultima Atualizacao:** 2025-11-14 18:30
+**Responsavel:** Anderson
+**Status Geral:** 50% Concluido - CI implementado, CD e BDD pendentes
+**Proxima Acao:** Implementar BDD no servico de Clientes
+**Prazo Estimado:** 9 dias para conclusao total

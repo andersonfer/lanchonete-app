@@ -10,6 +10,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/clientes")
 @Tag(name = "Clientes", description = "Endpoints para gestão de clientes")
 public class ClienteController {
+
+    private static final Logger log = LoggerFactory.getLogger(ClienteController.class);
 
     private final ClienteService clienteService;
 
@@ -42,6 +46,7 @@ public class ClienteController {
     })
     @PostMapping
     public ResponseEntity<ClienteResponse> cadastrar(@RequestBody final ClienteRequest request) {
+        log.info("CI/CD Test - Build 2025-11-17-v1 - Cadastro de cliente solicitado para CPF: {}", request.cpf());
         final ClienteResponse response = clienteService.cadastrar(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

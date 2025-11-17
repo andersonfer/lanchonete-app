@@ -68,6 +68,7 @@ public class ClienteController {
     })
     @PostMapping("/identificar")
     public ResponseEntity<ClienteResponse> identificar(@RequestBody final IdentificarClienteRequest request) {
+        log.info("CD Versionado - Identificação de cliente solicitada para CPF: {}", request.cpf());
         final ClienteResponse response = clienteService.identificar(request.cpf());
         return ResponseEntity.ok(response);
     }

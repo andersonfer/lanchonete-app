@@ -2,7 +2,7 @@
 
 **Projeto:** Sistema de Lanchonete - Arquitetura de Microserviços
 **Branch Atual:** main
-**Última Atualizacao:** 2025-11-14 18:30
+**Última Atualizacao:** 2025-11-17 14:30
 **Fase Atual:** Fase 4 - CI/CD e Qualidade de Codigo
 
 ---
@@ -27,8 +27,8 @@
 - **Comunicacao entre Servicos:** 100% CONCLUIDO (REST + RabbitMQ)
 - **Testes Unitarios:** 100% CONCLUIDO (80%+ cobertura em todos)
 - **CI com SonarCloud:** 100% CONCLUIDO
+- **Testes BDD:** 100% CONCLUIDO (19 cenários em 4 serviços)
 - **CD para AWS EKS:** 0% PENDENTE
-- **Testes BDD:** 0% PENDENTE
 - **Repositorios Separados:** 0% PENDENTE
 
 ---
@@ -83,12 +83,14 @@
 ### Current Status
 
 **Total de Entregaveis Fase 4:** 8 principais
-- **Concluidos:** 3/8 (37.5%)
+- **Concluidos:** 4/8 (50%)
 - **Em Progresso:** 0/8
-- **Pendentes:** 5/8 (62.5%)
+- **Pendentes:** 4/8 (50%)
 
 **Quality Metrics:**
 - Cobertura Media de Testes: 86.5% (meta: 80%)
+- Testes BDD: 19 cenários (100% passing)
+- Testes Totais: 393 (374 unitários + 19 BDD)
 - Pipelines CI Funcionando: 4/4 (100%)
 - Pipelines CD Funcionando: 0/4 (0%)
 - SonarCloud Projects: 4/4 configurados
@@ -110,8 +112,8 @@
 
 **PENDENCIAS CRITICAS:**
 - ❌ Pipelines de CD nao implementados (Entregavel 3c)
-- ❌ Testes BDD nao implementados (Entregavel 2a)
 - ❌ Branch protection nao configurada (Entregavel 3a)
+- ❌ Video de demonstração não gravado (Entregavel 4a)
 
 ---
 
@@ -147,18 +149,40 @@
 - Relatorios gerados automaticamente no CI
 - SonarCloud validando cobertura
 
-#### 2b. Testes BDD (Ao menos um caminho) ❌ PENDENTE
+#### 2b. Testes BDD (Ao menos um caminho) ✅ CONCLUIDO
 
-**Status:** NAO INICIADO
+**Status:** IMPLEMENTADO EM 4 SERVICOS
 
 **Requisitos:**
-- [ ] Implementar BDD em ao menos um servico
-- [ ] Usar Cucumber ou framework similar
-- [ ] Escrever features em Gherkin
-- [ ] Integrar com CI/CD
+- [x] Implementar BDD em ao menos um servico
+- [x] Usar Cucumber ou framework similar
+- [x] Escrever features em Gherkin
+- [x] Integrar com CI/CD
 
-**Estimativa:** 3-4 dias
-**Prioridade:** P0 - CRITICA (obrigatorio para entrega)
+**Implementação:**
+- ✅ **Clientes:** 6 cenários BDD (2 features)
+  - Feature: Cadastro de Cliente (4 cenários)
+  - Feature: Identificação Cliente (2 cenários)
+- ✅ **Pagamento:** 5 cenários BDD (1 feature)
+  - Feature: Validação de Valor de Pagamento (5 cenários)
+- ✅ **Pedidos:** 4 cenários BDD (2 features)
+  - Feature: Consultar Produtos (1 cenário)
+  - Feature: Criar Pedido (3 cenários)
+- ✅ **Cozinha:** 4 cenários BDD (2 features)
+  - Feature: Consultar Fila da Cozinha (2 cenários)
+  - Feature: Gerenciar Preparo de Pedidos (2 cenários)
+
+**Total:** 19 cenários BDD implementados e passando
+**Framework:** Cucumber 7.18.0 + JUnit Platform
+**Linguagem:** Gherkin em Português
+**Padrão:** Given-When-Then
+**Relatórios:** HTML + JSON gerados automaticamente
+
+**Evidências:**
+- Commit: feature/testes-bdd merged to main
+- Tests run: 393 (374 unitários + 19 BDD)
+- Success rate: 100%
+- Relatórios: target/cucumber-reports/ em cada serviço
 
 ---
 
@@ -580,7 +604,7 @@ Cada servico tera um workflow de CD com os seguintes passos:
 **OBRIGATORIOS:**
 - [x] 1. Refatoracao em ao menos 3 microservicos (4 implementados)
 - [x] 2a. Testes unitarios com 80% cobertura (media 86.5%)
-- [ ] 2b. Ao menos um caminho com BDD (PENDENTE)
+- [x] 2b. Ao menos um caminho com BDD (19 cenários implementados!)
 - [ ] 3a. Repositorios separados OU justificativa (DECISAO PENDENTE)
 - [x] 3b. CI com SonarCloud 70%+ coverage (4 workflows funcionando)
 - [ ] 3c. CD com deploy automatico (PENDENTE)
@@ -686,7 +710,7 @@ Cada servico tera um workflow de CD com os seguintes passos:
 **Testes:**
 - Testes unitarios ✅
 - 80% cobertura ✅ (86.5% media)
-- BDD em ao menos um caminho ❌ PENDENTE
+- BDD em ao menos um caminho ✅ (19 cenários implementados)
 
 **Repositorios e CI/CD:**
 - Branches protegidas ❌ PENDENTE
@@ -714,8 +738,8 @@ Cada servico tera um workflow de CD com os seguintes passos:
 
 ---
 
-**Ultima Atualizacao:** 2025-11-14 18:30
+**Ultima Atualizacao:** 2025-11-17 14:30
 **Responsavel:** Anderson
-**Status Geral:** 50% Concluido - CI implementado, CD e BDD pendentes
-**Proxima Acao:** Implementar BDD no servico de Clientes
-**Prazo Estimado:** 9 dias para conclusao total
+**Status Geral:** 50% Concluido - CI e BDD implementados, CD pendente
+**Proxima Acao:** Implementar pipelines de CD para deploy automatico
+**Prazo Estimado:** 6 dias para conclusao total

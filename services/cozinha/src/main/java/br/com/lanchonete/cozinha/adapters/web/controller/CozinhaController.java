@@ -12,6 +12,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +24,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/cozinha")
 @Tag(name = "Cozinha", description = "Endpoints para gestão da fila da cozinha")
 public class CozinhaController {
+
+    private static final Logger log = LoggerFactory.getLogger(CozinhaController.class);
 
     private final ListarPedidosCozinhaUseCase listarPedidosCozinhaUseCase;
     private final IniciarPreparoPedidoUseCase iniciarPreparoPedidoUseCase;
@@ -50,6 +54,7 @@ public class CozinhaController {
     })
     @GetMapping("/fila")
     public ResponseEntity<List<PedidoCozinhaResponse>> listarFila() {
+        log.info("CD Versionado SHA - Consulta da fila da cozinha solicitada");
         List<PedidoCozinha> pedidos = listarPedidosCozinhaUseCase.executar();
         List<PedidoCozinhaResponse> response = pedidos.stream()
                 .map(PedidoCozinhaResponse::fromDomain)

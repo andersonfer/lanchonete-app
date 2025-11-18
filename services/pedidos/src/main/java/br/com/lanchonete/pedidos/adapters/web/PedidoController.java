@@ -62,7 +62,7 @@ public class PedidoController {
     })
     @PostMapping
     public ResponseEntity<PedidoResponse> realizarPedido(@RequestBody RealizarPedidoRequest request) {
-        log.info("CD Versionado SHA - Pedido solicitado para cliente: {}", request.getCpfCliente());
+        log.info("CD Versionado SHA - Pedido solicitado");
         List<CriarPedidoUseCase.ItemPedidoInput> itensInput = request.getItens().stream()
                 .map(item -> new CriarPedidoUseCase.ItemPedidoInput(item.getProdutoId(), item.getQuantidade()))
                 .collect(Collectors.toList());

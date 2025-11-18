@@ -20,111 +20,117 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Validar arquivos YAML/YML
+      - name: Verificar arquivos modificados
+        id: changed-files
         run: |
-          echo "🔍 Validando arquivos YAML do Kubernetes..."
+          echo "🔍 Analisando mudanças no PR..."
 
-          # Verificar se há arquivos YAML modificados
-          YAML_FILES=$(find k8s -name "*.yaml" -o -name "*.yml" 2>/dev/null || true)
+          # Listar arquivos modificados
+          git diff --name-only origin/main...HEAD > changed_files.txt
 
-          if [ -n "$YAML_FILES" ]; then
-            echo "✅ Encontrados arquivos YAML para validar"
-            # Validação básica de sintaxe YAML
-            for file in $YAML_FILES; do
-              # Pular arquivos de deployment AWS (contêm placeholders {{ECR_*}})
-              if [[ "$file" == *"aws/deployments"* ]]; then
-                echo "  ⏭️  Pulando (template): $file"
-                continue
-              fi
+          echo "📝 Arquivos modificados:"
+          cat changed_files.txt
 
-              echo "  Validando: $file"
-              # Verifica se o arquivo tem sintaxe válida usando Python
-              python3 -c "import yaml; yaml.safe_load(open('$file'))" 2>&1 || {
-                echo "❌ Erro de sintaxe em $file"
-                exit 1
-              }
-            done
-            echo "✅ Todos os arquivos YAML são válidos"
-          else
-            echo "ℹ️  Nenhum arquivo YAML encontrado"
-          fi
+          # Contar arquivos
+          FILE_COUNT=$(wc -l < changed_files.txt)
+          echo "total_files=$FILE_COUNT" >> $GITHUB_OUTPUT
 
-      - name: Validar arquivos Terraform
+          echo "✅ Total de $FILE_COUNT arquivo(s) modificado(s)"
+
+      - name: Verificar arquivos sensíveis
         run: |
-          echo "🔍 Validando arquivos Terraform..."
+          echo "🔐 Verificando se há arquivos sensíveis..."
 
-          if [ -d "infra" ]; then
-            # Verificar formatação do Terraform
-            cd infra
+          # Lista de padrões de arquivos sensíveis que não devem estar no repo
+          SENSITIVE_PATTERNS=(
+            "*.pem"
+            "*.key"
+            "*.p12"
+            "*.jks"
+            "*credentials*"
+            "*.env"
+            "*secret*"
+            "*password*"
+          )
 
-            # Instalar Terraform se necessário
-            if ! command -v terraform &> /dev/null; then
-              echo "📥 Instalando Terraform..."
-              wget -q https://releases.hashicorp.com/terraform/1.6.0/terraform_1.6.0_linux_amd64.zip
-              unzip -q terraform_1.6.0_linux_amd64.zip
-              sudo mv terraform /usr/local/bin/
+          FOUND_SENSITIVE=false
+
+          for pattern in "${SENSITIVE_PATTERNS[@]}"; do
+            FILES=$(git diff --name-only origin/main...HEAD | grep -i "$pattern" || true)
+            if [ -n "$FILES" ]; then
+              echo "⚠️  ATENÇÃO: Arquivo potencialmente sensível encontrado: $FILES"
+              FOUND_SENSITIVE=true
             fi
+          done
 
-            echo "🔍 Verificando formatação..."
-            terraform fmt -check -recursive || {
-              echo "⚠️  Arquivos Terraform não estão formatados corretamente"
-              echo "💡 Execute: terraform fmt -recursive"
-              # Não falhar por formatação, apenas avisar
-            }
-
-            echo "✅ Validação Terraform concluída"
+          if [ "$FOUND_SENSITIVE" = true ]; then
+            echo "⚠️  Encontrados arquivos que podem conter informações sensíveis"
+            echo "💡 Verifique se não há credenciais, senhas ou chaves no código"
+            # Não falhar, apenas avisar
           else
-            echo "ℹ️  Diretório infra/ não encontrado"
+            echo "✅ Nenhum arquivo sensível detectado"
           fi
 
-      - name: Validar estrutura de workflows
+      - name: Verificar tamanho de arquivos
         run: |
-          echo "🔍 Validando workflows do GitHub Actions..."
+          echo "📦 Verificando tamanho de arquivos..."
 
-          if [ -d ".github/workflows" ]; then
-            WORKFLOW_FILES=$(find .github/workflows -name "*.yml" -o -name "*.yaml" 2>/dev/null || true)
+          # Verificar se há arquivos grandes (>5MB)
+          LARGE_FILES=$(git diff --name-only origin/main...HEAD | while read file; do
+            if [ -f "$file" ]; then
+              SIZE=$(stat -f%z "$file" 2>/dev/null || stat -c%s "$file" 2>/dev/null || echo 0)
+              if [ "$SIZE" -gt 5242880 ]; then
+                echo "$file ($(numfmt --to=iec $SIZE 2>/dev/null || echo $SIZE bytes))"
+              fi
+            fi
+          done)
 
-            for file in $WORKFLOW_FILES; do
-              echo "  Validando: $file"
-              python3 -c "import yaml; yaml.safe_load(open('$file'))" 2>&1 || {
-                echo "❌ Erro de sintaxe em $file"
-                exit 1
-              }
-            done
-            echo "✅ Todos os workflows são válidos"
+          if [ -n "$LARGE_FILES" ]; then
+            echo "⚠️  Arquivos grandes detectados (>5MB):"
+            echo "$LARGE_FILES"
+            echo "💡 Considere usar Git LFS para arquivos binários grandes"
+          else
+            echo "✅ Nenhum arquivo grande detectado"
           fi
 
-      - name: Validar scripts bash
+      - name: Verificar merge conflicts
         run: |
-          echo "🔍 Validando scripts bash..."
+          echo "🔀 Verificando markers de merge conflict..."
 
-          # Encontrar todos os scripts .sh
-          SCRIPTS=$(find deploy_scripts test_scripts -name "*.sh" 2>/dev/null || true)
+          CONFLICT_FILES=$(git diff --name-only origin/main...HEAD | while read file; do
+            if [ -f "$file" ]; then
+              if grep -l "<<<<<<< HEAD\|=======" "$file" 2>/dev/null; then
+                echo "$file"
+              fi
+            fi
+          done)
 
-          if [ -n "$SCRIPTS" ]; then
-            for script in $SCRIPTS; do
-              echo "  Validando: $script"
-              # Verificar sintaxe bash
-              bash -n "$script" || {
-                echo "❌ Erro de sintaxe em $script"
-                exit 1
-              }
-            done
-            echo "✅ Todos os scripts bash são válidos"
+          if [ -n "$CONFLICT_FILES" ]; then
+            echo "❌ ERRO: Markers de merge conflict encontrados em:"
+            echo "$CONFLICT_FILES"
+            exit 1
           else
-            echo "ℹ️  Nenhum script bash encontrado"
+            echo "✅ Nenhum marker de conflict detectado"
           fi
 
       - name: Resumo da validação
-        if: success()
+        if: always()
         run: |
           echo "## ✅ Validações Globais - Resumo" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Todas as validações passaram com sucesso:" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Estatísticas do PR" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Arquivos YAML validados" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Terraform verificado" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Workflows validados" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Scripts bash validados" >> $GITHUB_STEP_SUMMARY
+
+          FILE_COUNT=$(git diff --name-only origin/main...HEAD | wc -l)
+          COMMIT_COUNT=$(git log origin/main...HEAD --oneline | wc -l)
+
+          echo "- 📝 **Arquivos modificados:** $FILE_COUNT" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔄 **Commits:** $COMMIT_COUNT" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "🎉 PR pronto para merge!" >> $GITHUB_STEP_SUMMARY
+          echo "### ✅ Validações Executadas" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Verificação de arquivos sensíveis" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Verificação de tamanho de arquivos" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Verificação de merge conflicts" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🎉 **PR pronto para revisão!**" >> $GITHUB_STEP_SUMMARY

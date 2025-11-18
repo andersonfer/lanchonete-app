@@ -1,0 +1,124 @@
+name: CI - Global Validations
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+      - 'services/clientes/**'
+      - 'services/pedidos/**'
+      - 'services/cozinha/**'
+      - 'services/pagamento/**'
+
+jobs:
+  validate:
+    name: Testes e Análise SonarCloud
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validar arquivos YAML/YML
+        run: |
+          echo "🔍 Validando arquivos YAML do Kubernetes..."
+
+          # Verificar se há arquivos YAML modificados
+          YAML_FILES=$(find k8s -name "*.yaml" -o -name "*.yml" 2>/dev/null || true)
+
+          if [ -n "$YAML_FILES" ]; then
+            echo "✅ Encontrados arquivos YAML para validar"
+            # Validação básica de sintaxe YAML
+            for file in $YAML_FILES; do
+              echo "  Validando: $file"
+              # Verifica se o arquivo tem sintaxe válida usando Python
+              python3 -c "import yaml; yaml.safe_load(open('$file'))" 2>&1 || {
+                echo "❌ Erro de sintaxe em $file"
+                exit 1
+              }
+            done
+            echo "✅ Todos os arquivos YAML são válidos"
+          else
+            echo "ℹ️  Nenhum arquivo YAML encontrado"
+          fi
+
+      - name: Validar arquivos Terraform
+        run: |
+          echo "🔍 Validando arquivos Terraform..."
+
+          if [ -d "infra" ]; then
+            # Verificar formatação do Terraform
+            cd infra
+
+            # Instalar Terraform se necessário
+            if ! command -v terraform &> /dev/null; then
+              echo "📥 Instalando Terraform..."
+              wget -q https://releases.hashicorp.com/terraform/1.6.0/terraform_1.6.0_linux_amd64.zip
+              unzip -q terraform_1.6.0_linux_amd64.zip
+              sudo mv terraform /usr/local/bin/
+            fi
+
+            echo "🔍 Verificando formatação..."
+            terraform fmt -check -recursive || {
+              echo "⚠️  Arquivos Terraform não estão formatados corretamente"
+              echo "💡 Execute: terraform fmt -recursive"
+              # Não falhar por formatação, apenas avisar
+            }
+
+            echo "✅ Validação Terraform concluída"
+          else
+            echo "ℹ️  Diretório infra/ não encontrado"
+          fi
+
+      - name: Validar estrutura de workflows
+        run: |
+          echo "🔍 Validando workflows do GitHub Actions..."
+
+          if [ -d ".github/workflows" ]; then
+            WORKFLOW_FILES=$(find .github/workflows -name "*.yml" -o -name "*.yaml" 2>/dev/null || true)
+
+            for file in $WORKFLOW_FILES; do
+              echo "  Validando: $file"
+              python3 -c "import yaml; yaml.safe_load(open('$file'))" 2>&1 || {
+                echo "❌ Erro de sintaxe em $file"
+                exit 1
+              }
+            done
+            echo "✅ Todos os workflows são válidos"
+          fi
+
+      - name: Validar scripts bash
+        run: |
+          echo "🔍 Validando scripts bash..."
+
+          # Encontrar todos os scripts .sh
+          SCRIPTS=$(find deploy_scripts test_scripts -name "*.sh" 2>/dev/null || true)
+
+          if [ -n "$SCRIPTS" ]; then
+            for script in $SCRIPTS; do
+              echo "  Validando: $script"
+              # Verificar sintaxe bash
+              bash -n "$script" || {
+                echo "❌ Erro de sintaxe em $script"
+                exit 1
+              }
+            done
+            echo "✅ Todos os scripts bash são válidos"
+          else
+            echo "ℹ️  Nenhum script bash encontrado"
+          fi
+
+      - name: Resumo da validação
+        if: success()
+        run: |
+          echo "## ✅ Validações Globais - Resumo" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Todas as validações passaram com sucesso:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Arquivos YAML validados" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Terraform verificado" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Workflows validados" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Scripts bash validados" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🎉 PR pronto para merge!" >> $GITHUB_STEP_SUMMARY

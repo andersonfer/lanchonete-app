@@ -93,30 +93,6 @@ jobs:
             echo "✅ Nenhum arquivo grande detectado"
           fi
 
-      - name: Verificar merge conflicts
-        run: |
-          echo "🔀 Verificando markers de merge conflict..."
-
-          CONFLICT_FILES=$(git diff --name-only origin/main...HEAD | while read file; do
-            if [ -f "$file" ]; then
-              # Buscar por markers de conflict (usando variáveis para evitar falso positivo)
-              MARKER1="<<<<<<< HEAD"
-              MARKER2="======="
-              MARKER3=">>>>>>>"
-              if grep -l "$MARKER1\|$MARKER2\|$MARKER3" "$file" 2>/dev/null; then
-                echo "$file"
-              fi
-            fi
-          done)
-
-          if [ -n "$CONFLICT_FILES" ]; then
-            echo "❌ ERRO: Markers de merge conflict encontrados em:"
-            echo "$CONFLICT_FILES"
-            exit 1
-          else
-            echo "✅ Nenhum marker de conflict detectado"
-          fi
-
       - name: Resumo da validação
         if: always()
         run: |

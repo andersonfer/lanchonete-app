@@ -99,7 +99,11 @@ jobs:
 
           CONFLICT_FILES=$(git diff --name-only origin/main...HEAD | while read file; do
             if [ -f "$file" ]; then
-              if grep -l "<<<<<<< HEAD\|=======" "$file" 2>/dev/null; then
+              # Buscar por markers de conflict (usando variáveis para evitar falso positivo)
+              MARKER1="<<<<<<< HEAD"
+              MARKER2="======="
+              MARKER3=">>>>>>>"
+              if grep -l "$MARKER1\|$MARKER2\|$MARKER3" "$file" 2>/dev/null; then
                 echo "$file"
               fi
             fi

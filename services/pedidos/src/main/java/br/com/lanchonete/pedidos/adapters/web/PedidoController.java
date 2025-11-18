@@ -14,6 +14,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +27,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/pedidos")
 @Tag(name = "Pedidos", description = "Endpoints para gestão de pedidos")
 public class PedidoController {
+
+    private static final Logger log = LoggerFactory.getLogger(PedidoController.class);
 
     private final CriarPedidoUseCase criarPedidoUseCase;
     private final BuscarPedidoUseCase buscarPedidoUseCase;
@@ -58,6 +62,7 @@ public class PedidoController {
     })
     @PostMapping
     public ResponseEntity<PedidoResponse> realizarPedido(@RequestBody RealizarPedidoRequest request) {
+        log.info("CD Versionado SHA - Pedido solicitado");
         List<CriarPedidoUseCase.ItemPedidoInput> itensInput = request.getItens().stream()
                 .map(item -> new CriarPedidoUseCase.ItemPedidoInput(item.getProdutoId(), item.getQuantidade()))
                 .collect(Collectors.toList());

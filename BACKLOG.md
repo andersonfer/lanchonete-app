@@ -446,17 +446,261 @@ Cada pipeline CD possui 12 passos:
 
 ### Immediate Priority (Start Now)
 
-**0. [CLEANUP] Remover Código Legado do Monolito** 🧹 LIMPEZA TÉCNICA
+**0. [CLEANUP] Remover Código Legado do Monolito** ✅ CONCLUIDO
    - **Why:** Remover código antigo não utilizado, organizar repositório
    - **Depends on:** Nothing
    - **Effort:** 30 minutos
    - **Priority:** P1 - MEDIA
+   - **Status:** CONCLUIDO (PR #21 - 195 arquivos deletados)
    - **Acceptance Criteria:**
-     - [ ] Deletar diretório `app/` (código monolito antigo)
-     - [ ] Deletar diretório `k8s_manifests/` (manifestos k8s antigos)
-     - [ ] Deletar diretório `scripts_k8s/` (scripts antigos)
-     - [ ] Verificar ausência de referências aos diretórios deletados
-     - [ ] Commit: "chore: remove legacy monolith code and old k8s manifests"
+     - [x] Deletar diretório `app/` (código monolito antigo - 148 arquivos)
+     - [x] Deletar diretório `k8s_manifests/` (manifestos k8s antigos - 15 arquivos)
+     - [x] Deletar diretório `scripts_k8s/` (scripts antigos - 5 arquivos)
+     - [x] Deletar diretório `scripts/` (scripts legados - 9 arquivos)
+     - [x] Deletar `docker-compose.yml` (setup local legado)
+     - [x] Verificar ausência de referências aos diretórios deletados
+     - [x] Commit: "remoção do código antigo"
+
+**0.1 [CLEANUP] Remover Scripts de Deploy/Teste Local** 🧹 NOVA TAREFA
+   - **Why:** Limpar scripts locais não utilizados (apenas AWS é usado)
+   - **Depends on:** Análise de dependências concluída
+   - **Effort:** 30-45 minutos
+   - **Priority:** P2 - BAIXA
+   - **Status:** PENDENTE
+   - **Acceptance Criteria:**
+     - [ ] Analisar referências cruzadas entre scripts local/AWS (✅ JÁ FEITO)
+     - [ ] Deletar `deploy_scripts/local/` (4 scripts + README)
+       - build.sh, deploy.sh, cleanup.sh, destroy.sh
+     - [ ] Deletar `test_scripts/local/` (1 script)
+       - test-e2e.sh
+     - [ ] Manter `deploy_scripts/aws/` (6 scripts - USADOS)
+     - [ ] Manter `test_scripts/aws/` (5 scripts - USADOS)
+     - [ ] Verificar ausência de referências nos workflows GitHub
+     - [ ] Commit: "chore: remove local deployment and test scripts"
+   - **Análise:** Zero referências cruzadas detectadas (local vs AWS completamente isolados)
+
+**0.2 [CLEANUP] Remover Manifestos K8s Local** 🧹 NOVA TAREFA
+   - **Why:** Limpar manifestos K8s locais não utilizados (apenas AWS é usado)
+   - **Depends on:** Análise de dependências concluída
+   - **Effort:** 30-45 minutos
+   - **Priority:** P2 - BAIXA
+   - **Status:** PENDENTE
+   - **Acceptance Criteria:**
+     - [ ] Analisar uso de manifestos base/local/aws (✅ JÁ FEITO)
+     - [ ] Deletar `k8s/local/deployments/` (4 arquivos)
+       - clientes, pedidos, cozinha, pagamento deployments
+     - [ ] Deletar `k8s/local/statefulsets/` (5 arquivos)
+       - MySQL (3x), MongoDB, RabbitMQ statefulsets
+     - [ ] Deletar `k8s/ingress/local/` (2 arquivos)
+       - cozinha-nodeport.yaml, pedidos-nodeport.yaml
+     - [ ] Deletar `k8s/base/statefulsets/` (5 arquivos - NÃO REFERENCIADOS)
+       - Validar com: grep -r "k8s/base/statefulsets" (✅ ZERO REFS)
+     - [ ] Manter `k8s/aws/` (6 arquivos - USADOS NO CD)
+     - [ ] Manter `k8s/base/configmaps/` (4 arquivos - USADOS NO CD)
+     - [ ] Manter `k8s/base/services/` (4 arquivos - USADOS NO CD)
+     - [ ] Manter `k8s/ingress/aws/` (5 arquivos - USADOS NO CD)
+     - [ ] Manter `k8s/hpa/` (4 arquivos - AUTOSCALING)
+     - [ ] Verificar ausência de referências nos workflows e scripts AWS
+     - [ ] Commit: "chore: remove local k8s manifests and unused base statefulsets"
+   - **Análise:**
+     - AWS usa apenas: `k8s/aws/`, `k8s/base/{configmaps,services}`, `k8s/ingress/aws/`
+     - Base statefulsets nunca referenciados (artefato histórico)
+     - Local completamente isolado do AWS
+
+**0.3 [INFRA] CI/CD para Infraestrutura (Terraform + K8s)** 🏗️ NOVA TAREFA
+   - **Why:** Automação de provisionamento de infraestrutura, segurança e rastreabilidade
+   - **Depends on:** Análise de estrutura atual
+   - **Effort:** 6-8 horas
+   - **Priority:** P3 - MELHORIA (não obrigatório, mas altamente recomendado)
+   - **Status:** PROPOSTA
+
+   **Estrutura Atual:**
+   - **Terraform:** 7 módulos (backend, ecr, database, kubernetes, auth, lambda, api-gateway, ingress)
+   - **K8s Manifests:** Base (configmaps, services), AWS (deployments, statefulsets, ingress), HPA
+   - **Provisionamento:** Manual via scripts `deploy_scripts/aws/`
+   - **Estado:** S3 backend (já configurado em `infra/backend/`)
+
+   **Pipeline Proposto - Terraform (CI):**
+   ```yaml
+   name: CI - Terraform Infrastructure
+
+   on:
+     pull_request:
+       branches: [main]
+       paths:
+         - 'infra/**/*.tf'
+         - '.github/workflows/ci-terraform.yml'
+
+   jobs:
+     validate:
+       - terraform fmt -check (validar formatação)
+       - terraform init (validar configuração)
+       - terraform validate (validar sintaxe)
+       - tfsec (security scanning)
+       - terraform plan (dry-run, postar no PR como comentário)
+       - checkov (policy as code - opcional)
+   ```
+
+   **Pipeline Proposto - Terraform (CD):**
+   ```yaml
+   name: CD - Terraform Infrastructure
+
+   on:
+     push:
+       branches: [main]
+       paths:
+         - 'infra/database/**'
+         - 'infra/kubernetes/**'
+         - 'infra/auth/**'
+         - 'infra/lambda/**'
+         - 'infra/api-gateway/**'
+         - 'infra/ingress/**'
+
+   jobs:
+     deploy:
+       - terraform init
+       - terraform plan -out=tfplan
+       - terraform apply tfplan (com aprovação manual se produção)
+       - terraform output > outputs.json (artefato)
+   ```
+
+   **Pipeline Proposto - K8s Manifests (CI):**
+   ```yaml
+   name: CI - K8s Manifests
+
+   on:
+     pull_request:
+       branches: [main]
+       paths:
+         - 'k8s/**/*.yaml'
+         - 'k8s/**/*.yml'
+         - '.github/workflows/ci-k8s.yml'
+
+   jobs:
+     validate:
+       - kubeval (validar sintaxe YAML)
+       - kube-score (best practices)
+       - kubeconform (validar contra API K8s)
+       - kubectl dry-run (simular apply)
+       - kustomize build (se usar Kustomize)
+   ```
+
+   **Pipeline Proposto - K8s Manifests (CD):**
+   ```yaml
+   name: CD - K8s Shared Resources
+
+   on:
+     push:
+       branches: [main]
+       paths:
+         - 'k8s/base/configmaps/**'
+         - 'k8s/base/services/**'
+         - 'k8s/aws/statefulsets/**'
+         - 'k8s/ingress/aws/**'
+         - 'k8s/hpa/**'
+
+   jobs:
+     deploy:
+       - kubectl apply -f k8s/base/configmaps/
+       - kubectl apply -f k8s/base/services/
+       - kubectl apply -f k8s/aws/statefulsets/
+       - kubectl apply -f k8s/ingress/aws/
+       - kubectl apply -f k8s/hpa/
+       - kubectl rollout status (aguardar)
+   ```
+
+   **Estratégia de Separação:**
+
+   1. **Terraform - Por Módulo com Dependências:**
+      - Camada 1: `backend`, `ecr` (sem dependências)
+      - Camada 2: `kubernetes` (depende de VPC/network se existir)
+      - Camada 3: `database`, `auth` (depende de kubernetes/network)
+      - Camada 4: `lambda`, `api-gateway`, `ingress` (depende de tudo)
+      - Executar em ordem ou usar `terraform apply -target` seletivo
+
+   2. **K8s - Por Tipo de Recurso:**
+      - Recursos base (configmaps, services) - sempre primeiro
+      - Statefulsets (bancos de dados) - antes de deployments
+      - Deployments (aplicações) - já coberto pelos CD de serviços
+      - Ingress/HPA - depois de services/deployments
+
+   **Path Filters Recomendados:**
+   ```yaml
+   # CI Terraform - valida TUDO
+   paths:
+     - 'infra/**/*.tf'
+
+   # CD Terraform - por módulo (workflows separados)
+   paths:
+     - 'infra/database/**'  # CD Database
+     - 'infra/kubernetes/**' # CD EKS
+     - 'infra/auth/**'       # CD Cognito
+     # etc...
+
+   # CI K8s - valida TUDO
+   paths:
+     - 'k8s/**/*.yaml'
+     - 'k8s/**/*.yml'
+
+   # CD K8s - apenas recursos compartilhados
+   paths:
+     - 'k8s/base/configmaps/**'
+     - 'k8s/base/services/**'
+     - 'k8s/aws/statefulsets/**'
+     - 'k8s/ingress/aws/**'
+     - 'k8s/hpa/**'
+
+   # CD K8s Deployments - já cobertos pelos CD de cada serviço
+   # (clientes, pedidos, cozinha, pagamento)
+   ```
+
+   **Problemas a Resolver:**
+
+   1. **Terraform State Locking:**
+      - Usar DynamoDB lock table no backend S3
+      - Evitar applies concorrentes
+
+   2. **Credenciais AWS:**
+      - Mesmas secrets já configuradas (AWS_ACCESS_KEY_ID, etc.)
+      - Considerar OIDC federation para maior segurança
+
+   3. **Aprovação Manual:**
+      - Terraform apply em produção deve requerer aprovação
+      - GitHub Environments com reviewers
+
+   4. **Ordem de Execução:**
+      - Terraform ANTES de K8s (infra antes de manifests)
+      - Usar workflow dependencies se necessário
+
+   5. **Rollback:**
+      - Manter tfplan como artefato
+      - Permitir `terraform apply` de plano anterior
+      - K8s: usar `kubectl rollout undo`
+
+   **Acceptance Criteria:**
+     - [ ] Workflow CI - Terraform (fmt, validate, plan, security scan)
+     - [ ] Workflow CD - Terraform Database (automated ou manual approval)
+     - [ ] Workflow CD - Terraform Kubernetes (automated ou manual approval)
+     - [ ] Workflow CD - Terraform Auth/Lambda/Gateway (automated ou manual approval)
+     - [ ] Workflow CI - K8s Manifests (validation, dry-run)
+     - [ ] Workflow CD - K8s Shared Resources (configmaps, services, ingress, hpa)
+     - [ ] DynamoDB lock table configurado no backend S3
+     - [ ] Documentar strategy e ordem de execução
+     - [ ] Adicionar badges de CI/CD infra no README
+     - [ ] Testar rollback scenarios
+
+   **Ferramentas Recomendadas:**
+   - **Terraform:** tfsec, checkov (security), terraform-docs
+   - **K8s:** kubeval, kube-score, kubeconform, kube-linter
+   - **CI/CD:** GitHub Actions environments, manual approvals
+
+   **Benefícios:**
+   - ✅ Infraestrutura como código (IaC) rastreável
+   - ✅ Validação automática antes de apply
+   - ✅ Security scanning de infraestrutura
+   - ✅ Auditoria completa via Git history
+   - ✅ Consistência entre ambientes
+   - ✅ Rollback facilitado
 
 **1. [DOCS] Update README with Badges and Evidence** ⭐ COMECE AQUI
    - **Why:** Visibilidade do progresso, cumpre entregavel 4b

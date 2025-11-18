@@ -31,6 +31,12 @@ jobs:
             echo "✅ Encontrados arquivos YAML para validar"
             # Validação básica de sintaxe YAML
             for file in $YAML_FILES; do
+              # Pular arquivos de deployment AWS (contêm placeholders {{ECR_*}})
+              if [[ "$file" == *"aws/deployments"* ]]; then
+                echo "  ⏭️  Pulando (template): $file"
+                continue
+              fi
+
               echo "  Validando: $file"
               # Verifica se o arquivo tem sintaxe válida usando Python
               python3 -c "import yaml; yaml.safe_load(open('$file'))" 2>&1 || {

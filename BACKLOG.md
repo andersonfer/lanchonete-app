@@ -1,9 +1,9 @@
 # BACKLOG - Sistema Lanchonete (Fase 4)
 
 **Projeto:** Sistema de Lanchonete - Arquitetura de Microserviços
-**Branch Atual:** main
-**Última Atualizacao:** 2025-11-17 19:10
-**Fase Atual:** Fase 4 - CI/CD e Qualidade de Codigo
+**Branch Atual:** feature/atualizacao_backlog
+**Última Atualizacao:** 2025-11-18 08:30
+**Fase Atual:** Fase 4 - CI/CD e Qualidade de Codigo (FASE FINAL)
 
 ---
 
@@ -25,95 +25,147 @@
 - **Migracao Microservicos:** 100% CONCLUIDO
 - **Bancos de Dados:** 100% CONCLUIDO (3x MySQL + 1x MongoDB)
 - **Comunicacao entre Servicos:** 100% CONCLUIDO (REST + RabbitMQ)
-- **Testes Unitarios:** 100% CONCLUIDO (80%+ cobertura em todos)
+- **Testes Unitarios:** 100% CONCLUIDO (86.5% cobertura media)
 - **CI com SonarCloud:** 100% CONCLUIDO
 - **Testes BDD:** 100% CONCLUIDO (19 cenários em 4 serviços)
-- **CD para AWS EKS:** 100% CONCLUIDO (4 workflows funcionando)
-- **Repositorios Separados:** 0% PENDENTE
+- **CD para AWS EKS:** 100% CONCLUIDO (SHA versioning implementado)
+- **Seguranca:** 100% CONCLUIDO (Log Injection vulnerabilidade corrigida)
+- **Branch Protection:** 90% CONCLUIDO (checks configurados, regras pendentes)
+- **Documentacao:** 60% CONCLUIDO (badges e evidencias pendentes)
+- **Video Demo:** 0% PENDENTE
 
 ---
 
 ## SCRUM MASTER SESSION REPORT
 
-### Recent Progress Analysis (Ultimas 72h)
+### Recent Progress Analysis (Ultimas 24h - 2025-11-18)
 
-**Commits Analisados (desde 2025-11-11):**
-- `72bb829` - Merge PR #7: Refatoracao completa para microservicos
-- `1e0ea5b` - Criacao do CI de Pagamento
-- `602d824` - Refatoracao PedidoCozinhaResponse para record
-- `8bacc67` - Criacao do CI da Cozinha
-- `1b164ab` - Remocao dos pipelines antigos (ci-app.yml, cd-app.yml)
-- `8ed679e` - Remocao de testes duplicados
-- `031fca7` - Testes unitarios do servico de Pedidos
-- `03812bf` - Criacao do CI de Pedidos
-- `305e6e4` - Criacao do workflow de CI de Clientes
+**Commits Analisados (desde 2025-11-17 08:00):**
+- `8b5dd2b` - SECURITY FIX: Remove entrada do usuario do log (Log Injection)
+- `8c96e55` - Merge branch 'main' into test/cd-pedidos
+- `a53b4c3` - Ajustes no pipeline de pedidos (SHA versioning)
+- `696dd1b` - Merge PR #19: test/cd-pagamento (validated)
+- `62ed446` - Ajustes no pipeline de pagamentos (SHA versioning)
+- `74ae056` - Merge PR #18: test/cd-cozinha (validated)
+- `3ddb53c` - Ajustes no pipeline da cozinha (SHA versioning)
+- `d0e8478` - Merge PR #16: feature/cd-microservicos (SHA implementation)
+- `3d6d701` - Corrige imagens para adicionar SHA
+- `8650a2d` - Merge PR #15: melhorias-cd-clientes
+- `ada6639` - Criacao da tag versionada das imagens docker
+- `aaf2384` - Teste do pipeline de clientes (20251117)
+- `69de214` - Adiciona mensagem de log para testar pipeline
 
 **Principais Mudancas:**
-- 4 workflows de CI implementados (.github/workflows/ci-*.yml)
-- Todos os servicos com configuracao SonarCloud no pom.xml
-- Remocao dos pipelines monoliticos (ci-app.yml e cd-app.yml)
-- Adicao de testes unitarios no servico de Pedidos
-- PR #7 mergeado para main com todas as mudancas
+- ✅ CRITICO: SHA-based versioning implementado em todos os 4 CD pipelines
+- ✅ SECURITY: Vulnerabilidade de Log Injection corrigida no servico Pedidos
+- ✅ Branch protection ajustada para usar check generico "Testes e Análise SonarCloud"
+- ✅ 4 PRs de teste mergeados com sucesso (test/cd-*)
+- ✅ Deploy automatico funcionando sem necessidade de kubectl rollout restart manual
+- ✅ Todas as imagens Docker agora tagueadas com :latest e :sha
 
-### Completed Items (Desde Ultima Sessao)
+### Completed Items (Ultima Sessao - 2025-11-18)
+
+**ENTREGAVEL 3c: CD com SHA Versioning** ✅ CONCLUIDO (NOVA FEATURE!)
+- ✅ CD Clientes: SHA versioning + automatic deployment (PRs #15, #16)
+- ✅ CD Pedidos: SHA versioning + automatic deployment (PR #16, commit a53b4c3)
+- ✅ CD Cozinha: SHA versioning + automatic deployment (PRs #16, #18)
+- ✅ CD Pagamento: SHA versioning + automatic deployment (PRs #16, #19)
+- ✅ Todas imagens Docker tagueadas com: `:latest` e `:${{ github.sha }}`
+- ✅ Deploy usa tag especifica SHA para confiabilidade
+- ✅ Rollout automatico sem necessidade de kubectl restart manual
+- ✅ Smoke tests validando health, readiness, liveness em todos os servicos
+
+**SECURITY: Log Injection Vulnerability** ✅ CORRIGIDO
+- ✅ SonarCloud detectou vulnerabilidade no servico Pedidos (commit 8b5dd2b)
+- ✅ Entrada do usuario removida dos logs
+- ✅ Quality Gate passou apos correcao
+- ✅ Todos os 4 servicos agora sem vulnerabilidades criticas
+
+**BRANCH PROTECTION: Checks Unificados** ✅ MELHORADO
+- ✅ Branch protection usando check generico "Testes e Análise SonarCloud"
+- ✅ Nao precisa mais de 4 checks individuais por servico
+- ✅ PRs bloqueados ate CI passar
+
+**HISTORICO DE ENTREGAS ANTERIORES:**
 
 **FASE 4 - ENTREGAVEL 1: Refatoracao para Microservicos** ✅ CONCLUIDO
-- ✅ Separacao em 4 microservicos (Clientes, Pedidos, Cozinha, Pagamento)
-- ✅ Banco MySQL para Clientes, Pedidos e Cozinha
-- ✅ Banco MongoDB para Pagamento (NoSQL obrigatorio)
-- ✅ Comunicacao via REST (Feign Client)
-- ✅ Comunicacao via RabbitMQ (mensageria assincrona)
-- ✅ Isolamento de bancos de dados (sem acesso cross-service)
+- ✅ 4 microservicos (Clientes, Pedidos, Cozinha, Pagamento)
+- ✅ 3x MySQL + 1x MongoDB
+- ✅ REST (Feign Client) + RabbitMQ
+- ✅ Isolamento completo de bancos de dados
 
-**FASE 4 - ENTREGAVEL 2a: Testes Unitarios com 80% Cobertura** ✅ CONCLUIDO
-- ✅ Clientes: 85% cobertura (superou meta)
-- ✅ Pedidos: 83% cobertura (superou meta)
-- ✅ Cozinha: 84% cobertura (superou meta)
-- ✅ Pagamento: 94% cobertura (superou meta)
+**FASE 4 - ENTREGAVEL 2a: Testes Unitarios 80%+** ✅ CONCLUIDO
+- ✅ Clientes: 85%, Pedidos: 83%, Cozinha: 84%, Pagamento: 94%
+- ✅ Media: 86.5% (supera meta de 80%)
 
-**FASE 4 - ENTREGAVEL 3b: CI com SonarCloud (70% coverage minimo)** ✅ CONCLUIDO
-- ✅ CI Clientes: Testes + SonarCloud + Quality Gate
-- ✅ CI Pedidos: Testes + SonarCloud + Quality Gate
-- ✅ CI Cozinha: Testes + SonarCloud + Quality Gate
-- ✅ CI Pagamento: Testes + SonarCloud + Quality Gate
-- ✅ Path filters configurados (services/{servico}/**)
-- ✅ Trigger em Pull Requests para branch main
-- ✅ Todos os CIs executados com sucesso no PR #7
+**FASE 4 - ENTREGAVEL 2b: Testes BDD** ✅ CONCLUIDO
+- ✅ 19 cenarios BDD em 4 servicos (Cucumber + Gherkin)
+
+**FASE 4 - ENTREGAVEL 3b: CI com SonarCloud** ✅ CONCLUIDO
+- ✅ 4 workflows CI com Quality Gates > 70%
+- ✅ Path filters configurados
+- ✅ Trigger em PRs para main
 
 ### Current Status
 
-**Total de Entregaveis Fase 4:** 8 principais
-- **Concluidos:** 5/8 (62.5%)
-- **Em Progresso:** 0/8
-- **Pendentes:** 3/8 (37.5%)
+**Total de Entregaveis Fase 4:** 9 principais
+- **Concluidos:** 8/9 (88.9%) ⬆️ +22.2% desde ultima sessao
+- **Em Progresso:** 0/9
+- **Pendentes:** 1/9 (11.1%)
 
-**Quality Metrics:**
-- Cobertura Media de Testes: 86.5% (meta: 80%)
-- Testes BDD: 19 cenários (100% passing)
-- Testes Totais: 393 (374 unitários + 19 BDD)
-- Pipelines CI Funcionando: 4/4 (100%)
-- Pipelines CD Funcionando: 4/4 (100%)
-- SonarCloud Projects: 4/4 configurados
+**Quality Metrics (EXCELENTES):**
+- Cobertura Media de Testes: 86.5% (meta: 80%) ✅
+- Testes BDD: 19 cenários (100% passing) ✅
+- Testes Totais: 393 (374 unitários + 19 BDD) ✅
+- Pipelines CI Funcionando: 4/4 (100%) ✅
+- Pipelines CD Funcionando: 4/4 (100%) ✅
+- SonarCloud Quality Gates: 4/4 PASSED ✅
+- Vulnerabilidades Criticas: 0/4 (100% seguro) ✅
 
-**GitHub Actions Status (Ultimo PR #7):**
-- ✅ CI - Clientes: SUCCESS
-- ✅ CI - Pedidos: SUCCESS
-- ✅ CI - Cozinha: SUCCESS
-- ✅ CI - Pagamento: SUCCESS
+**GitHub Actions Status (Ultimos PRs #15-#19):**
+- ✅ CI - Clientes: SUCCESS (com SonarCloud)
+- ✅ CI - Pedidos: SUCCESS (vulnerabilidade corrigida)
+- ✅ CI - Cozinha: SUCCESS (com SonarCloud)
+- ✅ CI - Pagamento: SUCCESS (com SonarCloud)
+- ✅ CD - Clientes: SUCCESS (SHA: ada6639)
+- ✅ CD - Pedidos: SUCCESS (SHA: a53b4c3)
+- ✅ CD - Cozinha: SUCCESS (SHA: 3ddb53c)
+- ✅ CD - Pagamento: SUCCESS (SHA: 62ed446)
+
+**AWS EKS Deployment Status:**
+- Cluster: lanchonete-cluster (us-east-1) ✅
+- Todos os 4 servicos deployed com SHA versioning ✅
+- ALBs provisionados e respondendo ✅
+- Smoke tests passando (health/readiness/liveness) ✅
 
 ### Blockers & Risks
 
-**BLOQUEADOR CRITICO:**
-- ❌ **Repositorios nao estao separados** (Entregavel 3a)
-  - Requisito: "Seus repositorios devem ser separados para cada aplicacao"
-  - Situacao Atual: Monorepo unico com todos os servicos
-  - Impacto: Viola requisito obrigatorio da Fase 4
-  - Acao Necessaria: Criar 4 repositorios separados + configurar CI/CD em cada
+**SEM BLOQUEADORES CRITICOS!** 🎉 Todos os problemas tecnicos resolvidos.
 
-**PENDENCIAS CRITICAS:**
-- ❌ Teste integrado CI+CD nao realizado (validação final)
-- ❌ Branch protection nao configurada (Entregavel 3a)
-- ❌ Video de demonstração não gravado (Entregavel 4a)
+**PENDENCIAS (NAO-BLOQUEADORAS):**
+
+1. ⚠️ **Monorepo vs Multi-Repo** (Entregavel 3a - Decisao Arquitetural)
+   - Situacao: Usando monorepo com path filters (padrao da industria)
+   - Impacto: BAIXO - Monorepo e usado por Google, Microsoft, Uber para microservicos
+   - Mitigacao: Documentar decisao e justificar no video
+   - Path filters garantem isolamento: cada servico tem CI/CD independente
+   - **Recomendacao:** Manter monorepo + criar documento de justificativa
+
+2. ⚠️ **Branch Protection Rules** (Entregavel 3a - Parcialmente Completo)
+   - Status: Checks configurados, regras de protecao pendentes
+   - Impacto: BAIXO - PRs ja estao sendo revisados e checks obrigatorios funcionam
+   - Acao: Configurar regras formais no GitHub (30 minutos)
+
+3. ⚠️ **Documentacao e Badges** (Entregavel 4b - 60% Completo)
+   - Faltam: Badges SonarCloud, badges GitHub Actions, links para dashboards
+   - Impacto: BAIXO - Documentacao existe, falta apenas visibilidade
+   - Acao: Adicionar badges e links (2-3 horas)
+
+4. ⚠️ **Video de Demonstracao** (Entregavel 4a - Obrigatorio)
+   - Status: Nao iniciado
+   - Impacto: ALTO - Requisito obrigatorio para entrega
+   - Acao: Gravar video de 15-20 minutos (4-6 horas)
+   - Prioridade: ALTA
 
 ---
 
@@ -377,59 +429,330 @@ Cada pipeline CD possui 12 passos:
 
 ## PROXIMAS TAREFAS RECOMENDADAS
 
-### SPRINT ATUAL: Finalizacao Fase 4 (3-4 dias restantes)
+### SPRINT ATUAL: Finalizacao Fase 4 (2-3 dias restantes)
 
-**STATUS ATUAL (2025-11-17 19:10):**
-- ✅ BDD implementado (4 serviços, 19 cenários)
-- ✅ Pipelines de CD implementados (4 workflows)
-- ⏳ Teste integrado CI+CD (PRÓXIMA TAREFA)
-- ⏳ Branch protection
-- ⏳ Documentação e badges
-- ⏳ Video de demonstração
+**STATUS ATUAL (2025-11-18 08:30):**
+- ✅ Microservicos implementados (4 servicos, 100%)
+- ✅ Testes unitarios (86.5% cobertura, supera 80%)
+- ✅ Testes BDD (19 cenarios, 4 servicos)
+- ✅ Pipelines CI (4 workflows, SonarCloud integrado)
+- ✅ Pipelines CD (4 workflows, SHA versioning)
+- ✅ Seguranca (0 vulnerabilidades criticas)
+- ⏳ Documentacao (badges e evidencias)
+- ⏳ Branch protection (regras formais)
+- ⏳ Video de demonstracao (OBRIGATORIO)
 
-**PRÓXIMA SESSÃO (DIA 1): VALIDAÇÃO CI+CD**
-1. **[TESTE CI+CD]** Validação integrada end-to-end
-   - Fazer alteração em cada serviço (4 PRs)
-   - Validar CI executa automaticamente
-   - Validar Quality Gate passa
-   - Fazer merge e validar CD executa
-   - Validar deploy realizado com sucesso
-   - Validar smoke tests e ALBs
-   - **Estimativa:** 2-3 horas
-   - **Prioridade:** P0 - CRITICA
+**PROXIMA SESSAO (PRIORIDADE MAXIMA): DOCUMENTACAO + VIDEO**
 
-**DIA 2: BRANCH PROTECTION + DOCUMENTACAO**
-2. **[REPO]** Configurar branch protection
-   - Proteger branch main
-   - Bloquear commits diretos
-   - Requer PR reviews
-   - Requer CI passando
-   - **Estimativa:** 30 minutos
+### Immediate Priority (Start Now)
 
-3. **[DOCS]** Atualizar README com evidencias
-   - Adicionar badges SonarCloud (4 badges)
-   - Adicionar badges CI/CD (8 badges)
-   - Screenshots de cobertura
-   - Links para SonarCloud projects
-   - Adicionar usuario soat-architecture
-   - Documentar ALBs e endpoints
-   - **Estimativa:** 2-3 horas
+**0. [CLEANUP] Remover Código Legado do Monolito** ✅ CONCLUIDO
+   - **Why:** Remover código antigo não utilizado, organizar repositório
+   - **Depends on:** Nothing
+   - **Effort:** 30 minutos
+   - **Priority:** P1 - MEDIA
+   - **Status:** CONCLUIDO (PR #21 - 195 arquivos deletados)
+   - **Acceptance Criteria:**
+     - [x] Deletar diretório `app/` (código monolito antigo - 148 arquivos)
+     - [x] Deletar diretório `k8s_manifests/` (manifestos k8s antigos - 15 arquivos)
+     - [x] Deletar diretório `scripts_k8s/` (scripts antigos - 5 arquivos)
+     - [x] Deletar diretório `scripts/` (scripts legados - 9 arquivos)
+     - [x] Deletar `docker-compose.yml` (setup local legado)
+     - [x] Verificar ausência de referências aos diretórios deletados
+     - [x] Commit: "remoção do código antigo"
 
-**DIA 3-4: VIDEO + ENTREGA**
-4. **[VIDEO]** Gravar video de demonstracao
-   - Roteiro: Arquitetura → Testes → CI/CD → Deploy
-   - Mostrar aplicacao funcionando
-   - Mostrar checks verdes
-   - Mostrar ALBs respondendo
-   - Edicao e upload
-   - **Estimativa:** 4-6 horas
+**0.1 [CLEANUP] Remover Scripts de Deploy/Teste Local** ✅ CONCLUIDO
+   - **Why:** Limpar scripts locais não utilizados (apenas AWS é usado)
+   - **Depends on:** Análise de dependências concluída
+   - **Effort:** 30-45 minutos
+   - **Priority:** P2 - BAIXA
+   - **Status:** CONCLUIDO (2025-11-18)
+   - **Acceptance Criteria:**
+     - [x] Analisar referências cruzadas entre scripts local/AWS
+     - [x] Deletar `deploy_scripts/local/` (5 arquivos)
+     - [x] Deletar `test_scripts/local/` (1 arquivo)
+     - [x] Manter `deploy_scripts/aws/` (6 scripts - USADOS)
+     - [x] Manter `test_scripts/aws/` (5 scripts - USADOS)
+   - **Resultado:** 6 arquivos deletados
 
-5. **[ENTREGA]** Preparar artefatos finais
-   - Documento com nomes + Discord IDs
-   - Links para repositorios
-   - Link do video
-   - Validacao final
-   - **Estimativa:** 1 hora
+**0.2 [CLEANUP] Remover Manifestos K8s Local e HPA** ✅ CONCLUIDO
+   - **Why:** Limpar manifestos K8s locais não utilizados (apenas AWS é usado)
+   - **Depends on:** Análise de dependências concluída
+   - **Effort:** 30-45 minutos
+   - **Priority:** P2 - BAIXA
+   - **Status:** CONCLUIDO (2025-11-18)
+   - **Acceptance Criteria:**
+     - [x] Analisar uso de manifestos base/local/aws
+     - [x] Deletar `k8s/local/` (9 arquivos - deployments + statefulsets)
+     - [x] Deletar `k8s/ingress/local/` (2 arquivos - nodeports)
+     - [x] Deletar `k8s/base/statefulsets/` (5 arquivos - nunca referenciados)
+     - [x] Deletar `k8s/hpa/` (4 arquivos - não obrigatório para entrega)
+     - [x] Manter `k8s/aws/` (6 arquivos - USADOS NO CD)
+     - [x] Manter `k8s/base/configmaps/` (4 arquivos - USADOS NO CD)
+     - [x] Manter `k8s/base/services/` (4 arquivos - USADOS NO CD)
+     - [x] Manter `k8s/ingress/aws/` (5 arquivos - USADOS NO CD)
+   - **Resultado:** 20 arquivos deletados
+   - **Estrutura K8s Final:** 19 arquivos (apenas AWS)
+
+**0.3 [INFRA] CI/CD para Infraestrutura (Terraform + K8s)** 🏗️ NOVA TAREFA
+   - **Why:** Automação de provisionamento de infraestrutura, segurança e rastreabilidade
+   - **Depends on:** Análise de estrutura atual
+   - **Effort:** 6-8 horas
+   - **Priority:** P3 - MELHORIA (não obrigatório, mas altamente recomendado)
+   - **Status:** PROPOSTA
+
+   **Estrutura Atual:**
+   - **Terraform:** 7 módulos (backend, ecr, database, kubernetes, auth, lambda, api-gateway, ingress)
+   - **K8s Manifests:** Base (configmaps, services), AWS (deployments, statefulsets, ingress), HPA
+   - **Provisionamento:** Manual via scripts `deploy_scripts/aws/`
+   - **Estado:** S3 backend (já configurado em `infra/backend/`)
+
+   **Pipeline Proposto - Terraform (CI):**
+   ```yaml
+   name: CI - Terraform Infrastructure
+
+   on:
+     pull_request:
+       branches: [main]
+       paths:
+         - 'infra/**/*.tf'
+         - '.github/workflows/ci-terraform.yml'
+
+   jobs:
+     validate:
+       - terraform fmt -check (validar formatação)
+       - terraform init (validar configuração)
+       - terraform validate (validar sintaxe)
+       - tfsec (security scanning)
+       - terraform plan (dry-run, postar no PR como comentário)
+       - checkov (policy as code - opcional)
+   ```
+
+   **Pipeline Proposto - Terraform (CD):**
+   ```yaml
+   name: CD - Terraform Infrastructure
+
+   on:
+     push:
+       branches: [main]
+       paths:
+         - 'infra/database/**'
+         - 'infra/kubernetes/**'
+         - 'infra/auth/**'
+         - 'infra/lambda/**'
+         - 'infra/api-gateway/**'
+         - 'infra/ingress/**'
+
+   jobs:
+     deploy:
+       - terraform init
+       - terraform plan -out=tfplan
+       - terraform apply tfplan (com aprovação manual se produção)
+       - terraform output > outputs.json (artefato)
+   ```
+
+   **Pipeline Proposto - K8s Manifests (CI):**
+   ```yaml
+   name: CI - K8s Manifests
+
+   on:
+     pull_request:
+       branches: [main]
+       paths:
+         - 'k8s/**/*.yaml'
+         - 'k8s/**/*.yml'
+         - '.github/workflows/ci-k8s.yml'
+
+   jobs:
+     validate:
+       - kubeval (validar sintaxe YAML)
+       - kube-score (best practices)
+       - kubeconform (validar contra API K8s)
+       - kubectl dry-run (simular apply)
+       - kustomize build (se usar Kustomize)
+   ```
+
+   **Pipeline Proposto - K8s Manifests (CD):**
+   ```yaml
+   name: CD - K8s Shared Resources
+
+   on:
+     push:
+       branches: [main]
+       paths:
+         - 'k8s/base/configmaps/**'
+         - 'k8s/base/services/**'
+         - 'k8s/aws/statefulsets/**'
+         - 'k8s/ingress/aws/**'
+         - 'k8s/hpa/**'
+
+   jobs:
+     deploy:
+       - kubectl apply -f k8s/base/configmaps/
+       - kubectl apply -f k8s/base/services/
+       - kubectl apply -f k8s/aws/statefulsets/
+       - kubectl apply -f k8s/ingress/aws/
+       - kubectl apply -f k8s/hpa/
+       - kubectl rollout status (aguardar)
+   ```
+
+   **Estratégia de Separação:**
+
+   1. **Terraform - Por Módulo com Dependências:**
+      - Camada 1: `backend`, `ecr` (sem dependências)
+      - Camada 2: `kubernetes` (depende de VPC/network se existir)
+      - Camada 3: `database`, `auth` (depende de kubernetes/network)
+      - Camada 4: `lambda`, `api-gateway`, `ingress` (depende de tudo)
+      - Executar em ordem ou usar `terraform apply -target` seletivo
+
+   2. **K8s - Por Tipo de Recurso:**
+      - Recursos base (configmaps, services) - sempre primeiro
+      - Statefulsets (bancos de dados) - antes de deployments
+      - Deployments (aplicações) - já coberto pelos CD de serviços
+      - Ingress/HPA - depois de services/deployments
+
+   **Path Filters Recomendados:**
+   ```yaml
+   # CI Terraform - valida TUDO
+   paths:
+     - 'infra/**/*.tf'
+
+   # CD Terraform - por módulo (workflows separados)
+   paths:
+     - 'infra/database/**'  # CD Database
+     - 'infra/kubernetes/**' # CD EKS
+     - 'infra/auth/**'       # CD Cognito
+     # etc...
+
+   # CI K8s - valida TUDO
+   paths:
+     - 'k8s/**/*.yaml'
+     - 'k8s/**/*.yml'
+
+   # CD K8s - apenas recursos compartilhados
+   paths:
+     - 'k8s/base/configmaps/**'
+     - 'k8s/base/services/**'
+     - 'k8s/aws/statefulsets/**'
+     - 'k8s/ingress/aws/**'
+     - 'k8s/hpa/**'
+
+   # CD K8s Deployments - já cobertos pelos CD de cada serviço
+   # (clientes, pedidos, cozinha, pagamento)
+   ```
+
+   **Problemas a Resolver:**
+
+   1. **Terraform State Locking:**
+      - Usar DynamoDB lock table no backend S3
+      - Evitar applies concorrentes
+
+   2. **Credenciais AWS:**
+      - Mesmas secrets já configuradas (AWS_ACCESS_KEY_ID, etc.)
+      - Considerar OIDC federation para maior segurança
+
+   3. **Aprovação Manual:**
+      - Terraform apply em produção deve requerer aprovação
+      - GitHub Environments com reviewers
+
+   4. **Ordem de Execução:**
+      - Terraform ANTES de K8s (infra antes de manifests)
+      - Usar workflow dependencies se necessário
+
+   5. **Rollback:**
+      - Manter tfplan como artefato
+      - Permitir `terraform apply` de plano anterior
+      - K8s: usar `kubectl rollout undo`
+
+   **Acceptance Criteria:**
+     - [ ] Workflow CI - Terraform (fmt, validate, plan, security scan)
+     - [ ] Workflow CD - Terraform Database (automated ou manual approval)
+     - [ ] Workflow CD - Terraform Kubernetes (automated ou manual approval)
+     - [ ] Workflow CD - Terraform Auth/Lambda/Gateway (automated ou manual approval)
+     - [ ] Workflow CI - K8s Manifests (validation, dry-run)
+     - [ ] Workflow CD - K8s Shared Resources (configmaps, services, ingress, hpa)
+     - [ ] DynamoDB lock table configurado no backend S3
+     - [ ] Documentar strategy e ordem de execução
+     - [ ] Adicionar badges de CI/CD infra no README
+     - [ ] Testar rollback scenarios
+
+   **Ferramentas Recomendadas:**
+   - **Terraform:** tfsec, checkov (security), terraform-docs
+   - **K8s:** kubeval, kube-score, kubeconform, kube-linter
+   - **CI/CD:** GitHub Actions environments, manual approvals
+
+   **Benefícios:**
+   - ✅ Infraestrutura como código (IaC) rastreável
+   - ✅ Validação automática antes de apply
+   - ✅ Security scanning de infraestrutura
+   - ✅ Auditoria completa via Git history
+   - ✅ Consistência entre ambientes
+   - ✅ Rollback facilitado
+
+**1. [DOCS] Update README with Badges and Evidence** ⭐ COMECE AQUI
+   - **Why:** Visibilidade do progresso, cumpre entregavel 4b
+   - **Depends on:** Nothing - pode iniciar imediatamente
+   - **Effort:** 2-3 horas
+   - **Priority:** P0 - ALTA
+   - **Acceptance Criteria:**
+     - [ ] Adicionar 4 badges SonarCloud Quality Gate
+     - [ ] Adicionar 4 badges SonarCloud Coverage
+     - [ ] Adicionar 8 badges GitHub Actions (4 CI + 4 CD)
+     - [ ] Adicionar links para dashboards SonarCloud
+     - [ ] Documentar ALBs e endpoints AWS
+     - [ ] Explicar SHA versioning strategy
+     - [ ] Adicionar secao "What's New in Phase 4"
+
+**2. [REPO] Configure Branch Protection Rules** ✅ CONCLUIDO
+   - **Status:** Branch protection configurada com sucesso
+   - **Verificado em:** 2025-11-18
+   - **Configuracao:**
+     - ✅ PRs obrigatorios antes de merge
+     - ✅ Check "Testes e Análise SonarCloud" obrigatorio
+     - ✅ Enforce admins ativado
+     - ✅ Force pushes bloqueados
+     - ✅ Branch deletions bloqueados
+
+**3. [DOCS] Create Monorepo Architecture Decision Document** ❌ NAO NECESSARIO
+   - **Status:** Validado com professor - nao e necessario
+   - **Razao:** Monorepo e aceitavel para o projeto
+   - **Data:** 2025-11-18
+
+### Following Priority (Next 2-3 Days)
+
+**4. [VIDEO] Record Demo Video** 🎬 OBRIGATORIO
+   - **Why:** Entregavel obrigatorio 4a
+   - **Depends on:** Badges e documentacao completos (para referencia)
+   - **Effort:** 4-6 horas (roteiro + gravacao + edicao)
+   - **Priority:** P0 - CRITICA
+   - **Acceptance Criteria:**
+     - [ ] Roteiro completo (15-20 minutos)
+     - [ ] Secao 1: Arquitetura (4 min) - microservicos, bancos, comunicacao
+     - [ ] Secao 2: Aplicacao funcionando (5 min) - fluxo completo E2E
+     - [ ] Secao 3: Testes (4 min) - cobertura, BDD, SonarCloud
+     - [ ] Secao 4: CI/CD (4 min) - pipelines, SHA versioning, deploy AWS
+     - [ ] Secao 5: Monorepo decision (2 min) - justificativa
+     - [ ] Video editado e publicado (YouTube unlisted)
+     - [ ] Link testado e funcionando
+
+**5. [DOCS] Add Evaluator Access** ✅ CONCLUIDO
+   - **Status:** Usuario @soat-architecture adicionado como collaborator
+   - **Verificado em:** 2025-11-18
+   - **Permissao:** Read access concedido
+   - **Documentacao:** Pendente no README
+
+**6. [ENTREGA] Prepare Final Submission**
+   - **Why:** Submissao final do projeto
+   - **Depends on:** Todos os itens anteriores
+   - **Effort:** 1 hora
+   - **Priority:** P0 - CRITICA
+   - **Acceptance Criteria:**
+     - [ ] Documento com nomes dos integrantes + Discord IDs
+     - [ ] Links para repositorio(s)
+     - [ ] Link do video YouTube
+     - [ ] Link SonarCloud organization
+     - [ ] Validacao final de todos os requisitos
+     - [ ] Submeter no prazo
 
 ---
 
@@ -818,11 +1141,64 @@ Cada servico tera um workflow de CD com os seguintes passos:
 
 ---
 
-**Ultima Atualizacao:** 2025-11-17 19:10
-**Responsavel:** Anderson
-**Status Geral:** 62.5% Concluido - CI, BDD e CD implementados
-**Proxima Acao:** Teste integrado CI+CD (validação end-to-end)
-**Prazo Estimado:** 3-4 dias para conclusao total
+**Ultima Atualizacao:** 2025-11-18 15:30
+**Responsavel:** Anderson (Scrum Master + Product Owner)
+**Status Geral:** 70% Concluido - Limpeza de código concluída, infra validada!
+**Proxima Acao:** Documentacao (badges, evidencias) + Video de demonstracao
+**Prazo Estimado:** 1-2 dias para conclusao total (apenas artefatos de entrega restantes)
+
+### Sessão de Hoje (2025-11-18 Tarde)
+
+**Trabalho Realizado:**
+1. ✅ Merge PR #21 - Remoção código legado (195 arquivos)
+2. ✅ Criação workflow CI - Global Validations (para PRs fora de services/)
+3. ✅ Remoção scripts locais (deploy_scripts/local, test_scripts/local) - 6 arquivos
+4. ✅ Remoção manifestos K8s locais e HPA - 20 arquivos
+5. ✅ Proposta CI/CD para Infraestrutura (Terraform + K8s) documentada
+6. ✅ Validação completa da infraestrutura AWS (todos serviços UP)
+
+**Total de Arquivos Removidos Hoje:** 221 arquivos (limpeza completa!)
+
+**Estrutura Final do Repositório:**
+- K8s: 19 arquivos (apenas AWS)
+- Scripts: 11 arquivos (apenas AWS)
+- Terraform: 7 módulos (todos necessários)
+- Services: 4 microserviços (intactos)
+
+---
+
+## RESUMO EXECUTIVO (2025-11-18)
+
+### O que foi alcancado na Fase 4
+
+**INFRAESTRUTURA:**
+- ✅ 4 microservicos independentes (Clientes, Pedidos, Cozinha, Pagamento)
+- ✅ 3 bancos MySQL + 1 MongoDB (isolamento completo)
+- ✅ Comunicacao REST (Feign) + RabbitMQ (eventos asincronos)
+- ✅ Deploy em AWS EKS com infraestrutura Terraform
+
+**QUALIDADE:**
+- ✅ 86.5% cobertura media de testes (supera meta de 80%)
+- ✅ 393 testes automatizados (374 unitarios + 19 BDD)
+- ✅ 4 Quality Gates SonarCloud passando (> 70% coverage)
+- ✅ 0 vulnerabilidades criticas (Log Injection corrigida)
+
+**CI/CD:**
+- ✅ 4 pipelines CI com SonarCloud integrado
+- ✅ 4 pipelines CD com SHA versioning
+- ✅ Deploy automatico no merge para main
+- ✅ Smoke tests validando health/readiness/liveness
+- ✅ ALBs provisionados e respondendo
+
+**PROXIMOS PASSOS:**
+1. Adicionar badges e evidencias no README (2-3h)
+2. Configurar branch protection formal (30min)
+3. Criar documento de decisao de monorepo (1h)
+4. Gravar video de demonstracao (4-6h)
+5. Adicionar usuario soat-architecture (5min)
+6. Submeter projeto final (1h)
+
+**TOTAL RESTANTE:** 8-11 horas de trabalho (2-3 dias)
 
 ---
 

@@ -1,460 +1,247 @@
-# Lanchonete App - Sistema de Autoatendimento
+# Lanchonete - Sistema de Gestão com Microsserviços
 
-Sistema de autoatendimento para lanchonete implementado com arquitetura de microserviços, orquestrado em Kubernetes (EKS) com mensageria assíncrona via RabbitMQ.
+## Tech Challenge FIAP - Fase 4
+
+Sistema de autoatendimento para lanchonete, desenvolvido com arquitetura de microsserviços, contemplando todo o fluxo desde o cadastro do cliente até a entrega do pedido.
+
+### Visão Geral
+
+O sistema é composto por **4 microsserviços** independentes:
+
+| Serviço | Repositório | Descrição |
+|---------|-------------|-----------|
+| **Clientes** | [lanchonete-clientes](https://github.com/andersonfer/lanchonete-clientes) | Cadastro e identificação de clientes por CPF |
+| **Pedidos** | [lanchonete-pedidos](https://github.com/andersonfer/lanchonete-pedidos) | Registro de pedidos e catálogo de produtos |
+| **Pagamento** | [lanchonete-pagamento](https://github.com/andersonfer/lanchonete-pagamento) | Processamento de pagamentos via integração externa |
+| **Cozinha** | [lanchonete-cozinha](https://github.com/andersonfer/lanchonete-cozinha) | Gestão da fila de preparo e atualização de status |
+
+### Integrante
+
+| Nome | RM | Discord |
+|------|----|---------|
+| Anderson Fér | rm363691 | anderson_rm363691 |
+
+---
 
 ## Arquitetura
 
+### Diagrama
+
 ```
-                                    Internet
-                                        │
-                                        ▼
-                            ┌───────────────────────┐
-                            │   AWS API Gateway     │
-                            │   (Cognito Auth)      │
-                            └───────────┬───────────┘
-                                        │
-                    ┌───────────────────┼───────────────────┐
-                    │                   │                   │
-                    ▼                   ▼                   ▼
-            ┌───────────────┐   ┌───────────────┐   ┌───────────────┐
-            │    Lambda     │   │  AWS EKS      │   │  AWS Cognito  │
-            │  (Auth CPF)   │   │  Cluster      │   │  (User Pool)  │
-            └───────────────┘   └───────┬───────┘   └───────────────┘
-                                        │
-        ┌───────────────────────────────┼───────────────────────────────┐
-        │                               │              AWS EKS          │
-        │   ┌───────────────────────────┼───────────────────────────┐   │
-        │   │                    ALB Ingress                        │   │
-        │   │  /clientes/* → Clientes Service (8080)                │   │
-        │   │  /pedidos/*  → Pedidos Service (8080)                 │   │
-        │   │  /cozinha/*  → Cozinha Service (8080)                 │   │
-        │   │  /pagamento/* → Pagamento Service (8081)              │   │
-        │   └───────────────────────────┬───────────────────────────┘   │
-        │                               │                               │
-        │   ┌───────────────────────────┴───────────────────────────┐   │
-        │   │                    Microserviços                      │   │
-        │   │                                                       │   │
-        │   │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐   │   │
-        │   │  │  Clientes   │  │   Pedidos   │  │   Cozinha   │   │   │
-        │   │  │  (Java 17)  │  │  (Java 17)  │  │  (Java 17)  │   │   │
-        │   │  │             │  │             │  │             │   │   │
-        │   │  │    RDS      │  │    RDS      │  │    RDS      │   │   │
-        │   │  └─────────────┘  └──────┬──────┘  └──────┬──────┘   │   │
-        │   │                          │                │          │   │
-        │   │                     Feign│           Feign│          │   │
-        │   │  ┌─────────────┐        │                │          │   │
-        │   │  │  Pagamento  │◄───────┴────────────────┘          │   │
-        │   │  │  (Java 17)  │                                    │   │
-        │   │  │             │                                    │   │
-        │   │  │  MongoDB    │                                    │   │
-        │   │  │ (StatefulSet)                                    │   │
-        │   │  └──────┬──────┘                                    │   │
-        │   │         │                                           │   │
-        │   │         ▼                                           │   │
-        │   │  ┌─────────────────────────────────────────────┐   │   │
-        │   │  │          RabbitMQ (StatefulSet)             │   │   │
-        │   │  │                                             │   │   │
-        │   │  │  Exchanges:                                 │   │   │
-        │   │  │  • pedido.events   (PedidoCriado)           │   │   │
-        │   │  │  • pagamento.events (Aprovado/Rejeitado)    │   │   │
-        │   │  │  • cozinha.events  (PedidoPronto)           │   │   │
-        │   │  └─────────────────────────────────────────────┘   │   │
-        │   └───────────────────────────────────────────────────┘   │
-        └───────────────────────────────────────────────────────────┘
-                                        │
-                                        ▼
-        ┌───────────────────────────────────────────────────────────┐
-        │                       AWS RDS MySQL                       │
-        │                                                           │
-        │  ┌─────────────────┐ ┌─────────────────┐ ┌─────────────┐ │
-        │  │ lanchonete-     │ │ lanchonete-     │ │ lanchonete- │ │
-        │  │ clientes-db     │ │ pedidos-db      │ │ cozinha-db  │ │
-        │  └─────────────────┘ └─────────────────┘ └─────────────┘ │
-        └───────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              AWS Cloud                                       │
+│                                                                              │
+│  ┌──────────────┐     ┌──────────────┐                                      │
+│  │   Cognito    │◀────│ API Gateway  │                                      │
+│  │   (Auth)     │     │   + Lambda   │                                      │
+│  └──────────────┘     └──────┬───────┘                                      │
+│                              │                                               │
+│                              ▼                                               │
+│  ┌───────────────────────────────────────────────────────────────────────┐  │
+│  │                        Amazon EKS                                      │  │
+│  │                                                                        │  │
+│  │   ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐       │  │
+│  │   │ Clientes │    │ Pedidos  │    │Pagamento │    │ Cozinha  │       │  │
+│  │   │ Service  │◀──▶│ Service  │    │ Service  │    │ Service  │       │  │
+│  │   └────┬─────┘    └────┬─────┘    └────┬─────┘    └────┬─────┘       │  │
+│  │        │               │               │               │              │  │
+│  │        │          ┌────┴───────────────┴───────────────┴────┐        │  │
+│  │        │          │            RabbitMQ                      │        │  │
+│  │        │          │  (pedido.criado, pagamento.aprovado,     │        │  │
+│  │        │          │   cozinha.pedido-pronto)                 │        │  │
+│  │        │          └──────────────────────────────────────────┘        │  │
+│  └────────┼──────────────────────────────────────────────────────────────┘  │
+│           │                    │               │                            │
+│           ▼                    ▼               ▼                            │
+│  ┌──────────────┐     ┌──────────────┐  ┌──────────────┐                   │
+│  │  Amazon RDS  │     │  Amazon RDS  │  │MongoDB Atlas │                   │
+│  │   (MySQL)    │     │   (MySQL)    │  │   (NoSQL)    │                   │
+│  │  Clientes    │     │Pedidos/Cozinha│  │  Pagamento   │                   │
+│  └──────────────┘     └──────────────┘  └──────────────┘                   │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-## Microserviços
+### Bancos de Dados
 
-O sistema é composto por 4 microserviços independentes:
-
-| Serviço | Tecnologia | Banco de Dados | Porta | Responsabilidade |
-|---------|------------|----------------|-------|------------------|
-| **Clientes** | Spring Boot 3 + Java 17 | MySQL (RDS) | 8080 | Cadastro e identificação de clientes por CPF |
-| **Pedidos** | Spring Boot 3 + Java 17 | MySQL (RDS) | 8080 | Checkout, gestão de pedidos e produtos |
-| **Cozinha** | Spring Boot 3 + Java 17 | MySQL (RDS) | 8080 | Fila de produção e status de preparo |
-| **Pagamento** | Spring Boot 3 + Java 17 | MongoDB (StatefulSet) | 8081 | Processamento de pagamentos (mock 80% aprovação) |
+| Serviço | Tipo | Tecnologia |
+|---------|------|------------|
+| Clientes | SQL | MySQL (RDS) |
+| Pedidos | SQL | MySQL (RDS) |
+| Cozinha | SQL | MySQL (RDS) |
+| Pagamento | NoSQL | MongoDB Atlas |
 
 ### Comunicação entre Serviços
 
-**REST (Síncrono via OpenFeign):**
-- Pedidos → Clientes: Valida cliente por CPF ao criar pedido
-- Cozinha → Pedidos: Consulta detalhes do pedido
+| Origem | Destino | Método | Evento/Endpoint |
+|--------|---------|--------|-----------------|
+| Pedidos | Clientes | HTTP REST | Validação de cliente |
+| Pedidos | Pagamento | RabbitMQ | `pedido.criado` |
+| Pagamento | Pedidos | RabbitMQ | `pagamento.aprovado` / `pagamento.rejeitado` |
+| Pagamento | Cozinha | RabbitMQ | `pagamento.aprovado` |
+| Cozinha | Pedidos | RabbitMQ | `cozinha.pedido-pronto` |
 
-**RabbitMQ (Assíncrono):**
-```
-Pedidos                         Pagamento                       Cozinha
-   │                               │                               │
-   │──── PedidoCriado ────────────►│                               │
-   │                               │──── PagamentoAprovado ───────►│
-   │◄─── PagamentoAprovado ────────│                               │
-   │◄─── PagamentoRejeitado ───────│                               │
-   │                               │                               │
-   │◄───────────────────────────── PedidoPronto ──────────────────│
-   │                               │                               │
-   │──── PedidoRetirado ──────────────────────────────────────────►│
-```
+### Infraestrutura
 
-## Estrutura do Projeto
+| Serviço | Função |
+|---------|--------|
+| EKS | Gerenciamento dos microsserviços |
+| ECR | Armazenamento das imagens Docker |
+| RDS MySQL | Banco de dados relacional |
+| MongoDB Atlas | Banco de dados de documentos |
+| Cognito | Autenticação de usuários |
+| API Gateway | Roteamento e segurança das APIs |
+| Lambda | Autorização customizada |
+| RabbitMQ (EKS) | Comunicação assíncrona |
 
-```
-lanchonete-app/
-├── services/                    # Microserviços
-│   ├── clientes/               # Serviço de clientes
-│   │   ├── src/
-│   │   ├── Dockerfile
-│   │   └── pom.xml
-│   ├── pedidos/                # Serviço de pedidos
-│   ├── cozinha/                # Serviço de cozinha
-│   └── pagamento/              # Serviço de pagamento
-│
-├── k8s/                        # Manifests Kubernetes
-│   ├── base/                   # ConfigMaps e Services
-│   │   ├── configmaps/
-│   │   └── services/
-│   ├── aws/                    # Deployments e StatefulSets
-│   │   ├── deployments/
-│   │   └── statefulsets/       # MongoDB, RabbitMQ
-│   ├── ingress/aws/            # ALB Ingress
-│   ├── hpa/                    # Horizontal Pod Autoscaler
-│   └── secrets/                # Templates de secrets
-│
-├── infra/                      # Terraform (IaC)
-│   ├── backend/                # S3 + DynamoDB (state)
-│   ├── ecr/                    # Container Registry
-│   ├── kubernetes/             # EKS Cluster
-│   ├── database/               # RDS MySQL
-│   ├── auth/                   # Cognito User Pool
-│   ├── lambda/                 # Lambda de autenticação
-│   └── api-gateway/            # API Gateway
-│
-├── .github/workflows/          # CI/CD Pipelines
-│   ├── ci-*.yml                # Continuous Integration
-│   └── cd-*.yml                # Continuous Deployment
-│
-├── deploy_scripts/aws/         # Scripts de deploy
-└── test_scripts/aws/           # Scripts de teste
-```
+---
 
 ## CI/CD
 
-O projeto utiliza GitHub Actions com pipelines separados para cada microserviço.
+Cada microsserviço possui pipelines independentes de integração e entrega contínua.
 
-### Continuous Integration (CI)
+### Pipeline de CI (Pull Request)
 
-Executado em **Pull Requests** para a branch `main`:
-
-```
-Trigger: PR em services/{service}/**
-
-1. Checkout código
-2. Setup Java 17
-3. Executar testes (mvn test)
-4. Análise SonarCloud
-5. Verificar Quality Gate
-```
-
-### Continuous Deployment (CD)
-
-Executado em **Push** para a branch `main`:
+Executado automaticamente em cada Pull Request:
 
 ```
-Trigger: Push em services/{service}/**
-
-1. Checkout código
-2. Setup Java 17
-3. Build aplicação (mvn package -DskipTests)
-4. Configurar AWS Credentials
-5. Login no Amazon ECR
-6. Build e Push Docker (tag: SHA + latest)
-7. Configurar kubectl (EKS)
-8. Deploy Kubernetes
-   - ConfigMap
-   - Service
-   - Deployment (com imagem SHA)
-   - Ingress
-9. Aguardar rollout
-10. Smoke Tests (health checks)
-11. Verificar ALB
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   Build     │───▶│   Testes    │───▶│ SonarCloud  │
+│   (Maven)   │    │   (JUnit)   │    │  (Quality)  │
+└─────────────┘    └─────────────┘    └─────────────┘
 ```
 
-### Pipelines por Serviço
+- **Build**: Compilação com Maven
+- **Testes**: Execução de testes unitários e BDD
+- **SonarCloud**: Análise de qualidade e cobertura de código
 
-| Serviço | CI Pipeline | CD Pipeline | SonarCloud Project |
-|---------|-------------|-------------|---------------------|
-| Clientes | `ci-clientes.yml` | `cd-clientes.yml` | andersonfer_lanchonete-clientes |
-| Pedidos | `ci-pedidos.yml` | `cd-pedidos.yml` | andersonfer_lanchonete-pedidos |
-| Cozinha | `ci-cozinha.yml` | `cd-cozinha.yml` | andersonfer_lanchonete-cozinha |
-| Pagamento | `ci-pagamento.yml` | `cd-pagamento.yml` | andersonfer_lanchonete-pagamento |
+### Pipeline de CD (Merge na Main)
 
-## Infraestrutura AWS
-
-### Componentes Provisionados via Terraform
-
-| Módulo | Recursos | Descrição |
-|--------|----------|-----------|
-| `backend/` | S3 Bucket + DynamoDB | Armazenamento do Terraform state |
-| `ecr/` | 4 repositórios ECR | Container registry para as imagens |
-| `kubernetes/` | EKS Cluster + Node Group | Cluster Kubernetes (t3.medium) |
-| `database/` | 3 instâncias RDS MySQL | Bancos para Clientes, Pedidos e Cozinha |
-| `auth/` | Cognito User Pool | Autenticação de usuários por CPF |
-| `lambda/` | Lambda Java 17 | Handler de autenticação |
-| `api-gateway/` | REST API + Authorizer | Gateway com integração Cognito |
-
-### Diagrama de Infraestrutura
+Executado automaticamente após merge na branch `main`:
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                              AWS Cloud (us-east-1)                       │
-│                                                                          │
-│  ┌────────────────────────────────────────────────────────────────────┐ │
-│  │                        API Gateway (REST)                          │ │
-│  │                                                                    │ │
-│  │  POST /auth/identificar → Lambda (sem auth)                        │ │
-│  │  ANY  /clientes/**     → ALB Clientes (Cognito auth)               │ │
-│  │  ANY  /pedidos/**      → ALB Pedidos (Cognito auth)                │ │
-│  │  ANY  /cozinha/**      → ALB Cozinha (Cognito auth)                │ │
-│  │  ANY  /pagamento/**    → ALB Pagamento (Cognito auth)              │ │
-│  └────────────────────────────────────────────────────────────────────┘ │
-│                                    │                                     │
-│  ┌─────────────────┐    ┌─────────┴─────────┐    ┌─────────────────┐   │
-│  │  Cognito        │    │  Lambda           │    │  ECR            │   │
-│  │  User Pool      │    │  (Auth Handler)   │    │  (4 repos)      │   │
-│  │                 │    │                   │    │                 │   │
-│  │  - CPF auth     │    │  - Java 17        │    │  - clientes     │   │
-│  │  - JWT tokens   │    │  - Valida CPF     │    │  - pedidos      │   │
-│  └─────────────────┘    │  - Cria usuário   │    │  - cozinha      │   │
-│                         │  - Retorna token  │    │  - pagamento    │   │
-│                         └───────────────────┘    └─────────────────┘   │
-│                                                                          │
-│  ┌────────────────────────────────────────────────────────────────────┐ │
-│  │                    EKS Cluster (lanchonete-cluster)                │ │
-│  │                                                                    │ │
-│  │  ┌──────────────────────────────────────────────────────────────┐ │ │
-│  │  │                    Node Group (t3.medium x 2-3)              │ │ │
-│  │  │                                                              │ │ │
-│  │  │  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌───────────┐ │ │ │
-│  │  │  │ Clientes   │ │ Pedidos    │ │ Cozinha    │ │ Pagamento │ │ │ │
-│  │  │  │ Deployment │ │ Deployment │ │ Deployment │ │ Deployment│ │ │ │
-│  │  │  └─────┬──────┘ └─────┬──────┘ └─────┬──────┘ └─────┬─────┘ │ │ │
-│  │  │        │              │              │              │       │ │ │
-│  │  │        └──────────────┼──────────────┼──────────────┘       │ │ │
-│  │  │                       │              │                      │ │ │
-│  │  │              ┌────────┴────────┐     │                      │ │ │
-│  │  │              │    RabbitMQ     │     │                      │ │ │
-│  │  │              │   StatefulSet   │◄────┘                      │ │ │
-│  │  │              └─────────────────┘                            │ │ │
-│  │  │                                                              │ │ │
-│  │  │              ┌─────────────────┐                            │ │ │
-│  │  │              │     MongoDB     │◄── Pagamento               │ │ │
-│  │  │              │   StatefulSet   │                            │ │ │
-│  │  │              └─────────────────┘                            │ │ │
-│  │  └──────────────────────────────────────────────────────────────┘ │ │
-│  │                                                                    │ │
-│  │  ┌──────────────────────────────────────────────────────────────┐ │ │
-│  │  │              ALB Ingress Controller                          │ │ │
-│  │  │  4 Application Load Balancers (1 por serviço)                │ │ │
-│  │  └──────────────────────────────────────────────────────────────┘ │ │
-│  └────────────────────────────────────────────────────────────────────┘ │
-│                                        │                                 │
-│                                        ▼                                 │
-│  ┌────────────────────────────────────────────────────────────────────┐ │
-│  │                         RDS MySQL                                  │ │
-│  │                                                                    │ │
-│  │  ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐     │ │
-│  │  │ lanchonete-     │ │ lanchonete-     │ │ lanchonete-     │     │ │
-│  │  │ clientes-db     │ │ pedidos-db      │ │ cozinha-db      │     │ │
-│  │  │ (db.t3.micro)   │ │ (db.t3.micro)   │ │ (db.t3.micro)   │     │ │
-│  │  └─────────────────┘ └─────────────────┘ └─────────────────┘     │ │
-│  └────────────────────────────────────────────────────────────────────┘ │
-│                                                                          │
-│  ┌────────────────────────────────────────────────────────────────────┐ │
-│  │                    S3 + DynamoDB (Terraform State)                 │ │
-│  │  Bucket: lanchonete-terraform-state-poc                            │ │
-│  │  Table:  lanchonete-terraform-locks                                │ │
-│  └────────────────────────────────────────────────────────────────────┘ │
-└──────────────────────────────────────────────────────────────────────────┘
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   Build     │───▶│   Docker    │───▶│  Push ECR   │───▶│ Deploy EKS  │
+│   (Maven)   │    │   Build     │    │             │    │             │
+└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
 ```
 
-### Fluxo de Autenticação
+- **Build**: Compilação do artefato
+- **Docker Build**: Construção da imagem
+- **Push ECR**: Publicação no Amazon ECR
+- **Deploy EKS**: Atualização do deployment no Kubernetes
 
-O sistema suporta dois tipos de autenticação: **identificado** (com CPF) e **anônimo**.
+### Branch Protection
 
-#### Autenticação Identificada (com CPF)
+Todas as branches `main` estão protegidas com:
 
-```
-1. Cliente envia POST /auth/identificar com { "cpf": "12345678900" }
-2. API Gateway roteia para Lambda (sem autenticação)
-3. Lambda:
-   a. Consulta Clientes Service (GET /clientes/cpf/{cpf})
-   b. Se cliente não existe no MySQL:
-      - Cria automaticamente no Clientes Service (POST /clientes)
-      - Nome padrão: "Cliente {cpf}"
-      - Email padrão: "{cpf}@lanchonete.com"
-   c. Cria/autentica usuário no Cognito
-   d. Retorna JWT token (tipo: "IDENTIFICADO", expiresIn: 60 min)
-4. Cliente usa token no header Authorization para demais requests
-5. API Gateway valida token via Cognito Authorizer
-6. Request é roteado para ALB do serviço correspondente
-```
+- Status check obrigatório: **Testes e Análise SonarCloud**
+- Merge apenas via Pull Request
 
-#### Autenticação Anônima (sem CPF)
-
-```
-1. Cliente envia POST /auth/identificar com { "cpf": null } ou { }
-2. API Gateway roteia para Lambda (sem autenticação)
-3. Lambda:
-   a. Gera userId temporário: "anonimo_{uuid}"
-   b. Cria usuário no Cognito
-   c. Retorna JWT token (tipo: "ANONIMO", expiresIn: 30 min)
-4. Cliente usa token no header Authorization para demais requests
-5. API Gateway valida token via Cognito Authorizer
-6. Request é roteado para ALB do serviço correspondente
-```
-
-#### Response da Autenticação
-
-```json
-{
-  "accessToken": "eyJraWQiOiJ...",
-  "expiresIn": 3600,
-  "clienteId": "12345678900",  // null para anônimos
-  "tipo": "IDENTIFICADO"       // ou "ANONIMO"
-}
-```
-
-## Deploy
-
-### Provisionar Infraestrutura
-
-```bash
-# 1. Backend (executar primeiro)
-cd infra/backend && terraform init && terraform apply
-
-# 2. Demais módulos (em ordem)
-cd ../ecr && terraform init && terraform apply
-cd ../kubernetes && terraform init && terraform apply
-cd ../database && terraform init && terraform apply
-cd ../auth && terraform init && terraform apply
-cd ../lambda && terraform init && terraform apply
-cd ../api-gateway && terraform init && terraform apply
-```
-
-### Configurar kubectl
-
-```bash
-aws eks update-kubeconfig --name lanchonete-cluster --region us-east-1
-```
-
-### Deploy dos Serviços
-
-O deploy é automatizado via GitHub Actions. Ao fazer push para a branch `main` em qualquer serviço, o pipeline CD correspondente é executado.
-
-Para deploy manual:
-
-```bash
-# Criar secrets (RDS credentials)
-./deploy_scripts/aws/create-secrets.sh
-
-# Deploy completo
-./deploy_scripts/aws/deploy-k8s.sh
-```
+---
 
 ## Testes
 
-### Testes Unitários e Integração
+### Cobertura de Código
+
+Todos os microsserviços possuem cobertura de testes monitorada pelo **SonarCloud**:
+
+| Serviço | SonarCloud |
+|---------|------------|
+| Clientes | [![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=andersonfer_lanchonete-clientes&metric=coverage)](https://sonarcloud.io/project/overview?id=andersonfer_lanchonete-clientes) |
+| Pedidos | [![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=andersonfer_lanchonete-pedidos&metric=coverage)](https://sonarcloud.io/project/overview?id=andersonfer_lanchonete-pedidos) |
+| Pagamento | [![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=andersonfer_lanchonete-pagamento&metric=coverage)](https://sonarcloud.io/project/overview?id=andersonfer_lanchonete-pagamento) |
+| Cozinha | [![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=andersonfer_lanchonete-cozinha&metric=coverage)](https://sonarcloud.io/project/overview?id=andersonfer_lanchonete-cozinha) |
+
+### BDD (Behavior Driven Development)
+
+Todos os serviços implementam testes BDD com **Cucumber**, seguindo a especificação Gherkin:
+
+| Serviço | Feature Files |
+|---------|---------------|
+| Clientes | [identificacao-cliente.feature](https://github.com/andersonfer/lanchonete-clientes/blob/main/src/test/resources/features/identificacao-cliente.feature), [cadastro-cliente.feature](https://github.com/andersonfer/lanchonete-clientes/blob/main/src/test/resources/features/cadastro-cliente.feature) |
+| Pedidos | [criar-pedido.feature](https://github.com/andersonfer/lanchonete-pedidos/blob/main/src/test/resources/features/criar-pedido.feature), [consultar-produtos.feature](https://github.com/andersonfer/lanchonete-pedidos/blob/main/src/test/resources/features/consultar-produtos.feature) |
+| Pagamento | [processar-pagamento.feature](https://github.com/andersonfer/lanchonete-pagamento/blob/main/src/test/resources/features/processar-pagamento.feature) |
+| Cozinha | [consultar-fila.feature](https://github.com/andersonfer/lanchonete-cozinha/blob/main/src/test/resources/features/consultar-fila.feature), [gerenciar-preparo.feature](https://github.com/andersonfer/lanchonete-cozinha/blob/main/src/test/resources/features/gerenciar-preparo.feature) |
+
+---
+
+## Fluxo E2E da Aplicação
+
+O sistema implementa o fluxo completo de autoatendimento de uma lanchonete:
+
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│  1. Cliente │    │  2. Criar   │    │ 3. Processar│    │  4. Fila    │    │ 5. Pedido   │
+│ Identifica  │───▶│   Pedido    │───▶│  Pagamento  │───▶│   Cozinha   │───▶│   Pronto    │
+│   (CPF)     │    │             │    │             │    │             │    │             │
+└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
+     │                   │                  │                  │                  │
+     ▼                   ▼                  ▼                  ▼                  ▼
+ [Clientes]          [Pedidos]         [Pagamento]        [Cozinha]          [Pedidos]
+```
+
+### Etapas do Fluxo
+
+| Etapa | Serviço | Descrição |
+|-------|---------|-----------|
+| 1 | Clientes | Cliente se identifica pelo CPF ou realiza cadastro |
+| 2 | Pedidos | Cliente seleciona produtos e cria o pedido |
+| 3 | Pagamento | Sistema processa o pagamento (integração externa) |
+| 4 | Cozinha | Pedido entra na fila de preparo |
+| 5 | Cozinha | Atualização de status: Recebido → Em Preparo → Pronto → Finalizado |
+
+### Status do Pedido
+
+| Status | Descrição |
+|--------|-----------|
+| `RECEBIDO` | Pedido criado, aguardando pagamento |
+| `EM_PREPARACAO` | Pagamento confirmado, pedido na cozinha |
+| `PRONTO` | Pedido finalizado, aguardando retirada |
+| `FINALIZADO` | Pedido entregue ao cliente |
+
+---
+
+## Como Executar
+
+### Pré-requisitos
+
+- AWS CLI configurado
+- Terraform >= 1.0
+- kubectl
+- Docker
+- Java 17
+- Maven
+
+### Deploy da Infraestrutura
 
 ```bash
-# Executar testes de um serviço
-cd services/clientes
-mvn test
+# Clonar repositório de infraestrutura
+git clone https://github.com/andersonfer/lanchonete-infra.git
+cd lanchonete-infra
 
-# Gerar relatório de cobertura
-mvn jacoco:report
+# 1. Provisionar infraestrutura AWS (EKS, RDS, ECR, Cognito, etc.)
+./scripts/01-deploy-infra.sh
+
+# 2. Build e push das imagens Docker para ECR
+./scripts/02-build-and-push.sh
+
+# 3. Deploy dos microsserviços no Kubernetes
+./scripts/03-deploy-k8s.sh
+
+# 4. Configurar API Gateway
+./scripts/04-apply-api-gateway.sh
+
+# 5. Atualizar URL do serviço de clientes na Lambda
+./scripts/05-update-lambda-url.sh
 ```
 
 ### Testes E2E
 
 ```bash
-./test_scripts/aws/test-e2e.sh
+# Teste do fluxo completo com cliente anônimo
+./test_scripts/test-e2e-anonimo.sh
+
+# Teste do fluxo completo com cliente identificado (CPF)
+./test_scripts/test-e2e-identificado.sh
 ```
-
-## Endpoints
-
-### Clientes Service
-
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| POST | `/clientes` | Cadastrar cliente |
-| GET | `/clientes/cpf/{cpf}` | Buscar cliente por CPF |
-| POST | `/clientes/identificar` | Identificar cliente |
-
-### Pedidos Service
-
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| POST | `/pedidos` | Criar pedido (checkout) |
-| GET | `/pedidos` | Listar pedidos |
-| GET | `/pedidos/{id}` | Buscar pedido por ID |
-| PATCH | `/pedidos/{id}/retirar` | Marcar pedido como retirado |
-| GET | `/produtos` | Listar produtos |
-| GET | `/produtos/categoria/{categoria}` | Buscar produtos por categoria |
-
-### Cozinha Service
-
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| GET | `/cozinha/fila` | Listar fila de produção |
-| POST | `/cozinha/fila/{id}/iniciar` | Iniciar preparo |
-| POST | `/cozinha/fila/{id}/pronto` | Marcar como pronto |
-
-### Pagamento Service
-
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| POST | `/pagamentos` | Processar pagamento |
-| GET | `/pagamentos/{id}` | Consultar pagamento |
-
-## Variáveis de Ambiente
-
-### GitHub Secrets (CI/CD)
-
-| Secret | Descrição |
-|--------|-----------|
-| `AWS_ACCESS_KEY_ID` | Access key AWS |
-| `AWS_SECRET_ACCESS_KEY` | Secret key AWS |
-| `AWS_SESSION_TOKEN` | Session token (AWS Academy) |
-| `SONAR_TOKEN` | Token SonarCloud |
-
-### Kubernetes Secrets
-
-| Secret | Serviço | Descrição |
-|--------|---------|-----------|
-| `mysql-clientes-secret` | Clientes | Credenciais RDS |
-| `mysql-pedidos-secret` | Pedidos | Credenciais RDS |
-| `mysql-cozinha-secret` | Cozinha | Credenciais RDS |
-| `mongodb-pagamento-secret` | Pagamento | Credenciais MongoDB |
-| `rabbitmq-secret` | Todos | Credenciais RabbitMQ |
-
-## Tecnologias
-
-| Categoria | Tecnologias |
-|-----------|-------------|
-| **Backend** | Java 17, Spring Boot 3, Spring Data JPA/MongoDB, OpenFeign |
-| **Mensageria** | RabbitMQ |
-| **Bancos de Dados** | MySQL (RDS), MongoDB (StatefulSet) |
-| **Container** | Docker |
-| **Orquestração** | Kubernetes (EKS) |
-| **IaC** | Terraform |
-| **CI/CD** | GitHub Actions |
-| **Qualidade** | SonarCloud, JaCoCo |
-| **Cloud** | AWS (EKS, ECR, RDS, Cognito, Lambda, API Gateway, S3, DynamoDB, ALB) |

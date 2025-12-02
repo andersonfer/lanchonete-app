@@ -1,8 +1,0 @@
-DROP TABLE IF EXISTS cliente;
-
-CREATE TABLE cliente (
-    id IDENTITY PRIMARY KEY,
-    cpf VARCHAR(11) NOT NULL UNIQUE,
-    nome VARCHAR NOT NULL,
-    email VARCHAR NOT NULL
-);

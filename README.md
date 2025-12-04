@@ -14,6 +14,7 @@ O sistema é composto por **4 microsserviços** independentes:
 | **Pedidos** | [lanchonete-pedidos](https://github.com/andersonfer/lanchonete-pedidos) | Registro de pedidos e catálogo de produtos |
 | **Pagamento** | [lanchonete-pagamento](https://github.com/andersonfer/lanchonete-pagamento) | Processamento de pagamentos via integração externa |
 | **Cozinha** | [lanchonete-cozinha](https://github.com/andersonfer/lanchonete-cozinha) | Gestão da fila de preparo e atualização de status |
+| **Infraestrutura** | [lanchonete-infra](https://github.com/andersonfer/lanchonete-infra) | Terraform, Kubernetes manifests e scripts de deploy |
 
 ### Integrante
 

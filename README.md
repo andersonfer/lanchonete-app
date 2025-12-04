@@ -97,6 +97,42 @@ O sistema é composto por **4 microsserviços** independentes:
 
 ---
 
+## Fluxo E2E da Aplicação
+
+O sistema implementa o fluxo completo de autoatendimento de uma lanchonete:
+
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│  1. Cliente │    │  2. Criar   │    │ 3. Processar│    │  4. Fila    │    │ 5. Pedido   │
+│ Identifica  │───▶│   Pedido    │───▶│  Pagamento  │───▶│   Cozinha   │───▶│   Pronto    │
+│   (CPF)     │    │             │    │             │    │             │    │             │
+└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
+     │                   │                  │                  │                  │
+     ▼                   ▼                  ▼                  ▼                  ▼
+ [Clientes]          [Pedidos]         [Pagamento]        [Cozinha]          [Pedidos]
+```
+
+### Etapas do Fluxo
+
+| Etapa | Serviço | Descrição |
+|-------|---------|-----------|
+| 1 | Clientes | Cliente se identifica pelo CPF ou realiza cadastro |
+| 2 | Pedidos | Cliente seleciona produtos e cria o pedido |
+| 3 | Pagamento | Sistema processa o pagamento (integração externa) |
+| 4 | Cozinha | Pedido entra na fila de preparo |
+| 5 | Cozinha | Atualização de status: Recebido → Em Preparo → Pronto → Finalizado |
+
+### Status do Pedido
+
+| Status | Descrição |
+|--------|-----------|
+| `RECEBIDO` | Pedido criado, aguardando pagamento |
+| `EM_PREPARACAO` | Pagamento confirmado, pedido na cozinha |
+| `PRONTO` | Pedido finalizado, aguardando retirada |
+| `FINALIZADO` | Pedido entregue ao cliente |
+
+---
+
 ## CI/CD
 
 Cada microsserviço possui pipelines independentes de integração e entrega contínua.
@@ -164,42 +200,6 @@ Todos os serviços implementam testes BDD com **Cucumber**, seguindo a especific
 | Pedidos | [criar-pedido.feature](https://github.com/andersonfer/lanchonete-pedidos/blob/main/src/test/resources/features/criar-pedido.feature), [consultar-produtos.feature](https://github.com/andersonfer/lanchonete-pedidos/blob/main/src/test/resources/features/consultar-produtos.feature) |
 | Pagamento | [processar-pagamento.feature](https://github.com/andersonfer/lanchonete-pagamento/blob/main/src/test/resources/features/processar-pagamento.feature) |
 | Cozinha | [consultar-fila.feature](https://github.com/andersonfer/lanchonete-cozinha/blob/main/src/test/resources/features/consultar-fila.feature), [gerenciar-preparo.feature](https://github.com/andersonfer/lanchonete-cozinha/blob/main/src/test/resources/features/gerenciar-preparo.feature) |
-
----
-
-## Fluxo E2E da Aplicação
-
-O sistema implementa o fluxo completo de autoatendimento de uma lanchonete:
-
-```
-┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│  1. Cliente │    │  2. Criar   │    │ 3. Processar│    │  4. Fila    │    │ 5. Pedido   │
-│ Identifica  │───▶│   Pedido    │───▶│  Pagamento  │───▶│   Cozinha   │───▶│   Pronto    │
-│   (CPF)     │    │             │    │             │    │             │    │             │
-└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
-     │                   │                  │                  │                  │
-     ▼                   ▼                  ▼                  ▼                  ▼
- [Clientes]          [Pedidos]         [Pagamento]        [Cozinha]          [Pedidos]
-```
-
-### Etapas do Fluxo
-
-| Etapa | Serviço | Descrição |
-|-------|---------|-----------|
-| 1 | Clientes | Cliente se identifica pelo CPF ou realiza cadastro |
-| 2 | Pedidos | Cliente seleciona produtos e cria o pedido |
-| 3 | Pagamento | Sistema processa o pagamento (integração externa) |
-| 4 | Cozinha | Pedido entra na fila de preparo |
-| 5 | Cozinha | Atualização de status: Recebido → Em Preparo → Pronto → Finalizado |
-
-### Status do Pedido
-
-| Status | Descrição |
-|--------|-----------|
-| `RECEBIDO` | Pedido criado, aguardando pagamento |
-| `EM_PREPARACAO` | Pagamento confirmado, pedido na cozinha |
-| `PRONTO` | Pedido finalizado, aguardando retirada |
-| `FINALIZADO` | Pedido entregue ao cliente |
 
 ---
 
